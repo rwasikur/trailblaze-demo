@@ -1,0 +1,51 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: trailblaze-auto-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./src/backend
+    container_name: trailblaze-backend
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./src/backend:/app
+      - /app/node_modules
+    environment:
+      - DEBUG=1
+    depends_on:
+      - mongodb
+
+  frontend:
+    build:
+      context: ./src/frontend
+    container_name: trailblaze-frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    volumes:
+      - ./src/frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+
+  nginx:
+    build: ./deployment/nginx
+    container_name: trailblaze_nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    environment:
+      - FRONTEND_HOST=frontend
+      - BACKEND_HOST=backend
+      
+volumes:
+  mongo_data:
