@@ -1,0 +1,92 @@
+# Build and Dependency Directories
+node_modules/
+dist/
+build/
+src/backend/venv/
+src/backend/.venv/
+src/frontend/dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+develop-eggs/
+eggs/
+.eggs/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environment Variables
+.env
+.env.local
+
+# IDE and Editor Configs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Windows System Files (Strictly ignored)
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+*.stackdump
+
+# Logs and Reports
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+test-results/
+playwright-report/
+TEST_REPORT.md
+FINAL_TEST_REPORT.md
+FINAL_TEST_RESULTS.md
+TEST_CASES_SUMMARY.md
+TEST_FIXES_COMPLETE.md
+TEST_FIXES_SUMMARY.md
+test_output*.txt
+TEST_EXECUTION_SUMMARY.md
+
+# OS Specific
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# MediaVault Specific
+src/backend/media/
+*.mp4
+*.sqlite3
+.vite/
+fix_responsive*.py
+check_media.py
+generate_thumbnails.py
+verify_thumbnails.py
+base-app/src/backend/media/
