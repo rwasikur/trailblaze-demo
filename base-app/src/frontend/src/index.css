@@ -72,7 +72,7 @@ h4 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 5%;
+    padding: 0.8rem 5%;
     background: rgba(13, 13, 13, 0.8);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--glass-border);
@@ -84,10 +84,7 @@ h4 {
 .nav-brand {
     font-size: 1.8rem;
     font-weight: 900;
-    background: linear-gradient(135deg, #00E5FF, #005F73);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--accent);
     text-decoration: none;
     letter-spacing: -0.5px;
 }
@@ -130,9 +127,20 @@ h4 {
     box-shadow: 0 4px 15px var(--accent-glow);
 }
 
+.btn-slate {
+    background: #4A6572;
+    box-shadow: 0 4px 6px rgba(74, 101, 114, 0.3);
+}
+
+.btn-slate:hover {
+    background: #344955;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(52, 73, 85, 0.4);
+}
+
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 2rem;
 }
 

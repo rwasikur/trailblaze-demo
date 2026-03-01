@@ -35,16 +35,19 @@ const getCarById = async (req, res) => {
 
 const createCar = async (req, res) => {
     try {
-        const { make, model, year, price, mileage, description, imageUrl } = req.body;
+        const { name, brand, model_year, transmission, fuel_type, seating_capacity, price_per_day, description, image_url, availability_status } = req.body;
 
         const car = new Car({
-            make,
-            model,
-            year,
-            price,
-            mileage,
+            name,
+            brand,
+            model_year,
+            transmission,
+            fuel_type,
+            seating_capacity,
+            price_per_day,
             description,
-            imageUrl
+            image_url,
+            availability_status
         });
 
         const createdCar = await car.save();
@@ -54,8 +57,25 @@ const createCar = async (req, res) => {
     }
 };
 
+const bookCar = async (req, res) => {
+    try {
+        const car = await Car.findById(req.params.id);
+        if (car && car.availability_status === 'Available') {
+            car.availability_status = 'Pending';
+            car.requested_by = req.body.requested_by || 'Anonymous User';
+            await car.save();
+            res.json({ message: 'Car booked successfully', car });
+        } else {
+            res.status(400).json({ message: 'Car not available for booking' });
+        }
+    } catch (err) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 module.exports = {
     getCars,
     getCarById,
     createCar,
+    bookCar,
 };

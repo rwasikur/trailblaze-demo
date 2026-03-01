@@ -1,16 +1,20 @@
 const mongoose = require('mongoose');
 
 const carSchema = new mongoose.Schema({
-    make: { type: String, required: true },
-    model: { type: String, required: true },
-    year: { type: Number, required: true },
-    price: { type: Number, required: true },
-    mileage: { type: Number, required: true },
+    name: { type: String, required: true },
+    brand: { type: String, required: true },
+    model_year: { type: Number, required: true },
+    transmission: { type: String, required: true },
+    fuel_type: { type: String, required: true },
+    seating_capacity: { type: Number, required: true },
+    price_per_day: { type: Number, required: true },
     description: { type: String },
-    imageUrl: { type: String },
+    image_url: { type: String },
+    availability_status: { type: String, default: 'Available' }, // 'Available', 'Pending', 'Unavailable'
+    requested_by: { type: String, default: '' },
     clickCount: { type: Number, default: 0 } // Hidden from public APIs
 }, { timestamps: true });
 
-carSchema.index({ make: 'text', model: 'text', description: 'text' });
+carSchema.index({ name: 'text', brand: 'text', description: 'text' });
 
 module.exports = mongoose.model('Car', carSchema);
