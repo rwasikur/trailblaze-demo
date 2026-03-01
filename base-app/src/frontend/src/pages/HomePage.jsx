@@ -1,10 +1,11 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
+    const navigate = useNavigate();
     return (
         <div style={{
             margin: '-2rem -5.5% -2rem -5.5%', /* Stretch beyond app-container padding */
-            height: 'calc(100vh - 84px)',      /* Exactly fill the remaining viewport (No Scroll) */
+            height: 'calc(100vh - 66px)',      /* Exactly fill the remaining viewport (No Scroll) */
             position: 'relative',
             display: 'flex',
             flexDirection: 'column',
@@ -22,7 +23,10 @@ const HomePage = () => {
                 <p style={{ color: '#eef2f7', textShadow: '0 2px 10px rgba(0,0,0,0.8)', fontSize: '1rem', fontWeight: 400, margin: '0 auto 0 auto', fontFamily: 'Inter, sans-serif', maxWidth: '600px', lineHeight: 1.5 }}>
                     Book premium cars for unforgettable long drives and epic travel adventures. Explore breathtaking destinations in style.
                 </p>
-                <button className="btn" style={{ marginTop: '5rem', background: 'var(--accent)', color: 'var(--bg-color)', fontSize: '0.9rem', padding: '0.6rem 2rem', borderRadius: '12px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, boxShadow: '0 4px 15px var(--accent-glow)' }}>
+                <button
+                    className="btn"
+                    onClick={() => navigate('/browse')}
+                    style={{ marginTop: '5rem', background: 'var(--accent)', color: 'var(--bg-color)', fontSize: '0.9rem', padding: '0.6rem 2rem', borderRadius: '12px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, boxShadow: '0 4px 15px var(--accent-glow)' }}>
                     Explore Cars
                     <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>&rarr;</span>
                 </button>

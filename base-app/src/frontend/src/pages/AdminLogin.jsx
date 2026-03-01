@@ -1,21 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const AdminLogin = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [isLogin, setIsLogin] = useState(true);
+    const [formData, setFormData] = useState({
+        full_name: '', email: '', password: '', confirm_password: '', phone: ''
+    });
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    const handleLogin = async (e) => {
+    useEffect(() => {
+        if (localStorage.getItem('adminToken')) {
+            navigate('/admin/dashboard');
+        }
+    }, [navigate]);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
         try {
-            const { data } = await axios.post('http://localhost:8000/api/admin/login', { username, password });
+            if (!isLogin && formData.password.length < 6) {
+                return setError('Password must be at least 6 characters');
+            }
+
+            const endpoint = isLogin ? '/api/admin/login' : '/api/admin/signup';
+            const payload = isLogin
+                ? { email: formData.email, password: formData.password }
+                : { full_name: formData.full_name, email: formData.email, password: formData.password };
+
+            const { data } = await axios.post(`http://localhost:8000${endpoint}`, payload);
             localStorage.setItem('adminToken', data.token);
             navigate('/admin/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed.');
+            setError(err.response?.data?.message || 'Authentication failed.');
         }
     };
 
@@ -38,30 +56,46 @@ const AdminLogin = () => {
             </div>
 
             <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '2.5rem', background: 'rgba(0, 0, 0, 0.75)', zIndex: 1 }}>
-                <h2 className="page-title" style={{ fontSize: '2.5rem', marginBottom: '2rem' }}>Admin Portal</h2>
+                <h2 className="page-title" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{isLogin ? 'Admin Portal' : 'Admin Register'}</h2>
                 {error && <div style={{ color: 'var(--accent)', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
-                <form onSubmit={handleLogin}>
+                <form onSubmit={handleSubmit}>
+                    {!isLogin && (
+                        <div className="form-group">
+                            <label>Full Name</label>
+                            <input
+                                type="text"
+                                value={formData.full_name}
+                                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                                required={!isLogin}
+                            />
+                        </div>
+                    )}
                     <div className="form-group">
-                        <label>Username</label>
+                        <label>Gmail</label>
                         <input
-                            type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            placeholder="admin"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             required
                         />
                     </div>
+
                     <div className="form-group">
                         <label>Password</label>
                         <input
                             type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="password123"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             required
                         />
                     </div>
-                    <button type="submit" className="btn" style={{ width: '100%', marginTop: '1rem' }}>Secure Login</button>
+
+                    <button type="submit" className="btn" style={{ width: '100%', marginTop: '1rem' }}>
+                        {isLogin ? 'Login' : 'Sign Up'}
+                    </button>
+                    <div style={{ textAlign: 'center', marginTop: '1rem', cursor: 'pointer', color: 'var(--accent)' }} onClick={() => setIsLogin(!isLogin)}>
+                        {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
+                    </div>
                 </form>
             </div>
         </div>
