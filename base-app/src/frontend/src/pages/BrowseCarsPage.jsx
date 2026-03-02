@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import CarRating from '../components/CarRating';
 
 const BrowseCarsPage = () => {
     const [cars, setCars] = useState([]);
@@ -60,7 +61,10 @@ const BrowseCarsPage = () => {
                             <div key={car._id} className="car-card" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#ffffff', border: '1px solid #eaeaea', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
                                 <img src={car.image_url || '/car3.avif'} alt={`${car.brand} ${car.name}`} className="car-image" style={{ height: '180px', objectFit: 'cover' }} />
                                 <div className="car-content" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                                    <h3 className="car-title" style={{ fontSize: '1.15rem', marginBottom: '0.2rem', fontWeight: 600, color: '#111111' }}>{car.brand} {car.name}</h3>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                        <h3 className="car-title" style={{ fontSize: '1.15rem', margin: 0, fontWeight: 600, color: '#111111', lineHeight: 1.2 }}>{car.brand} {car.name}</h3>
+                                        <CarRating carId={car._id} readOnly={true} lightTheme={true} />
+                                    </div>
                                     <div className="car-price" style={{ fontSize: '1.05rem', marginBottom: '1.2rem', color: '#555555' }}>
                                         <span style={{ fontWeight: 'bold', color: '#111111', fontSize: '1.15rem' }}>₹{car.price_per_day?.toLocaleString()}</span> / day
                                     </div>

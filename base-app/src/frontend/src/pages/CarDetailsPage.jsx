@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import CarRating from '../components/CarRating';
 
 const CarDetailsPage = () => {
     const { id } = useParams();
@@ -82,6 +83,11 @@ const CarDetailsPage = () => {
                     <div style={{ marginBottom: '2.5rem' }}>
                         <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>Overview</h3>
                         <p style={{ lineHeight: '1.8', color: 'var(--text-main)', fontSize: '1.05rem' }}>{car.description || 'A stunning premium vehicle awaiting your test drive.'}</p>
+                    </div>
+
+                    <div style={{ marginBottom: '2.5rem' }}>
+                        <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>Rate This Car</h3>
+                        <CarRating carId={car._id || id} readOnly={false} showBreakdown={true} />
                     </div>
 
                     <button
