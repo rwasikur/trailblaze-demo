@@ -16,6 +16,7 @@ services:
     volumes:
       - ./src/backend:/app
       - /app/node_modules
+      - car_images:/app/uploads
     environment:
       - DEBUG=1
       - MONGO_URI=mongodb://mongodb:27017/trailblaze
@@ -51,3 +52,4 @@ services:
       
 volumes:
   mongo_data:
+  car_images:

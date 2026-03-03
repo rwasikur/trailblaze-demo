@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-
+import api from '../api';
 const BrowseCarsPage = () => {
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -11,7 +10,7 @@ const BrowseCarsPage = () => {
     useEffect(() => {
         const fetchCars = async () => {
             try {
-                const { data } = await axios.get('http://localhost:8000/api/cars');
+                const { data } = await api.get('/api/cars');
                 setCars(data.cars);
             } catch (error) {
                 console.error('Error fetching cars', error);

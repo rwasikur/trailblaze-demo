@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import BrowseCarsPage from './pages/BrowseCarsPage';
@@ -20,6 +22,7 @@ function App() {
         <Router>
             <div className="app-container">
                 <Navbar />
+                <ToastContainer position="bottom-right" theme="dark" />
                 <main className="main-content">
                     <Routes>
                         <Route path="/" element={<HomePage />} />

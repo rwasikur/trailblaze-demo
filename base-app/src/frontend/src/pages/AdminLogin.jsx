@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
+import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-
 const AdminLogin = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [formData, setFormData] = useState({
         full_name: '', email: '', password: '', confirm_password: '', phone: ''
     });
-    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -18,10 +17,9 @@ const AdminLogin = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(null);
         try {
             if (!isLogin && formData.password.length < 6) {
-                return setError('Password must be at least 6 characters');
+                return toast.error('Password must be at least 6 characters');
             }
 
             const endpoint = isLogin ? '/api/admin/login' : '/api/admin/signup';
@@ -29,11 +27,12 @@ const AdminLogin = () => {
                 ? { email: formData.email, password: formData.password }
                 : { full_name: formData.full_name, email: formData.email, password: formData.password };
 
-            const { data } = await axios.post(`http://localhost:8000${endpoint}`, payload);
+            const { data } = await api.post(endpoint, payload);
             localStorage.setItem('adminToken', data.token);
+            toast.success("Successfully logged in!");
             navigate('/admin/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || 'Authentication failed.');
+            toast.error(err.response?.data?.message || 'Authentication failed.');
         }
     };
 
@@ -56,8 +55,7 @@ const AdminLogin = () => {
             </div>
 
             <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '2.5rem', background: 'rgba(0, 0, 0, 0.75)', zIndex: 1 }}>
-                <h2 className="page-title" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{isLogin ? 'Admin Portal' : 'Admin Register'}</h2>
-                {error && <div style={{ color: 'var(--accent)', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
+                <h2 className="page-title" style={{ fontSize: '2.5rem', margin: '0 0 1.5rem 0', padding: 0 }}>{isLogin ? 'Admin Portal' : 'Admin Register'}</h2>
                 <form onSubmit={handleSubmit}>
                     {!isLogin && (
                         <div className="form-group">

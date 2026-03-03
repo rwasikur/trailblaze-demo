@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-
+import api from '../api';
+import { toast } from 'react-toastify';
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '', price_per_day: '', description: '', image_url: '', availability_status: 'Available'
     });
-    const [statusMsg, setStatusMsg] = useState('');
     const [stats, setStats] = useState({
         activeBookings: 0,
         activeRentals: 0,
@@ -26,12 +25,12 @@ const AdminDashboard = () => {
 
     const fetchStats = async (token) => {
         try {
-            const { data } = await axios.get('http://localhost:8000/api/admin/dashboard-stats', {
+            const { data } = await api.get('/api/admin/dashboard-stats', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setStats(data);
 
-            const carsRes = await axios.get('http://localhost:8000/api/admin/cars', {
+            const carsRes = await api.get('/api/admin/cars', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setCars(carsRes.data);
@@ -44,15 +43,14 @@ const AdminDashboard = () => {
         if (window.confirm('Are you sure you want to delete this vehicle?')) {
             try {
                 const token = localStorage.getItem('adminToken');
-                await axios.delete(`http://localhost:8000/api/admin/cars/${id}`, {
+                await api.delete(`/api/admin/cars/${id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 fetchStats(token); // Refresh stats and list
-                setStatusMsg('Vehicle deleted successfully.');
-                setTimeout(() => setStatusMsg(''), 3000);
+                toast.success('Vehicle deleted successfully.');
             } catch (err) {
                 console.error('Failed to delete car:', err);
-                setStatusMsg('Error deleting vehicle.');
+                toast.error('Error deleting vehicle.');
             }
         }
     };
@@ -60,13 +58,14 @@ const AdminDashboard = () => {
     const updateStatusHandler = async (id, status) => {
         try {
             const token = localStorage.getItem('adminToken');
-            await axios.put(`http://localhost:8000/api/admin/cars/${id}/status`, { status }, {
+            await api.put(`/api/admin/cars/${id}/status`, { status }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchStats(token);
+            toast.success('Status updated successfully');
         } catch (err) {
             console.error('Failed to update status:', err);
-            setStatusMsg('Error updating car status.');
+            toast.error('Error updating car status.');
         }
     };
 
@@ -76,15 +75,16 @@ const AdminDashboard = () => {
         formDataUpload.append('image', file);
         setUploading(true);
         try {
-            const { data } = await axios.post('http://localhost:8000/api/upload', formDataUpload, {
+            const { data } = await api.post('/api/upload', formDataUpload, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-            setFormData({ ...formData, image_url: `http://localhost:8000${data.url}` });
+            setFormData({ ...formData, image_url: `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${data.url}` });
             setUploading(false);
+            toast.success("Image uploaded!");
         } catch (error) {
             console.error(error);
             setUploading(false);
-            alert('Upload failed');
+            toast.error('Upload failed');
         }
     };
 
@@ -98,13 +98,12 @@ const AdminDashboard = () => {
         try {
             const token = localStorage.getItem('adminToken');
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            await axios.post('http://localhost:8000/api/admin/add-car', formData, config);
-            setStatusMsg('Vehicle added successfully!');
+            await api.post('/api/admin/add-car', formData, config);
+            toast.success('Vehicle added successfully!');
             fetchStats(token);
             setFormData({ name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '', price_per_day: '', description: '', image_url: '', availability_status: 'Available' });
-            setTimeout(() => setStatusMsg(''), 3000);
         } catch (err) {
-            setStatusMsg('Error: ' + (err.response?.data?.message || err.message));
+            toast.error('Error: ' + (err.response?.data?.message || err.message));
         }
     };
 
@@ -222,7 +221,6 @@ const AdminDashboard = () => {
                 {showAddForm && (
                     <div className="glass-panel" style={{ padding: '2rem', animation: 'fadeIn 0.3s ease-out' }}>
                         <h2 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>Add Vehicle Listing</h2>
-                        {statusMsg && <div style={{ marginBottom: '1rem', color: statusMsg.includes('Error') ? 'var(--accent)' : '#2e86de' }}>{statusMsg}</div>}
 
                         <form onSubmit={handleAddCar}>
                             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>

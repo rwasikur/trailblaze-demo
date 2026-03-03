@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-
+import api from '../api';
+import { toast } from 'react-toastify';
 const CarDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -9,12 +9,10 @@ const CarDetailsPage = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [bookingName, setBookingName] = useState('');
-    const [bookingStatusMsg, setBookingStatusMsg] = useState('');
-
     useEffect(() => {
         const fetchCar = async () => {
             try {
-                const { data } = await axios.get(`http://localhost:8000/api/cars/${id}`);
+                const { data } = await api.get(`/api/cars/${id}`);
                 setCar(data);
                 setLoading(false);
             } catch (error) {
@@ -29,17 +27,16 @@ const CarDetailsPage = () => {
         if (!bookingName || bookingName.trim() === '') return;
 
         try {
-            await axios.post(`http://localhost:8000/api/cars/${id}/book`, { requested_by: bookingName.trim() });
-            setBookingStatusMsg("Booking request submitted! We will contact you soon.");
+            await api.post(`/api/cars/${id}/book`, { requested_by: bookingName.trim() });
+            toast.success("Booking request submitted! We will contact you soon.");
             setCar({ ...car, availability_status: 'Pending' });
             setTimeout(() => {
                 setShowModal(false);
-                setBookingStatusMsg('');
                 setBookingName('');
-            }, 3000);
+            }, 1000);
         } catch (error) {
             console.error('Error booking car', error);
-            setBookingStatusMsg("Failed to submit booking. Please try again.");
+            toast.error("Failed to submit booking. Please try again.");
         }
     };
 
@@ -108,12 +105,6 @@ const CarDetailsPage = () => {
                             onChange={(e) => setBookingName(e.target.value)}
                             style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.05)', color: 'var(--text-main)', marginBottom: '1.5rem', fontFamily: 'Inter' }}
                         />
-
-                        {bookingStatusMsg && (
-                            <div style={{ marginBottom: '1.5rem', padding: '1rem', borderRadius: '8px', background: bookingStatusMsg.includes('Failed') ? 'rgba(255, 82, 82, 0.1)' : 'rgba(0, 229, 255, 0.1)', color: bookingStatusMsg.includes('Failed') ? '#FF5252' : 'var(--accent)', border: `1px solid ${bookingStatusMsg.includes('Failed') ? '#FF5252' : 'var(--accent)'}` }}>
-                                {bookingStatusMsg}
-                            </div>
-                        )}
 
                         <div style={{ display: 'flex', gap: '1rem' }}>
                             <button onClick={() => setShowModal(false)} className="btn" style={{ flex: 1, background: 'transparent', border: '1px solid var(--glass-border)' }}>Cancel</button>
