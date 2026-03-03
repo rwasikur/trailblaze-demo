@@ -35,7 +35,7 @@ const getCarById = async (req, res) => {
 
 const createCar = async (req, res) => {
     try {
-        const { name, brand, model_year, transmission, fuel_type, seating_capacity, price_per_day, range, body_type, description, image_url, secondary_images, availability_status } = req.body;
+        const { name, brand, model_year, transmission, fuel_type, seating_capacity, price_per_day, range, body_type, mileage, exterior_color, interior_color, number_of_owners, registration_city, insurance_validity, description, image_url, secondary_images, availability_status } = req.body;
 
         const car = new Car({
             name,
@@ -47,6 +47,12 @@ const createCar = async (req, res) => {
             price_per_day,
             range,
             body_type,
+            mileage,
+            exterior_color,
+            interior_color,
+            number_of_owners,
+            registration_city,
+            insurance_validity,
             description,
             image_url,
             secondary_images: secondary_images || [],
