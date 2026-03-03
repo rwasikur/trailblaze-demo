@@ -18,6 +18,8 @@ services:
       - /app/node_modules
     environment:
       - DEBUG=1
+      - MONGO_URI=mongodb://mongodb:27017/trailblaze
+      - JWT_SECRET=09f633cdb908fe68f43f458db444f801de483a5db2fec1d30679b264c6dbfb1d
     depends_on:
       - mongodb
 
