@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 const AddCarPage = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '', price_per_day: '', description: '', availability_status: 'Available'
+        name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '', price_per_day: '', range: '', body_type: '', description: '', availability_status: 'Available'
     });
     const [images, setImages] = useState([]);
     const [uploading, setUploading] = useState(false);
@@ -111,7 +111,7 @@ const AddCarPage = () => {
                                 <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
                             </div>
                             <div className="form-group" style={{ marginBottom: 0 }}>
-                                <label>Price Per Day (₹)</label>
+                                <label>Price (₹)</label>
                                 <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
                             </div>
                             <div className="form-group" style={{ marginBottom: 0 }}>
@@ -126,7 +126,15 @@ const AddCarPage = () => {
                                 <label>Seating Capacity</label>
                                 <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
                             </div>
-                            <div className="form-group" style={{ marginBottom: 0, gridColumn: 'span 2' }}>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Range (e.g. 350km)</label>
+                                <input type="text" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Body Type (e.g. SUV)</label>
+                                <input type="text" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
                                 <label>Availability</label>
                                 <select value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.05)', color: '#000', appearance: 'none' }}>
                                     <option value="Available" style={{ color: '#000' }}>Available</option>

@@ -29,6 +29,7 @@ const AdminLogin = () => {
 
             const { data } = await api.post(endpoint, payload);
             localStorage.setItem('adminToken', data.token);
+            window.dispatchEvent(new Event('authChange'));
             toast.success("Successfully logged in!");
             navigate('/admin/dashboard');
         } catch (err) {

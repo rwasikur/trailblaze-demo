@@ -8,6 +8,8 @@ const carSchema = new mongoose.Schema({
     fuel_type: { type: String, required: true },
     seating_capacity: { type: Number, required: true },
     price_per_day: { type: Number, required: true },
+    range: { type: String },
+    body_type: { type: String },
     description: { type: String },
     image_url: { type: String },
     secondary_images: [{ type: String }],

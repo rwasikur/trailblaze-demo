@@ -92,60 +92,40 @@ const CarDetailsPage = () => {
                     </div>
 
                     <div style={{ width: '60%', padding: '1.5rem 2rem', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <div>
-                                <div style={{ color: '#64748b', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '0.3rem', fontSize: '0.75rem' }}>{car.brand}</div>
-                                <h1 style={{ fontSize: '1.3rem', margin: 0, lineHeight: 1.2, color: '#0f172a', fontWeight: 700, letterSpacing: '-0.5px' }}>{car.name}</h1>
+                                <div style={{ color: '#64748b', fontWeight: 500, marginBottom: '0.3rem', fontSize: '0.9rem' }}>{car.brand}</div>
+                                <h1 style={{ fontSize: '1.8rem', margin: '0 0 1rem 0', lineHeight: 1.2, color: '#0f172a', fontWeight: 700 }}>{car.name}</h1>
                             </div>
-                            <div style={{ textAlign: 'right', background: '#f8fafc', padding: '0.6rem 1rem', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
-                                <div style={{ fontSize: '1.2rem', color: '#0f172a', fontWeight: 800 }}>₹{car.price_per_day?.toLocaleString()}</div>
-                                <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>per day</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <div>
+                                    <div style={{ fontSize: '1.1rem', color: '#0f172a', fontWeight: 700 }}>₹{car.price_per_day?.toLocaleString()}</div>
+                                    <div style={{ color: '#64748b', fontSize: '0.75rem' }}>Ex-showroom</div>
+                                </div>
                             </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '0.8rem', marginBottom: '1.5rem' }}>
-                            <div style={{ padding: '0.8rem', background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '10px' }}>
-                                <strong style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', marginBottom: '0.4rem', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                    Year
-                                </strong>
-                                <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '0.9rem', display: 'block' }}>{car.model_year}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', padding: '1rem 0' }}>
+                            <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid #e2e8f0' }}>
+                                <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                </div>
+                                <div style={{ fontSize: '1rem', fontWeight: 600, color: '#0f172a', marginBottom: '0.2rem' }}>{car.range || 'N/A'}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Range</div>
                             </div>
-                            <div style={{ padding: '0.8rem', background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '10px' }}>
-                                <strong style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', marginBottom: '0.4rem', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                                    Transmission
-                                </strong>
-                                <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '0.9rem', display: 'block' }}>{car.transmission}</span>
+                            <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid #e2e8f0' }}>
+                                <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.64A1 1 0 0012.5 7H7.5a1 1 0 00-.8.4L4 11l-2 1.15V16h3m8 0a2 2 0 11-4 0m4 0a2 2 0 10-4 0m-10 0a2 2 0 11-4 0m4 0a2 2 0 10-4 0"></path></svg>
+                                </div>
+                                <div style={{ fontSize: '1rem', fontWeight: 600, color: '#0f172a', marginBottom: '0.2rem' }}>{car.body_type || 'N/A'}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Body type</div>
                             </div>
-                            <div style={{ padding: '0.8rem', background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '10px' }}>
-                                <strong style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', marginBottom: '0.4rem', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="22" x2="15" y2="22"></line><line x1="4" y1="9" x2="14" y2="9"></line><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"></path><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"></path></svg>
-                                    Fuel Type
-                                </strong>
-                                <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '0.9rem', display: 'block' }}>{car.fuel_type}</span>
-                            </div>
-                            <div style={{ padding: '0.8rem', background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '10px' }}>
-                                <strong style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', marginBottom: '0.4rem', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                                    Seats
-                                </strong>
-                                <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '0.9rem', display: 'block' }}>{car.seating_capacity}</span>
-                            </div>
-                            <div style={{ padding: '0.8rem', background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '10px' }}>
-                                <strong style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', marginBottom: '0.4rem', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                                    Status
-                                </strong>
-                                <span style={{
-                                    padding: '0.2rem 0.6rem', borderRadius: '9999px', fontSize: '0.7rem', fontWeight: 600, display: 'inline-block',
-                                    background: car.availability_status === 'Available' ? '#ecfdf5' : '#fef2f2',
-                                    color: car.availability_status === 'Available' ? '#059669' : '#dc2626',
-                                    border: `1px solid ${car.availability_status === 'Available' ? '#d1fae5' : '#fee2e2'}`,
-                                    whiteSpace: 'nowrap'
-                                }}>
-                                    {car.availability_status === 'Available' ? 'Available' : 'Unavailable'}
-                                </span>
+                            <div style={{ textAlign: 'center', flex: 1 }}>
+                                <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                                </div>
+                                <div style={{ fontSize: '1rem', fontWeight: 600, color: '#0f172a', marginBottom: '0.2rem' }}>{car.fuel_type || 'N/A'}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Fuel type</div>
                             </div>
                         </div>
 
@@ -156,14 +136,16 @@ const CarDetailsPage = () => {
                             </div>
                         </div>
 
-                        <button
-                            className="btn"
-                            style={{ flexShrink: 0, width: '100%', fontSize: '0.95rem', padding: '0.8rem', background: '#4A6572', color: '#ffffff', borderRadius: '10px', fontWeight: 600, letterSpacing: '0.5px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', marginTop: '1rem' }}
-                            onClick={() => setShowModal(true)}
-                            disabled={car.availability_status !== 'Available'}
-                        >
-                            {car.availability_status === 'Available' ? 'Book This Vehicle' : 'Currently Unavailable'}
-                        </button>
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                            <button
+                                className="btn"
+                                style={{ flex: 1, padding: '0.8rem', background: '#0a0a0a', color: '#ffffff', borderRadius: '8px', fontWeight: 600, border: 'none', cursor: 'pointer', opacity: car.availability_status !== 'Available' ? 0.7 : 1 }}
+                                onClick={() => setShowModal(true)}
+                                disabled={car.availability_status !== 'Available'}
+                            >
+                                {car.availability_status === 'Available' ? 'Grab hot deals' : 'Currently Unavailable'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
