@@ -10,8 +10,11 @@ api.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             localStorage.removeItem('adminToken');
-            toast.error("Session expired or unauthorized. Please log in again.");
-            window.location.href = '/admin';
+            // Only redirect if the request was NOT a login attempt
+            if (error.config && !error.config.url.includes('/login')) {
+                toast.error("Session expired or unauthorized. Please log in again.");
+                window.location.href = '/admin';
+            }
         }
         return Promise.reject(error);
     }

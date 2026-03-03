@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 const AdminLogin = () => {
     const [isLogin, setIsLogin] = useState(true);
+    const [errorMsg, setErrorMsg] = useState('');
     const [formData, setFormData] = useState({
         full_name: '', email: '', password: '', confirm_password: '', phone: ''
     });

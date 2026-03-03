@@ -82,7 +82,6 @@ const CarDetailsPage = () => {
                         { id: 'Overview', label: `${car.brand} ${car.name}` },
                         { id: 'Price', label: 'Price' },
                         { id: 'Specs', label: 'Specs' },
-                        { id: 'Variants', label: 'Variants' },
                         { id: 'Colours', label: 'Colours' },
                         { id: 'Range', label: 'Range' },
                         { id: 'Images', label: 'Images' }
@@ -215,11 +214,7 @@ const CarDetailsPage = () => {
                                     </div>
                                 )}
 
-                                {activeTab === 'Variants' && (
-                                    <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, paddingRight: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Currently details not available.</p>
-                                    </div>
-                                )}
+
 
                                 {activeTab === 'Colours' && (
                                     <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, paddingRight: '0.5rem' }}>
@@ -278,7 +273,7 @@ const CarDetailsPage = () => {
                                 onClick={() => setShowModal(true)}
                                 disabled={car.availability_status !== 'Available'}
                             >
-                                {car.availability_status === 'Available' ? 'Grab hot deals' : 'Currently Unavailable'}
+                                {car.availability_status === 'Available' ? 'Book Now' : 'Currently Unavailable'}
                             </button>
                         </div>
                     </div>
