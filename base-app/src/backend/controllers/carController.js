@@ -3,12 +3,13 @@ const Car = require('../models/Car');
 const getCars = async (req, res) => {
     try {
         const page = Number(req.query.pageNumber) || 1;
-        const pageSize = Number(req.query.pageSize) || 10;
+        const pageSize = Number(req.query.pageSize) || 100;
 
         const count = await Car.countDocuments();
 
         const cars = await Car.find({})
             .select('-clickCount')
+            .sort({ createdAt: -1 })
             .limit(pageSize)
             .skip(pageSize * (page - 1));
 
