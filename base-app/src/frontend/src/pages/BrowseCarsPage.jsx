@@ -11,9 +11,10 @@ const BrowseCarsPage = () => {
         const fetchCars = async () => {
             try {
                 const { data } = await api.get('/api/cars');
-                setCars(data.cars);
+                setCars(data.cars || []);
             } catch (error) {
                 console.error('Error fetching cars', error);
+                setCars([]);
             } finally {
                 setLoading(false);
             }
@@ -21,16 +22,16 @@ const BrowseCarsPage = () => {
         fetchCars();
     }, []);
 
-    const filteredCars = cars.filter(car =>
-        car.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        car.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredCars = (cars || []).filter(car =>
+        (car.brand || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (car.name || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
-        <div style={{ backgroundColor: '#ffffff', minHeight: 'calc(100vh - 66px)', margin: '-2rem -5.5% -2rem -5.5%', padding: '2rem 5%' }}>
+        <div style={{ backgroundColor: '#ffffff', height: 'calc(100vh - 66px)', overflowY: 'auto', margin: '-2rem -5.5% -2rem -5.5%', padding: '2rem 5%' }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-                    <h1 style={{ fontSize: '1.8rem', margin: 0, color: '#111111', fontWeight: 'bold', letterSpacing: '1px' }}>Browse Cars</h1>
+                    <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', margin: 0, color: '#0f172a', fontWeight: 800, letterSpacing: '-0.5px' }}>Browse Cars</h1>
                     <input
                         type="text"
                         placeholder="Search by brand or name..."
@@ -59,9 +60,9 @@ const BrowseCarsPage = () => {
                             <div key={car._id} className="car-card" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#ffffff', border: '1px solid #eaeaea', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
                                 <img src={car.image_url || '/car3.avif'} alt={`${car.brand} ${car.name}`} className="car-image" style={{ height: '180px', objectFit: 'cover' }} />
                                 <div className="car-content" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                                    <h3 className="car-title" style={{ fontSize: '1.15rem', marginBottom: '0.2rem', fontWeight: 600, color: '#111111' }}>{car.brand} {car.name}</h3>
-                                    <div className="car-price" style={{ fontSize: '1.05rem', marginBottom: '1.2rem', color: '#555555' }}>
-                                        <span style={{ fontWeight: 'bold', color: '#111111', fontSize: '1.15rem' }}>₹{car.price_per_day?.toLocaleString()}</span> / day
+                                    <h3 className="car-title" style={{ fontSize: '1.1rem', marginBottom: '0.2rem', fontWeight: 600, color: '#111111' }}>{car.brand} {car.name}</h3>
+                                    <div className="car-price" style={{ fontSize: '1rem', marginBottom: '1.2rem', color: '#555555' }}>
+                                        <span style={{ fontWeight: 'bold', color: '#111111', fontSize: '1.05rem' }}>₹{car.price_per_day?.toLocaleString()}</span> / day
                                     </div>
                                     <button
                                         className="btn btn-slate"

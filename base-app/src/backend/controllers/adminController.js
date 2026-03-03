@@ -44,6 +44,36 @@ const updateCarStatus = async (req, res) => {
     }
 };
 
+const updateCar = async (req, res) => {
+    try {
+        const car = await Car.findById(req.params.id);
+        if (car) {
+            car.name = req.body.name || car.name;
+            car.brand = req.body.brand || car.brand;
+            car.model_year = req.body.model_year || car.model_year;
+            car.transmission = req.body.transmission || car.transmission;
+            car.fuel_type = req.body.fuel_type || car.fuel_type;
+            car.seating_capacity = req.body.seating_capacity || car.seating_capacity;
+            car.price_per_day = req.body.price_per_day || car.price_per_day;
+            car.description = req.body.description || car.description;
+            car.image_url = req.body.image_url || car.image_url;
+            car.secondary_images = req.body.secondary_images !== undefined ? req.body.secondary_images : car.secondary_images;
+            car.availability_status = req.body.availability_status || car.availability_status;
+
+            if (car.availability_status === 'Available') {
+                car.requested_by = ''; // Clear requested_by if made available again
+            }
+
+            const updatedCar = await car.save();
+            res.json(updatedCar);
+        } else {
+            res.status(404).json({ message: 'Car not found' });
+        }
+    } catch (err) {
+        res.status(500).json({ message: 'Server error: ' + err.message });
+    }
+};
+
 const getAllCars = async (req, res) => {
     try {
         const cars = await Car.find({}).sort({ createdAt: -1 });
@@ -66,4 +96,4 @@ const deleteCar = async (req, res) => {
     }
 };
 
-module.exports = { getDashboardStats, getAllCars, deleteCar, updateCarStatus };
+module.exports = { getDashboardStats, getAllCars, deleteCar, updateCarStatus, updateCar };

@@ -10,6 +10,7 @@ const carSchema = new mongoose.Schema({
     price_per_day: { type: Number, required: true },
     description: { type: String },
     image_url: { type: String },
+    secondary_images: [{ type: String }],
     availability_status: { type: String, default: 'Available' }, // 'Available', 'Pending', 'Unavailable'
     requested_by: { type: String, default: '' },
     clickCount: { type: Number, default: 0 } // Hidden from public APIs

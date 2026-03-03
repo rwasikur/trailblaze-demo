@@ -1,15 +1,50 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
 
-const AddCarPage = () => {
+const EditCarPage = () => {
+    const { id } = useParams();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '', price_per_day: '', description: '', availability_status: 'Available'
     });
     const [images, setImages] = useState([]);
     const [uploading, setUploading] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCar = async () => {
+            try {
+                const { data } = await api.get(`/api/cars/${id}`);
+                setFormData({
+                    name: data.name || '',
+                    brand: data.brand || '',
+                    model_year: data.model_year || '',
+                    transmission: data.transmission || '',
+                    fuel_type: data.fuel_type || '',
+                    seating_capacity: data.seating_capacity || '',
+                    price_per_day: data.price_per_day || '',
+                    description: data.description || '',
+                    availability_status: data.availability_status || 'Available'
+                });
+
+                const loadedImages = [];
+                if (data.image_url) loadedImages.push(data.image_url);
+                if (data.secondary_images && Array.isArray(data.secondary_images)) {
+                    loadedImages.push(...data.secondary_images);
+                }
+                setImages(loadedImages);
+
+            } catch (error) {
+                console.error('Error fetching car details', error);
+                toast.error("Could not load car details for editing.");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCar();
+    }, [id]);
 
     const uploadFileHandler = async (e) => {
         const files = Array.from(e.target.files);
@@ -40,7 +75,7 @@ const AddCarPage = () => {
         if (index === 0) return;
         const newImages = [...images];
         const [selected] = newImages.splice(index, 1);
-        newImages.unshift(selected); // move to front
+        newImages.unshift(selected);
         setImages(newImages);
     };
 
@@ -49,7 +84,7 @@ const AddCarPage = () => {
         setImages(newImages);
     };
 
-    const handleAddCar = async (e) => {
+    const handleEditCar = async (e) => {
         e.preventDefault();
         try {
             const payload = {
@@ -60,13 +95,15 @@ const AddCarPage = () => {
 
             const token = localStorage.getItem('adminToken');
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            await api.post('/api/admin/add-car', payload, config);
-            toast.success('Vehicle added successfully!');
-            navigate('/admin/dashboard');
+            await api.put(`/api/admin/cars/${id}`, payload, config);
+            toast.success('Vehicle updated successfully!');
+            navigate('/admin/inventory');
         } catch (err) {
             toast.error('Error: ' + (err.response?.data?.message || err.message));
         }
     };
+
+    if (loading) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading details...</p>;
 
     return (
         <div style={{
@@ -77,26 +114,26 @@ const AddCarPage = () => {
             overflow: 'hidden',
             backgroundColor: '#f8fafc',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            fontFamily: 'Inter, sans-serif'
         }}>
-
             <style>{`
                 .admin-light-panel { color: #000; }
                 .admin-light-panel label { color: #2D3748 !important; font-weight: 600; font-size: 0.8rem; }
                 .admin-light-panel input, .admin-light-panel textarea, .admin-light-panel select { color: #000 !important; background: rgba(0,0,0,0.05) !important; border-color: #ccc !important; padding: 0.5rem !important; }
             `}</style>
 
-            <div className="admin-light-panel" style={{ width: '100%', padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexShrink: 0, paddingBottom: '1rem', borderBottom: '1px solid #e2e8f0' }}>
+            <div className="admin-light-panel" style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexShrink: 0 }}>
                     <div>
-                        <h1 className="page-title" style={{ margin: 0, fontSize: '1.8rem', color: '#0f172a', fontWeight: 700, letterSpacing: '-0.5px', textShadow: 'none', textAlign: 'left' }}>Add New Vehicle</h1>
-                        <p style={{ margin: '0.2rem 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Enter the details below to add a new car to the dealership catalogue.</p>
+                        <h1 className="page-title" style={{ margin: 0, fontSize: '1.8rem', color: '#0f172a', fontWeight: 700, letterSpacing: '-0.5px', textShadow: 'none', textAlign: 'left' }}>Edit</h1>
+                        <p style={{ margin: '0.2rem 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Update vehicle metadata and availability status below.</p>
                     </div>
-                    <button onClick={() => navigate('/admin/dashboard')} className="btn" style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#475569', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Back to Dashboard</button>
+                    <button onClick={() => navigate('/admin/inventory')} className="btn" style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#475569', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Back to Inventory</button>
                 </div>
 
-                <div style={{ animation: 'fadeIn 0.3s ease-out', flex: 1, paddingRight: '10px', overflowY: 'auto' }}>
-                    <form onSubmit={handleAddCar} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ animation: 'fadeIn 0.3s ease-out', flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
+                    <form onSubmit={handleEditCar} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
                             <div className="form-group" style={{ marginBottom: 0 }}>
                                 <label>Car Name</label>
@@ -130,6 +167,7 @@ const AddCarPage = () => {
                                 <label>Availability</label>
                                 <select value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.05)', color: '#000', appearance: 'none' }}>
                                     <option value="Available" style={{ color: '#000' }}>Available</option>
+                                    <option value="Pending" style={{ color: '#000' }}>Pending</option>
                                     <option value="Unavailable" style={{ color: '#000' }}>Unavailable</option>
                                 </select>
                             </div>
@@ -167,9 +205,8 @@ const AddCarPage = () => {
                                 )}
                             </div>
                         </div>
-
                         <button type="submit" className="btn btn-slate" disabled={uploading} style={{ flexShrink: 0, color: '#fff', width: '100%', opacity: uploading ? 0.5 : 1, cursor: uploading ? 'not-allowed' : 'pointer', marginTop: '1rem' }}>
-                            {uploading ? 'Processing Image(s)...' : 'Save Listing to Fleet'}
+                            {uploading ? 'Processing Image(s)...' : 'Save Updates to Fleet'}
                         </button>
                     </form>
                 </div>
@@ -178,4 +215,4 @@ const AddCarPage = () => {
     );
 };
 
-export default AddCarPage;
+export default EditCarPage;

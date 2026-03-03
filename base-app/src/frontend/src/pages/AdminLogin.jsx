@@ -38,24 +38,27 @@ const AdminLogin = () => {
 
     return (
         <div style={{
-            margin: '-2rem -5.5% -2rem -5.5%',
             minHeight: 'calc(100vh - 84px)',
             position: 'relative',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             padding: '2rem',
-            overflow: 'hidden'
+            margin: '-2rem -6%',
+            overflow: 'auto',
+            backgroundColor: '#ffffff'
         }}>
-            {/* Split Composite Background Layer */}
-            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', zIndex: -1 }}>
-                <div style={{ flex: 1, backgroundImage: 'url("/group of cars.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.6)' }}></div>
-                <div style={{ flex: 1, backgroundImage: 'url("/latest admin car.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.6)' }}></div>
-                <div style={{ flex: 1, backgroundImage: 'url("/car1.webp")', backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.6)' }}></div>
-            </div>
 
-            <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '2.5rem', background: 'rgba(0, 0, 0, 0.75)', zIndex: 1 }}>
-                <h2 className="page-title" style={{ fontSize: '2.5rem', margin: '0 0 1.5rem 0', padding: 0 }}>{isLogin ? 'Admin Portal' : 'Admin Register'}</h2>
+            <style>{`
+                .admin-light-panel { color: #000; }
+                .admin-light-panel label { color: #2D3748 !important; font-weight: 600; }
+                .admin-light-panel input { color: #000 !important; background: rgba(0,0,0,0.05) !important; border-color: #ccc !important; }
+                .admin-link { color: var(--accent) !important; transition: all 0.3s ease; }
+                .admin-link:hover { opacity: 0.8; }
+            `}</style>
+
+            <div className="admin-light-panel" style={{ width: '100%', maxWidth: '400px', padding: '2.5rem', background: 'rgba(220, 220, 220, 0.45)', backdropFilter: 'blur(12px)', borderRadius: '16px', zIndex: 1, boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.15)' }}>
+                <h2 className="page-title" style={{ fontSize: '1.4rem', margin: '0 0 1.5rem 0', padding: 0, color: 'var(--accent)', textShadow: 'none' }}>{isLogin ? 'Admin Portal' : 'Admin Register'}</h2>
                 <form onSubmit={handleSubmit}>
                     {!isLogin && (
                         <div className="form-group">
@@ -69,7 +72,7 @@ const AdminLogin = () => {
                         </div>
                     )}
                     <div className="form-group">
-                        <label>Gmail</label>
+                        <label>Email Address</label>
                         <input
                             type="email"
                             value={formData.email}
@@ -88,10 +91,10 @@ const AdminLogin = () => {
                         />
                     </div>
 
-                    <button type="submit" className="btn" style={{ width: '100%', marginTop: '1rem' }}>
+                    <button type="submit" className="btn btn-slate" style={{ width: '100%', marginTop: '1rem', color: '#fff' }}>
                         {isLogin ? 'Login' : 'Sign Up'}
                     </button>
-                    <div style={{ textAlign: 'center', marginTop: '1rem', cursor: 'pointer', color: 'var(--accent)' }} onClick={() => setIsLogin(!isLogin)}>
+                    <div className="admin-link" style={{ textAlign: 'center', marginTop: '1rem', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setIsLogin(!isLogin)}>
                         {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
                     </div>
                 </form>
