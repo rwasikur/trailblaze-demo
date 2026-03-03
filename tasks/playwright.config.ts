@@ -6,7 +6,7 @@ export default defineConfig({
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
     workers: 1,
-    reporter: 'html',
+    reporter: [['html', { open: 'never' }]],
     use: {
         baseURL: process.env.API_URL || 'http://localhost',
         trace: 'on-first-retry',
@@ -15,6 +15,6 @@ export default defineConfig({
         {
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
-        },
+        }
     ],
 });

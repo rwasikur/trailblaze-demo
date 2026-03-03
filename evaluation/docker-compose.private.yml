@@ -9,7 +9,7 @@ services:
     environment:
       - DEBUG=1
       - SQLITE_DB_NAME=/tmp/db_private.sqlite3
-      - INIT_SCRIPT=scripts.seed_private
+      - INIT_SCRIPT=node ../evaluation/scripts/seed_private.js
     volumes:
       - trailblazeauto_private_uploads:/app/uploads
       - sqlite_private_data:/app/db_data
