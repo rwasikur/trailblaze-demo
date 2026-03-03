@@ -4,18 +4,13 @@ import api from '../api';
 import { toast } from 'react-toastify';
 const AdminDashboard = () => {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '', price_per_day: '', description: '', image_url: '', availability_status: 'Available'
-    });
     const [stats, setStats] = useState({
         activeBookings: 0,
         activeRentals: 0,
         fleetStatus: "0 / 0 Ready",
         totalRevenue: 0
     });
-    const [uploading, setUploading] = useState(false);
     const [cars, setCars] = useState([]);
-    const [showAddForm, setShowAddForm] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
@@ -69,42 +64,9 @@ const AdminDashboard = () => {
         }
     };
 
-    const uploadFileHandler = async (e) => {
-        const file = e.target.files[0];
-        const formDataUpload = new FormData();
-        formDataUpload.append('image', file);
-        setUploading(true);
-        try {
-            const { data } = await api.post('/api/upload', formDataUpload, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-            setFormData({ ...formData, image_url: `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${data.url}` });
-            setUploading(false);
-            toast.success("Image uploaded!");
-        } catch (error) {
-            console.error(error);
-            setUploading(false);
-            toast.error('Upload failed');
-        }
-    };
-
     const handleLogout = () => {
         localStorage.removeItem('adminToken');
         navigate('/admin');
-    };
-
-    const handleAddCar = async (e) => {
-        e.preventDefault();
-        try {
-            const token = localStorage.getItem('adminToken');
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-            await api.post('/api/admin/add-car', formData, config);
-            toast.success('Vehicle added successfully!');
-            fetchStats(token);
-            setFormData({ name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '', price_per_day: '', description: '', image_url: '', availability_status: 'Available' });
-        } catch (err) {
-            toast.error('Error: ' + (err.response?.data?.message || err.message));
-        }
     };
 
     return (
@@ -150,8 +112,8 @@ const AdminDashboard = () => {
                 <div className="glass-panel" style={{ background: 'transparent', border: 'none', padding: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>
                         <h2 style={{ margin: 0 }}>Manage Inventory</h2>
-                        <button onClick={() => setShowAddForm(!showAddForm)} className="btn" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
-                            {showAddForm ? 'Cancel Application' : '+ Add New Vehicle'}
+                        <button onClick={() => navigate('/admin/add-car')} className="btn" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
+                            + Add New Vehicle
                         </button>
                     </div>
 
@@ -217,73 +179,6 @@ const AdminDashboard = () => {
                         </table>
                     </div>
                 </div>
-
-                {showAddForm && (
-                    <div className="glass-panel" style={{ padding: '2rem', animation: 'fadeIn 0.3s ease-out' }}>
-                        <h2 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>Add Vehicle Listing</h2>
-
-                        <form onSubmit={handleAddCar}>
-                            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                                <div className="form-group" style={{ flex: '1 1 200px' }}>
-                                    <label>Car Name</label>
-                                    <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-                                </div>
-                                <div className="form-group" style={{ flex: '1 1 200px' }}>
-                                    <label>Brand</label>
-                                    <input type="text" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required />
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                                <div className="form-group" style={{ flex: '1 1 200px' }}>
-                                    <label>Model Year</label>
-                                    <input type="number" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
-                                </div>
-                                <div className="form-group" style={{ flex: '1 1 200px' }}>
-                                    <label>Price Per Day (₹)</label>
-                                    <input type="number" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                                <div className="form-group" style={{ flex: '1 1 150px' }}>
-                                    <label>Transmission</label>
-                                    <input type="text" value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required />
-                                </div>
-                                <div className="form-group" style={{ flex: '1 1 150px' }}>
-                                    <label>Fuel Type</label>
-                                    <input type="text" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required />
-                                </div>
-                                <div className="form-group" style={{ flex: '1 1 150px' }}>
-                                    <label>Seating Capacity</label>
-                                    <input type="number" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                                <div className="form-group" style={{ flex: '1 1 200px' }}>
-                                    <label>Image <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>(Upload)</span></label>
-                                    <input type="file" onChange={uploadFileHandler} accept="image/*" style={{ border: 'none', background: 'transparent', padding: '0.8rem 0' }} />
-                                    {uploading && <small style={{ color: 'var(--accent)' }}>Uploading...</small>}
-                                </div>
-                                <div className="form-group" style={{ flex: '1 1 200px' }}>
-                                    <label>Availability</label>
-                                    <select value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)', color: 'var(--text-color)' }}>
-                                        <option value="Available">Available</option>
-                                        <option value="Unavailable">Unavailable</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Description</label>
-                                <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="4" style={{ width: '100%' }}></textarea>
-                            </div>
-
-                            <button type="submit" className="btn" style={{ width: '100%' }}>Save Listing</button>
-                        </form>
-                    </div>
-                )}
             </div>
         </div>
     );

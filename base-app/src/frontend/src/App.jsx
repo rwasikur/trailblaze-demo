@@ -8,6 +8,7 @@ import BrowseCarsPage from './pages/BrowseCarsPage';
 import CarDetailsPage from './pages/CarDetailsPage';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import AddCarPage from './pages/AddCarPage';
 import './index.css';
 
 const Footer = () => (
@@ -30,6 +31,7 @@ function App() {
                         <Route path="/car/:id" element={<CarDetailsPage />} />
                         <Route path="/admin" element={<AdminLogin />} />
                         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                        <Route path="/admin/add-car" element={<AddCarPage />} />
                     </Routes>
                 </main>
                 <Footer />
