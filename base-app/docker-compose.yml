@@ -1,11 +1,15 @@
 services:
-  mongodb:
-    image: mongo:latest
+  postgres:
+    image: postgres:15-alpine
     container_name: trailblaze-auto-db
     ports:
-      - "27017:27017"
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=trailblaze
+      - POSTGRES_PASSWORD=trailblazepass
+      - POSTGRES_DB=trailblaze
     volumes:
-      - mongo_data:/data/db
+      - pg_data:/var/lib/postgresql/data
 
   backend:
     build:
@@ -19,17 +23,17 @@ services:
       - car_images:/app/uploads
     environment:
       - DEBUG=1
-      - MONGO_URI=mongodb://mongodb:27017/trailblaze
+      - DATABASE_URL=postgres://trailblaze:trailblazepass@postgres:5432/trailblaze
       - JWT_SECRET=09f633cdb908fe68f43f458db444f801de483a5db2fec1d30679b264c6dbfb1d
     depends_on:
-      - mongodb
+      - postgres
 
   frontend:
     build:
       context: ./src/frontend
     container_name: trailblaze-frontend
     ports:
-      - "${FRONTEND_PORT:-5173}:5173"
+      - "${FRONTEND_PORT:-80}:80"
     volumes:
       - ./src/frontend:/app
       - /app/node_modules
@@ -37,19 +41,7 @@ services:
       - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
-
-  nginx:
-    build: ./deployment/nginx
-    container_name: trailblaze_nginx
-    ports:
-      - "80:80"
-    depends_on:
-      - frontend
-      - backend
-    environment:
-      - FRONTEND_HOST=frontend
-      - BACKEND_HOST=backend
       
 volumes:
-  mongo_data:
+  pg_data:
   car_images:

@@ -2,17 +2,16 @@ const Car = require('../models/Car');
 
 const getDashboardStats = async (req, res) => {
     try {
-        const totalCars = await Car.countDocuments();
-        const availableCars = await Car.countDocuments({ availability_status: 'Available' });
-        const pendingCars = await Car.countDocuments({ availability_status: 'Pending' });
-        const unavailableCars = await Car.countDocuments({ availability_status: 'Unavailable' });
+        const totalCars = await Car.count();
+        const availableCars = await Car.count({ where: { availability_status: 'Available' } });
+        const pendingCars = await Car.count({ where: { availability_status: 'Pending' } });
+        const unavailableCars = await Car.count({ where: { availability_status: 'Unavailable' } });
 
-        // Generate true revenue from currently blocked/booked cars' daily price
-        const unavailableCarsDocs = await Car.find({ availability_status: 'Unavailable' });
+        const unavailableCarsDocs = await Car.findAll({ where: { availability_status: 'Unavailable' } });
         const totalRevenue = unavailableCarsDocs.reduce((acc, car) => acc + (car.price_per_day || 0), 0);
 
-        const activeBookings = pendingCars; // Booking Requests
-        const activeRentals = unavailableCars; // Active in Using
+        const activeBookings = pendingCars;
+        const activeRentals = unavailableCars;
         const fleetStatus = `${availableCars} / ${totalCars} Ready`;
 
         res.json({
@@ -28,11 +27,11 @@ const getDashboardStats = async (req, res) => {
 
 const updateCarStatus = async (req, res) => {
     try {
-        const car = await Car.findById(req.params.id);
+        const car = await Car.findByPk(req.params.id);
         if (car) {
             car.availability_status = req.body.status || car.availability_status;
             if (car.availability_status === 'Available') {
-                car.requested_by = ''; // Clear requested_by if made available again
+                car.requested_by = '';
             }
             await car.save();
             res.json(car);
@@ -46,7 +45,7 @@ const updateCarStatus = async (req, res) => {
 
 const updateCar = async (req, res) => {
     try {
-        const car = await Car.findById(req.params.id);
+        const car = await Car.findByPk(req.params.id);
         if (car) {
             car.name = req.body.name || car.name;
             car.brand = req.body.brand || car.brand;
@@ -61,7 +60,7 @@ const updateCar = async (req, res) => {
             car.availability_status = req.body.availability_status || car.availability_status;
 
             if (car.availability_status === 'Available') {
-                car.requested_by = ''; // Clear requested_by if made available again
+                car.requested_by = '';
             }
 
             const updatedCar = await car.save();
@@ -76,7 +75,7 @@ const updateCar = async (req, res) => {
 
 const getAllCars = async (req, res) => {
     try {
-        const cars = await Car.find({}).sort({ createdAt: -1 });
+        const cars = await Car.findAll({ order: [['createdAt', 'DESC']] });
         res.json(cars);
     } catch (err) {
         res.status(500).json({ message: 'Server error: ' + err.message });
@@ -85,8 +84,9 @@ const getAllCars = async (req, res) => {
 
 const deleteCar = async (req, res) => {
     try {
-        const car = await Car.findByIdAndDelete(req.params.id);
+        const car = await Car.findByPk(req.params.id);
         if (car) {
+            await car.destroy();
             res.json({ message: 'Car removed successfully' });
         } else {
             res.status(404).json({ message: 'Car not found' });

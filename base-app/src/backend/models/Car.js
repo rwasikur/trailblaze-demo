@@ -1,21 +1,35 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const carSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    brand: { type: String, required: true },
-    model_year: { type: Number, required: true },
-    transmission: { type: String, required: true },
-    fuel_type: { type: String, required: true },
-    seating_capacity: { type: Number, required: true },
-    price_per_day: { type: Number, required: true },
-    description: { type: String },
-    image_url: { type: String },
-    secondary_images: [{ type: String }],
-    availability_status: { type: String, default: 'Available' }, // 'Available', 'Pending', 'Unavailable'
-    requested_by: { type: String, default: '' },
-    clickCount: { type: Number, default: 0 } // Hidden from public APIs
-}, { timestamps: true });
+const Car = sequelize.define('Car', {
+    _id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+    },
+    name: { type: DataTypes.STRING, allowNull: false },
+    brand: { type: DataTypes.STRING, allowNull: false },
+    model_year: { type: DataTypes.INTEGER, allowNull: false },
+    transmission: { type: DataTypes.STRING, allowNull: false },
+    fuel_type: { type: DataTypes.STRING, allowNull: false },
+    seating_capacity: { type: DataTypes.INTEGER, allowNull: false },
+    price_per_day: { type: DataTypes.INTEGER, allowNull: false },
+    description: { type: DataTypes.TEXT },
+    image_url: { type: DataTypes.STRING },
+    secondary_images: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: []
+    },
+    availability_status: { type: DataTypes.STRING, defaultValue: 'Available' }, // 'Available', 'Pending', 'Unavailable'
+    requested_by: { type: DataTypes.STRING, defaultValue: '' },
+    clickCount: { type: DataTypes.INTEGER, defaultValue: 0 }
+}, {
+    timestamps: true,
+    indexes: [
+        {
+            fields: ['name', 'brand']
+        }
+    ]
+});
 
-carSchema.index({ name: 'text', brand: 'text', description: 'text' });
-
-module.exports = mongoose.model('Car', carSchema);
+module.exports = Car;
