@@ -1,20 +1,19 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
 const Admin = require('./models/Admin');
-const connectDB = require('./config/db');
+const { connectDB } = require('./config/db');
 
 connectDB();
 
 const seedAdmin = async () => {
     try {
-        const adminCount = await Admin.countDocuments();
+        const adminCount = await Admin.count();
         if (adminCount === 0) {
-            const admin = new Admin({
-                username: 'admin',
+            await Admin.create({
+                full_name: 'admin',
+                email: 'admin@test.com',
                 password: 'password123',
                 role: 'superadmin'
             });
-            await admin.save();
             console.log('Seeded admin user. Username: admin, Password: password123');
         } else {
             console.log('Admin user already exists.');

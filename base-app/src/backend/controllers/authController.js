@@ -9,7 +9,7 @@ const signupAdmin = async (req, res) => {
     try {
         const { full_name, email, password } = req.body;
 
-        const adminExists = await Admin.findOne({ email });
+        const adminExists = await Admin.findOne({ where: { email } });
         if (adminExists) {
             return res.status(400).json({ message: 'Admin already exists' });
         }
@@ -39,7 +39,7 @@ const signupAdmin = async (req, res) => {
 const authAdmin = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const admin = await Admin.findOne({ email });
+        const admin = await Admin.findOne({ where: { email } });
 
         if (admin && (await admin.matchPassword(password))) {
             res.json({

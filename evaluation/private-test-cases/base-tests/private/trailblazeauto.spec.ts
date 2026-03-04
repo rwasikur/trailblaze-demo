@@ -6,17 +6,17 @@ const adminEmail = `admin-${Date.now()}@test.com`;
 test.describe('TrailblazeAuto Private UI Tests', () => {
 
     test.beforeEach(async ({ page }) => {
-        await page.goto('http://localhost:5173/');
+        await page.goto('http://localhost/');
     });
 
     test('should contain private seed data in catalogue', async ({ page }) => {
-        await page.goto('http://localhost:5173/browse');
+        await page.goto('http://localhost/browse');
         await expect(page.locator('.car-card').first()).toBeVisible({ timeout: 10000 });
     });
 
     test('should register and view dashboard stats', async ({ page }) => {
         // Register the new admin
-        await page.goto('http://localhost:5173/admin');
+        await page.goto('http://localhost/admin');
         await page.click('text=Don\'t have an account? Sign Up');
 
         await page.fill('input:near(label:has-text("Full Name"))', 'Test Admin');
@@ -30,7 +30,7 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
 
     test('should load manage inventory page', async ({ page }) => {
         // Log in using generated admin
-        await page.goto('http://localhost:5173/admin');
+        await page.goto('http://localhost/admin');
         await page.fill('input[type="email"]', adminEmail);
         await page.fill('input[type="password"]', 'password123');
         await page.click('button[type="submit"]');
@@ -42,7 +42,7 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
     });
 
     test('should render add car page with multi-image drag area', async ({ page }) => {
-        await page.goto('http://localhost:5173/admin');
+        await page.goto('http://localhost/admin');
         await page.fill('input[type="email"]', adminEmail);
         await page.fill('input[type="password"]', 'password123');
         await page.click('button[type="submit"]');
@@ -54,7 +54,7 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
     });
 
     test('should render edit car page correctly', async ({ page }) => {
-        await page.goto('http://localhost:5173/admin');
+        await page.goto('http://localhost/admin');
         await page.fill('input[type="email"]', adminEmail);
         await page.fill('input[type="password"]', 'password123');
         await page.click('button[type="submit"]');
@@ -71,7 +71,7 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
     });
 
     test('should successfully create a new vehicle', async ({ page }) => {
-        await page.goto('http://localhost:5173/admin');
+        await page.goto('http://localhost/admin');
         await page.fill('input[type="email"]', adminEmail);
         await page.fill('input[type="password"]', 'password123');
         await page.click('button[type="submit"]');
@@ -96,7 +96,7 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
 
     test('should track changing vehicle status workflow', async ({ page }) => {
         // Book the "Test Auto" car
-        await page.goto('http://localhost:5173/browse');
+        await page.goto('http://localhost/browse');
         const viewBtn = page.locator('h3:has-text("Test Auto")').locator('..').locator('button:has-text("View Details")');
 
         if (await viewBtn.count() > 0) {
@@ -112,7 +112,7 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
         }
 
         // Log into admin and approve/return it
-        await page.goto('http://localhost:5173/admin');
+        await page.goto('http://localhost/admin');
         await page.fill('input[type="email"]', adminEmail);
         await page.fill('input[type="password"]', 'password123');
         await page.click('button[type="submit"]');
@@ -135,7 +135,7 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
     });
 
     test('should delete a vehicle from inventory', async ({ page }) => {
-        await page.goto('http://localhost:5173/admin');
+        await page.goto('http://localhost/admin');
         await page.fill('input[type="email"]', adminEmail);
         await page.fill('input[type="password"]', 'password123');
         await page.click('button[type="submit"]');
