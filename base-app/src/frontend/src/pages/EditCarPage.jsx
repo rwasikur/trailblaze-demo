@@ -7,7 +7,7 @@ const EditCarPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '', price_per_day: '', description: '', availability_status: 'Available'
+        name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '', price_per_day: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '', number_of_owners: '', registration_city: '', insurance_validity: '', description: '', availability_status: 'Available'
     });
     const [images, setImages] = useState([]);
     const [uploading, setUploading] = useState(false);
@@ -25,6 +25,14 @@ const EditCarPage = () => {
                     fuel_type: data.fuel_type || '',
                     seating_capacity: data.seating_capacity || '',
                     price_per_day: data.price_per_day || '',
+                    range: data.range || '',
+                    body_type: data.body_type || '',
+                    mileage: data.mileage || '',
+                    exterior_color: data.exterior_color || '',
+                    interior_color: data.interior_color || '',
+                    number_of_owners: data.number_of_owners || '',
+                    registration_city: data.registration_city || '',
+                    insurance_validity: data.insurance_validity || '',
                     description: data.description || '',
                     availability_status: data.availability_status || 'Available'
                 });
@@ -148,7 +156,7 @@ const EditCarPage = () => {
                                 <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
                             </div>
                             <div className="form-group" style={{ marginBottom: 0 }}>
-                                <label>Price Per Day (₹)</label>
+                                <label>Price (₹)</label>
                                 <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
                             </div>
                             <div className="form-group" style={{ marginBottom: 0 }}>
@@ -163,7 +171,39 @@ const EditCarPage = () => {
                                 <label>Seating Capacity</label>
                                 <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
                             </div>
-                            <div className="form-group" style={{ marginBottom: 0, gridColumn: 'span 2' }}>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Range (e.g. 350km)</label>
+                                <input type="text" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Body Type (e.g. SUV)</label>
+                                <input type="text" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Mileage (e.g. 15,000 km)</label>
+                                <input type="text" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Exterior Color</label>
+                                <input type="text" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Interior Color</label>
+                                <input type="text" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Number of Owners</label>
+                                <input type="number" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Registration City</label>
+                                <input type="text" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Insurance Validity</label>
+                                <input type="text" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
                                 <label>Availability</label>
                                 <select value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.05)', color: '#000', appearance: 'none' }}>
                                     <option value="Available" style={{ color: '#000' }}>Available</option>

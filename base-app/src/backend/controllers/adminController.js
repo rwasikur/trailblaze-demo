@@ -54,6 +54,14 @@ const updateCar = async (req, res) => {
             car.fuel_type = req.body.fuel_type || car.fuel_type;
             car.seating_capacity = req.body.seating_capacity || car.seating_capacity;
             car.price_per_day = req.body.price_per_day || car.price_per_day;
+            car.range = req.body.range !== undefined ? req.body.range : car.range;
+            car.body_type = req.body.body_type || car.body_type;
+            car.mileage = req.body.mileage !== undefined ? req.body.mileage : car.mileage;
+            car.exterior_color = req.body.exterior_color || car.exterior_color;
+            car.interior_color = req.body.interior_color || car.interior_color;
+            car.number_of_owners = req.body.number_of_owners !== undefined ? req.body.number_of_owners : car.number_of_owners;
+            car.registration_city = req.body.registration_city || car.registration_city;
+            car.insurance_validity = req.body.insurance_validity || car.insurance_validity;
             car.description = req.body.description || car.description;
             car.image_url = req.body.image_url || car.image_url;
             car.secondary_images = req.body.secondary_images !== undefined ? req.body.secondary_images : car.secondary_images;

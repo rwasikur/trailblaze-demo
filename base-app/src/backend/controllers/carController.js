@@ -3,12 +3,13 @@ const Car = require('../models/Car');
 const getCars = async (req, res) => {
     try {
         const page = Number(req.query.pageNumber) || 1;
-        const pageSize = Number(req.query.pageSize) || 10;
+        const pageSize = Number(req.query.pageSize) || 100;
 
         const count = await Car.count();
 
         const cars = await Car.findAll({
             attributes: { exclude: ['clickCount'] },
+            order: [['createdAt', 'DESC']],
             limit: pageSize,
             offset: pageSize * (page - 1)
         });
@@ -38,7 +39,7 @@ const getCarById = async (req, res) => {
 
 const createCar = async (req, res) => {
     try {
-        const { name, brand, model_year, transmission, fuel_type, seating_capacity, price_per_day, description, image_url, secondary_images, availability_status } = req.body;
+        const { name, brand, model_year, transmission, fuel_type, seating_capacity, price_per_day, range, body_type, mileage, exterior_color, interior_color, number_of_owners, registration_city, insurance_validity, description, image_url, secondary_images, availability_status } = req.body;
 
         const createdCar = await Car.create({
             name,
@@ -48,6 +49,14 @@ const createCar = async (req, res) => {
             fuel_type,
             seating_capacity,
             price_per_day,
+            range,
+            body_type,
+            mileage,
+            exterior_color,
+            interior_color,
+            number_of_owners,
+            registration_city,
+            insurance_validity,
             description,
             image_url,
             secondary_images: secondary_images || [],
