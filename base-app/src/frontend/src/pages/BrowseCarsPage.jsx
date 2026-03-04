@@ -4,7 +4,6 @@ import api from '../api';
 const BrowseCarsPage = () => {
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -22,41 +21,20 @@ const BrowseCarsPage = () => {
         fetchCars();
     }, []);
 
-    const filteredCars = (cars || []).filter(car =>
-        (car.brand || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (car.name || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
     return (
         <div style={{ backgroundColor: '#ffffff', height: 'calc(100vh - 66px)', overflowY: 'auto', margin: '-2rem -5.5% -2rem -5.5%', padding: '2rem 5%' }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', margin: 0, color: '#0f172a', fontWeight: 800, letterSpacing: '-0.5px' }}>Browse Cars</h1>
-                    <input
-                        type="text"
-                        placeholder="Search by brand or name..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{
-                            width: '100%',
-                            maxWidth: '350px',
-                            padding: '0.8rem 1rem',
-                            borderRadius: '8px',
-                            border: '1px solid #e0e0e0',
-                            background: '#f8f9fa',
-                            color: '#333333',
-                            fontFamily: 'Inter, sans-serif'
-                        }}
-                    />
                 </div>
 
                 {loading ? (
                     <p>Loading cars...</p>
-                ) : filteredCars.length === 0 ? (
+                ) : cars.length === 0 ? (
                     <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>No Cars Available</p>
                 ) : (
                     <div className="grid">
-                        {filteredCars.map(car => (
+                        {cars.map(car => (
                             <div key={car._id} className="car-card" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#ffffff', border: '1px solid #eaeaea', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
                                 <img src={car.image_url || '/car3.avif'} alt={`${car.brand} ${car.name}`} className="car-image" style={{ height: '180px', objectFit: 'cover' }} />
                                 <div className="car-content" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
