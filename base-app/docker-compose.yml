@@ -57,19 +57,7 @@ services:
       backend:
         condition: service_healthy
 
-  nginx:
-    build:
-      context: ./nginx
-    container_name: trailblaze-nginx
-    restart: always
-    ports:
-      - "80:80"
-    depends_on:
-      frontend:
-        condition: service_started
-      backend:
-        condition: service_healthy
-      
+
 volumes:
   pg_data:
   car_images:
