@@ -16,6 +16,8 @@ services:
       context: ./src/backend
     container_name: trailblaze-backend
     restart: always
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
     volumes:
       - ./src/backend:/app
       - /app/node_modules
@@ -32,6 +34,8 @@ services:
       context: ./src/frontend
     container_name: trailblaze-frontend
     restart: always
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
     volumes:
       - ./src/frontend:/app
       - /app/node_modules
