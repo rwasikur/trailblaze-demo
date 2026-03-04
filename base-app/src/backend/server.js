@@ -25,6 +25,10 @@ app.get('/', (req, res) => {
     res.send('API Engine Running...');
 });
 
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.use(notFound);
 app.use(errorHandler);
 
