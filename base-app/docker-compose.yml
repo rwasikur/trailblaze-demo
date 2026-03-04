@@ -57,13 +57,7 @@ services:
       backend:
         condition: service_healthy
 
-  nginx:
-    build:
-      context: ./nginx
-    container_name: trailblaze-nginx
-    restart: always
-    ports:
-      - "80:80"
+  nginx: 
     depends_on:
       frontend:
         condition: service_started
