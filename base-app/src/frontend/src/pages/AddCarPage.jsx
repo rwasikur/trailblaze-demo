@@ -27,7 +27,7 @@ const AddCarPage = () => {
                 const { data } = await api.post('/api/upload', formDataUpload, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
-                uploadedUrls.push(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${data.url}`);
+                uploadedUrls.push(`${import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : 'http://localhost:8000'}${data.url}`);
             }
             setImages([...images, ...uploadedUrls]);
             toast.success("Image(s) uploaded successfully!");
