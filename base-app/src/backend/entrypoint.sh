@@ -20,7 +20,8 @@ done
 echo "✅ Database ready!"
 
 # REQUIRED: Run initialization/seeding
-python3 -m scripts.seed_public
+node seeder.js
+node scripts/seed_public.js
 
 # REQUIRED: Start application
 exec node server.js
