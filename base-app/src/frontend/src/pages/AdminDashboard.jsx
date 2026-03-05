@@ -102,7 +102,7 @@ const AdminDashboard = () => {
                     </div>
                     <div>
                         <p style={{ margin: 0, color: '#64748b', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Revenue</p>
-                        <h3 style={{ margin: '0.2rem 0 0 0', color: '#0f172a', fontSize: '1.4rem', fontWeight: 800 }}>₹{(stats.totalRevenue || 0).toLocaleString()}</h3>
+                        <h3 style={{ margin: '0.2rem 0 0 0', color: '#0f172a', fontSize: '1.4rem', fontWeight: 800 }}>${(stats.totalRevenue || 0).toLocaleString()}</h3>
                     </div>
                 </div>
 

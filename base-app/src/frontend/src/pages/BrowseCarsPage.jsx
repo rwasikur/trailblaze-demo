@@ -40,7 +40,7 @@ const BrowseCarsPage = () => {
                                 <div className="car-content" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                                     <h3 className="car-title" style={{ fontSize: '1.1rem', marginBottom: '0.2rem', fontWeight: 600, color: '#111111' }}>{car.brand} {car.name}</h3>
                                     <div className="car-price" style={{ fontSize: '1rem', marginBottom: '1.2rem', color: '#555555' }}>
-                                        <span style={{ fontWeight: 'bold', color: '#111111', fontSize: '1.05rem' }}>₹{car.price_per_day?.toLocaleString()}</span>
+                                        <span style={{ fontWeight: 'bold', color: '#111111', fontSize: '1.05rem' }}>${car.price_per_day?.toLocaleString()}</span>
                                     </div>
                                     <button
                                         className="btn btn-slate"

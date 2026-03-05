@@ -139,7 +139,7 @@ const CarDetailsPage = () => {
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                                     <div>
-                                        <div style={{ fontSize: '1.1rem', color: '#0f172a', fontWeight: 700 }}>₹{car.price_per_day?.toLocaleString()}</div>
+                                        <div style={{ fontSize: '1.1rem', color: '#0f172a', fontWeight: 700 }}>${car.price_per_day?.toLocaleString()}</div>
                                         <div style={{ color: '#64748b', fontSize: '0.75rem' }}>Ex-showroom</div>
                                     </div>
                                 </div>
@@ -197,7 +197,7 @@ const CarDetailsPage = () => {
                                             <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                                     <span style={{ color: '#64748b' }}>Ex-Showroom Price</span>
-                                                    <span style={{ fontWeight: 600 }}>₹{car.price_per_day.toLocaleString()}</span>
+                                                    <span style={{ fontWeight: 600 }}>${car.price_per_day.toLocaleString()}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
                                                     <span style={{ color: '#64748b' }}>Estimated Registration & Insurance</span>
@@ -267,14 +267,24 @@ const CarDetailsPage = () => {
                         )}
 
                         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                            <button
-                                className="btn"
-                                style={{ flex: 1, padding: '0.8rem', background: '#0a0a0a', color: '#ffffff', borderRadius: '8px', fontWeight: 600, border: 'none', cursor: 'pointer', opacity: car.availability_status !== 'Available' ? 0.7 : 1 }}
-                                onClick={() => setShowModal(true)}
-                                disabled={car.availability_status !== 'Available'}
-                            >
-                                {car.availability_status === 'Available' ? 'Book Now' : 'Currently Unavailable'}
-                            </button>
+                            {localStorage.getItem('adminToken') ? (
+                                <button
+                                    className="btn"
+                                    style={{ flex: 1, padding: '0.8rem', background: '#0a0a0a', color: '#ffffff', borderRadius: '8px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                                    onClick={() => navigate(`/admin/edit-car/${car._id}`)}
+                                >
+                                    Edit Details
+                                </button>
+                            ) : (
+                                <button
+                                    className="btn"
+                                    style={{ flex: 1, padding: '0.8rem', background: '#0a0a0a', color: '#ffffff', borderRadius: '8px', fontWeight: 600, border: 'none', cursor: 'pointer', opacity: car.availability_status !== 'Available' ? 0.7 : 1 }}
+                                    onClick={() => setShowModal(true)}
+                                    disabled={car.availability_status !== 'Available'}
+                                >
+                                    {car.availability_status === 'Available' ? 'Book Now' : 'Currently Unavailable'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
