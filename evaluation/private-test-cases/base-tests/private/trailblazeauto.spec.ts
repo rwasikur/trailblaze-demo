@@ -173,4 +173,50 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
             await page.waitForTimeout(2000);
         }
     });
+
+    test('should update admin profile successfully', async ({ page }) => {
+        await page.goto('http://localhost/admin');
+        await page.fill('input[type="email"]', adminEmail);
+        await page.fill('input[type="password"]', 'password123');
+        await page.click('button[type="submit"]');
+
+        await page.click('text=Profile');
+        await expect(page).toHaveURL(/.*admin\/profile/);
+
+        // Update details
+        const updatedName = "Updated Admin Name";
+        await page.fill('input:near(label:has-text("Full Name"))', updatedName);
+        await page.click('button:has-text("Save Changes")');
+        await expect(page.locator('text=Profile updated successfully')).toBeVisible();
+
+        // Verify persistence
+        await page.reload();
+        await expect(page.locator(`input[value="${updatedName}"]`)).toBeVisible();
+    });
+
+    test('should allow admin password update and re-login', async ({ page }) => {
+        const newPassword = 'new-password-789';
+        await page.goto('http://localhost/admin');
+        await page.fill('input[type="email"]', adminEmail);
+        await page.fill('input[type="password"]', 'password123');
+        await page.click('button[type="submit"]');
+
+        await page.click('text=Profile');
+        await page.fill('input[placeholder*="Leave blank"]', newPassword);
+        await page.click('button:has-text("Save Changes")');
+        await expect(page.locator('text=Profile updated successfully')).toBeVisible();
+
+        // Logout and verify new password
+        await page.click('text=Sign Out');
+        await page.goto('http://localhost/admin');
+        await page.fill('input[type="email"]', adminEmail);
+        await page.fill('input[type="password"]', newPassword);
+        await page.click('button[type="submit"]');
+        await expect(page).toHaveURL(/.*admin\/dashboard/);
+    });
+
+    test('should redirect unauthorized users from profile page', async ({ page }) => {
+        await page.goto('http://localhost/admin/profile');
+        await expect(page).toHaveURL(/.*admin/);
+    });
 });

@@ -24,6 +24,10 @@ test.describe('TrailblazeAuto Public UI Tests', () => {
         await expect(page).toHaveURL(/.*car\/.*/);
         // Wait for the action button to appear
         await page.waitForSelector('button:has-text("Book Now"), button:has-text("Currently Unavailable")', { timeout: 10000 });
+
+        // Check that Share button is removed
+        await expect(page.locator('button:has-text("Share")')).toBeHidden();
+
         const buttonText = await page.locator('button').allTextContents();
         const hasBookingBtn = buttonText.some(t => t.includes('Book Now') || t.includes('Currently Unavailable'));
         expect(hasBookingBtn).toBeTruthy();
