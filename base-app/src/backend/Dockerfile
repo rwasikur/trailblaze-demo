@@ -4,7 +4,7 @@ WORKDIR /app
 
 # CRITICAL: Install health check tools and Python BEFORE copying code
 RUN apk update && \
-    apk add --no-cache curl netcat-openbsd python3 py3-pip
+    apk add --no-cache curl netcat-openbsd python3 py3-pip build-base g++
 
 COPY package*.json ./
 RUN npm install

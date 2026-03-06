@@ -3,16 +3,17 @@ services:
     image: postgres:15-alpine
     container_name: trailblaze-auto-db
     environment:
-      - POSTGRES_USER=trailblaze
-      - POSTGRES_PASSWORD=trailblazepass
-      - POSTGRES_DB=trailblaze
+      - POSTGRES_USER=${POSTGRES_USER:-trailblaze}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-trailblazepass}
+      - POSTGRES_DB=${POSTGRES_DB:-trailblaze}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U trailblaze"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trailblaze}"]
       interval: 5s
       timeout: 5s
       retries: 5
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
 
   backend:
     build:
@@ -24,9 +25,9 @@ services:
       - /app/node_modules
       - car_images:/app/uploads
     environment:
-      - DEBUG=1
-      - DATABASE_URL=postgres://trailblaze:trailblazepass@postgres:5432/trailblaze
-      - JWT_SECRET=09f633cdb908fe68f43f458db444f801de483a5db2fec1d30679b264c6dbfb1d
+      - DEBUG=${DEBUG:-1}
+      - DATABASE_URL=${DATABASE_URL:-postgres://trailblaze:trailblazepass@postgres:5432/trailblaze}
+      - JWT_SECRET=${JWT_SECRET:-09f633cdb908fe68f43f458db444f801de483a5db2fec1d30679b264c6dbfb1d}
       - DB_HOST=postgres
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
