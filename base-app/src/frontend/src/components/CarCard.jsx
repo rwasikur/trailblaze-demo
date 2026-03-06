@@ -11,7 +11,7 @@ const CarCard = ({ car }) => {
                     <h3 className="car-title" style={{ margin: 0, lineHeight: 1.2 }}>{car.make} {car.model}</h3>
                     <CarRating carId={car._id} readOnly={true} />
                 </div>
-                <div className="car-price">₹{car.price.toLocaleString()}</div>
+                <div className="car-price">${car.price.toLocaleString()}</div>
                 <div style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>
                     {car.year} | {car.mileage.toLocaleString()} miles
                 </div>

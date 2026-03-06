@@ -17,7 +17,7 @@ const HomePage = () => {
             backgroundPosition: 'center',
         }}>
             <div style={{ zIndex: 1, textAlign: 'center', position: 'absolute', top: '10vh', width: '100%', padding: '0 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <h1 style={{ margin: '0 0 0.5rem 0', color: '#f0f8ff', textShadow: '0 4px 15px rgba(0,0,0,0.8)', fontSize: '3.5rem', fontWeight: 800, letterSpacing: '-1px', fontFamily: 'Outfit, sans-serif', lineHeight: 1.1 }}>
+                <h1 style={{ margin: '0 0 0.5rem 0', color: '#f0f8ff', textShadow: '0 4px 15px rgba(0,0,0,0.8)', fontSize: '2.8rem', fontWeight: 800, letterSpacing: '-1px', fontFamily: 'Outfit, sans-serif', lineHeight: 1.1 }}>
                     Drive Your Dream<br />Journey
                 </h1>
                 <p style={{ color: '#eef2f7', textShadow: '0 2px 10px rgba(0,0,0,0.8)', fontSize: '1rem', fontWeight: 400, margin: '0 auto 0 auto', fontFamily: 'Inter, sans-serif', maxWidth: '600px', lineHeight: 1.5 }}>
@@ -26,9 +26,9 @@ const HomePage = () => {
                 <button
                     className="btn"
                     onClick={() => navigate('/browse')}
-                    style={{ marginTop: '5rem', background: 'var(--accent)', color: 'var(--bg-color)', fontSize: '0.9rem', padding: '0.6rem 2rem', borderRadius: '12px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, boxShadow: '0 4px 15px var(--accent-glow)' }}>
+                    style={{ marginTop: '10rem', background: '#ffffff', color: '#111111', fontSize: '0.9rem', padding: '0.8rem 2.5rem', borderRadius: '12px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)' }}>
                     Explore Cars
-                    <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>&rarr;</span>
+                    <span style={{ fontSize: '1rem', lineHeight: 1 }}>&rarr;</span>
                 </button>
             </div>
         </div>

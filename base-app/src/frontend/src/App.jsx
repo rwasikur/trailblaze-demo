@@ -1,25 +1,26 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import BrowseCarsPage from './pages/BrowseCarsPage';
 import CarDetailsPage from './pages/CarDetailsPage';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import AddCarPage from './pages/AddCarPage';
+import EditCarPage from './pages/EditCarPage';
+import ManageInventoryPage from './pages/ManageInventoryPage';
 import './index.css';
 
-const Footer = () => (
-    <footer style={{ background: 'var(--primary)', padding: '2rem 5%', textAlign: 'center', borderTop: '1px solid var(--glass-border)' }}>
-        <p style={{ color: 'var(--text-muted)' }}>&copy; {new Date().getFullYear()} TrailblazeAuto. All rights reserved.</p>
-        <p style={{ color: 'var(--text-muted)' }}>Contact: info@trailblazeauto.com | +1 (555) 123-4567</p>
-    </footer>
-);
+// Footer removed per request
 
 function App() {
     return (
         <Router>
             <div className="app-container">
                 <Navbar />
+                <ToastContainer position="bottom-right" theme="dark" />
                 <main className="main-content">
                     <Routes>
                         <Route path="/" element={<HomePage />} />
@@ -27,9 +28,11 @@ function App() {
                         <Route path="/car/:id" element={<CarDetailsPage />} />
                         <Route path="/admin" element={<AdminLogin />} />
                         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                        <Route path="/admin/inventory" element={<ManageInventoryPage />} />
+                        <Route path="/admin/add-car" element={<AddCarPage />} />
+                        <Route path="/admin/edit-car/:id" element={<EditCarPage />} />
                     </Routes>
                 </main>
-                <Footer />
             </div>
         </Router>
     );

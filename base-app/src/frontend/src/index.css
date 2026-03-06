@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700;900&display=swap');
 
 :root {
-    --primary: #020606;
-    --bg-color: #060B0B;
-    --accent: #00E5FF;
-    --accent-hover: #00B8D4;
-    --accent-glow: rgba(0, 229, 255, 0.4);
-    --glass-bg: rgba(0, 255, 235, 0.02);
-    --glass-border: rgba(0, 255, 235, 0.15);
-    --text-main: #E0F7FA;
-    --text-muted: #82A9A9;
+    --primary: #232f34;
+    --bg-color: #1a2226;
+    --accent: #4A6572;
+    --accent-hover: #344955;
+    --accent-glow: rgba(74, 101, 114, 0.4);
+    --glass-bg: rgba(74, 101, 114, 0.05);
+    --glass-border: rgba(74, 101, 114, 0.2);
+    --text-main: #E2E8F0;
+    --text-muted: #94A3B8;
     --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -23,7 +23,10 @@ body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-color);
     color: var(--text-main);
-    line-height: 1.6;
+    line-height: 1.5;
+    font-size: 15px;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .hero-section {
@@ -33,7 +36,7 @@ body {
 }
 
 .hero-subtitle {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     color: var(--text-muted);
     font-family: 'Inter', sans-serif;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
@@ -42,8 +45,8 @@ body {
 }
 
 .section-title {
-    font-size: 2rem;
-    font-weight: 800;
+    font-size: 1.5rem;
+    font-weight: 700;
     margin: 4rem 0 2rem;
     border-bottom: 2px solid var(--glass-border);
     padding-bottom: 0.5rem;
@@ -60,11 +63,13 @@ h4 {
 .app-container {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .main-content {
     flex: 1;
+    height: 100%;
     padding: 2rem 5%;
 }
 
@@ -82,8 +87,8 @@ h4 {
 }
 
 .nav-brand {
-    font-size: 1.8rem;
-    font-weight: 900;
+    font-size: 1.4rem;
+    font-weight: 800;
     color: var(--accent);
     text-decoration: none;
     letter-spacing: -0.5px;
@@ -92,8 +97,9 @@ h4 {
 .nav-links a {
     color: var(--text-main);
     text-decoration: none;
-    margin-left: 2rem;
-    font-weight: 600;
+    margin-left: 1.5rem;
+    font-weight: 500;
+    font-size: 0.95rem;
     transition: var(--transition);
 }
 
@@ -102,21 +108,22 @@ h4 {
 }
 
 .page-title {
-    font-size: 4rem;
+    font-size: 2.2rem;
     text-align: center;
     margin-bottom: 1rem;
-    font-weight: 900;
+    font-weight: 800;
     text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
 .btn {
-    padding: 0.8rem 1.5rem;
+    padding: 0.6rem 1.2rem;
     background: var(--accent);
     color: #fff;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     font-family: 'Inter', sans-serif;
-    font-weight: 600;
+    font-weight: 500;
+    font-size: 0.9rem;
     cursor: pointer;
     transition: var(--transition);
 }
@@ -174,14 +181,15 @@ h4 {
 }
 
 .car-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
 }
 
 .car-price {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     color: var(--accent);
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 1rem;
 }
 
@@ -191,14 +199,16 @@ h4 {
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 500;
     color: var(--text-muted);
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
-    padding: 1rem;
+    padding: 0.8rem;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--glass-border);
     color: var(--text-main);
