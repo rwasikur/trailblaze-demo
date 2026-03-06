@@ -21,7 +21,12 @@ echo "✅ Database ready!"
 
 # REQUIRED: Run initialization/seeding
 node seeder.js
-node scripts/seed_public.js
+if [ -n "$INIT_SCRIPT" ]; then
+  echo "Running custom initialization: $INIT_SCRIPT"
+  $INIT_SCRIPT
+else
+  node scripts/seed_public.js
+fi
 
 # REQUIRED: Start application
 exec node server.js
