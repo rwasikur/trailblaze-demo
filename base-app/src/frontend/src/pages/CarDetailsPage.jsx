@@ -131,9 +131,9 @@ const CarDetailsPage = () => {
                         </div>
                     )}
 
-                    <div style={{ width: activeTab === 'Images' ? '100%' : '60%', padding: '1.5rem 2rem', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+                    <div style={{ width: activeTab === 'Images' ? '100%' : '60%', padding: '1.5rem 2rem', display: 'flex', flexDirection: 'column' }}>
                         {activeTab === 'Overview' && (
-                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: '0.5rem' }}>
                                 <div>
                                     <div style={{ color: '#64748b', fontWeight: 500, marginBottom: '0.3rem', fontSize: '0.9rem' }}>{car.brand}</div>
                                     <h1 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', lineHeight: 1.2, color: '#0f172a', fontWeight: 700 }}>{car.name}</h1>
@@ -270,7 +270,7 @@ const CarDetailsPage = () => {
                             </div>
                         )}
 
-                        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid #e2e8f0', flexShrink: 0 }}>
                             {localStorage.getItem('adminToken') ? (
                                 <button
                                     className="btn"

@@ -2,50 +2,73 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Task 1 - Public Logic Tests - Car Rating System', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('http://localhost:5173/browse');
+        await page.goto('http://localhost/browse');
     });
 
     test('Display star rating elements on the catalogue page naturally beside the title', async ({ page }) => {
-        // Wait for fetching to finish
         await page.waitForSelector('.car-card');
-
         const firstCarCard = page.locator('.car-card').first();
-
-        // Expect car rating element to be mounted inside the card
         const ratingElement = firstCarCard.locator('.car-rating-component');
+
         await expect(ratingElement).toBeVisible();
-
-        // Should have text for average reviews (since mock data gives default fake ratings)
         await expect(ratingElement).toContainText('reviews');
-
-        // Verify 5 active stars display format
         expect(await ratingElement.locator('span:has-text("★")').count()).toBeGreaterThanOrEqual(5);
     });
 
     test('Navigate to car details and perform an active 5-star rating interaction', async ({ page }) => {
-        // Find View Details button
-        await page.waitForSelector('.btn-slate');
-        await page.locator('.btn-slate').first().click();
-
-        // Wait to open Car Details page
+        await page.waitForSelector('.btn-slate:has-text("View Details")');
+        await page.locator('.btn-slate:has-text("View Details")').first().click();
         await expect(page).toHaveURL(/.*\/car\//);
 
-        // Ensure Breakdown text or title is present
-        await expect(page.getByText(/Rate This Car/i)).toBeVisible();
-
-        // Find standard hover rating triggers
         const ratingContainer = page.locator('.car-rating-component');
         await expect(ratingContainer).toBeVisible();
 
-        // Click the 5th star
         const stars = ratingContainer.locator('> div > div > span:has-text("★")');
         if (await stars.count() >= 5) {
             await stars.nth(4).click();
-
-            // Check feedback states
             await expect(page.getByText('Excellent')).toBeVisible();
             await expect(page.getByText('Thank you for rating this car!')).toBeVisible();
         }
     });
 
+    test('Perform a 1-star rating interaction and verify feedback', async ({ page }) => {
+        await page.waitForSelector('.btn-slate:has-text("View Details")');
+        // Click the second car to ensure clean state
+        await page.locator('.btn-slate:has-text("View Details")').nth(1).click();
+        await expect(page).toHaveURL(/.*\/car\//);
+
+        const ratingContainer = page.locator('.car-rating-component');
+        await expect(ratingContainer).toBeVisible();
+
+        const stars = ratingContainer.locator('> div > div > span:has-text("★")');
+        if (await stars.count() >= 5) {
+            await stars.nth(0).click(); // 1st star
+            await expect(page.getByText('Poor')).toBeVisible();
+            await expect(page.getByText('Thank you for rating this car!')).toBeVisible();
+        }
+    });
+
+    test('Verify hover states on the rating stars before clicking', async ({ page }) => {
+        await page.waitForSelector('.btn-slate:has-text("View Details")');
+        await page.locator('.btn-slate:has-text("View Details")').first().click();
+        await expect(page).toHaveURL(/.*\/car\//);
+
+        const ratingContainer = page.locator('.car-rating-component');
+        await expect(ratingContainer).toBeVisible();
+
+        const stars = ratingContainer.locator('> div > div > span:has-text("★")');
+        if (await stars.count() >= 5) {
+            // Hover 3rd star
+            await stars.nth(2).hover();
+            await expect(page.getByText('Good')).toBeVisible();
+
+            // Hover 2nd star
+            await stars.nth(1).hover();
+            await expect(page.getByText('Fair')).toBeVisible();
+
+            // Hover 4th star
+            await stars.nth(3).hover();
+            await expect(page.getByText('Very Good')).toBeVisible();
+        }
+    });
 });

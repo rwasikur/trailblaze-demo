@@ -155,20 +155,21 @@ const CarRating = ({ carId, readOnly = false, showBreakdown = false, lightTheme 
                 <div style={{
                     marginTop: '1.5rem',
                     padding: '1.5rem',
-                    background: 'rgba(255,255,255,0.03)',
+                    background: lightTheme ? '#f8fafc' : 'rgba(255,255,255,0.03)',
                     borderRadius: '12px',
+                    border: lightTheme ? '1px solid #e2e8f0' : 'none',
                     maxWidth: '400px'
                 }}>
-                    <h4 style={{ marginBottom: '1rem', color: 'var(--text-main)', fontWeight: '500' }}>Rating Breakdown</h4>
+                    <h4 style={{ marginBottom: '1rem', color: lightTheme ? '#0f172a' : 'var(--text-main)', fontWeight: '600' }}>Rating Breakdown</h4>
                     {[5, 4, 3, 2, 1].map(star => {
                         const count = breakdown[star];
                         const percentage = totalReviews === 0 ? 0 : Math.round((count / totalReviews) * 100);
                         return (
                             <div key={star} style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem', gap: '12px' }}>
-                                <span style={{ width: '45px', fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'left' }}>
+                                <span style={{ width: '45px', fontSize: '0.85rem', color: lightTheme ? '#64748b' : 'var(--text-muted)', textAlign: 'left' }}>
                                     {star} ★
                                 </span>
-                                <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div style={{ flex: 1, height: '6px', background: lightTheme ? '#e2e8f0' : 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
                                     <div style={{
                                         height: '100%',
                                         width: `${percentage}%`,
@@ -177,7 +178,7 @@ const CarRating = ({ carId, readOnly = false, showBreakdown = false, lightTheme 
                                         borderRadius: '3px'
                                     }}></div>
                                 </div>
-                                <span style={{ width: '45px', fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'right' }}>
+                                <span style={{ width: '45px', fontSize: '0.85rem', color: lightTheme ? '#64748b' : 'var(--text-muted)', textAlign: 'right' }}>
                                     {percentage}%
                                 </span>
                             </div>
