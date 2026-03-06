@@ -25,6 +25,7 @@ const Navbar = () => {
             </Link>
             <div className="nav-links">
                 {isAdmin && <Link to="/admin/dashboard">Admin Dashboard</Link>}
+                {isAdmin && <Link to="/admin/profile">Profile</Link>}
                 <Link to="/browse">Catalogue</Link>
                 {!isAdmin && <Link to="/admin">Admin Login</Link>}
                 {isAdmin && <Link to="/admin" onClick={() => {

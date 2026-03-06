@@ -11,6 +11,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AddCarPage from './pages/AddCarPage';
 import EditCarPage from './pages/EditCarPage';
 import ManageInventoryPage from './pages/ManageInventoryPage';
+import AdminProfile from './pages/AdminProfile';
 import './index.css';
 
 // Footer removed per request
@@ -31,6 +32,7 @@ function App() {
                         <Route path="/admin/inventory" element={<ManageInventoryPage />} />
                         <Route path="/admin/add-car" element={<AddCarPage />} />
                         <Route path="/admin/edit-car/:id" element={<EditCarPage />} />
+                        <Route path="/admin/profile" element={<AdminProfile />} />
                     </Routes>
                 </main>
             </div>
