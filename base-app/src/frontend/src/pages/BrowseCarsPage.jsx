@@ -46,6 +46,12 @@ const BrowseCarsPage = () => {
                                     <div className="car-price" style={{ fontSize: '1rem', marginBottom: '1.2rem', color: '#555555' }}>
                                         <span style={{ fontWeight: 'bold', color: '#111111', fontSize: '1.05rem' }}>${car.price_per_day?.toLocaleString()}</span>
                                     </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem', marginTop: '-0.5rem' }}>
+                                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#0f172a', fontSize: '0.7rem' }}>
+                                            {car.seller_name ? car.seller_name.charAt(0).toUpperCase() : 'T'}
+                                        </div>
+                                        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{car.seller_name || 'TrailblazeAuto'}</span>
+                                    </div>
                                     <button
                                         className="btn btn-slate"
                                         style={{ width: '100%', padding: '0.8rem', marginTop: 'auto', fontSize: '0.95rem', color: '#ffffff', border: 'none' }}
