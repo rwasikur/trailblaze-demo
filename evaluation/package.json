@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/quietlune/trailblazeauto#readme",
   "devDependencies": {
-    "@playwright/test": "1.57.0",
+    "@playwright/test": "1.58.2",
     "@types/node": "25.0.10"
   },
   "dependencies": {
