@@ -1,0 +1,18 @@
+version: '3.8'
+# Override file for private testing
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.private.yml up --build
+services:
+  backend:
+    container_name: trailblazeauto-backend-private
+    ports:
+      - "8001:3000"
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgres://trailblaze:trailblazepass@postgres:5432/trailblaze_private
+      - INIT_SCRIPT=node scripts/seed_private.js
+    volumes:
+      - trailblazeauto_private_uploads:/app/uploads
+volumes:
+  trailblazeauto_private_uploads:
+  sqlite_private_data:
+
