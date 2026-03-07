@@ -141,6 +141,16 @@ const CarDetailsPage = () => {
                                     </div>
                                 </div>
 
+                                <div style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#0f172a' }}>
+                                        {car.seller_name ? car.seller_name.charAt(0).toUpperCase() : 'T'}
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.1rem' }}>Sold by</div>
+                                        <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.95rem' }}>{car.seller_name || 'TrailblazeAuto Dealership'}</div>
+                                    </div>
+                                </div>
+
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', padding: '1rem 0' }}>
                                     <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid #e2e8f0' }}>
                                         <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
