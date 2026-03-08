@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
-import CarRating from '../components/CarRating';
 const CarDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -128,15 +127,12 @@ const CarDetailsPage = () => {
                         </div>
                     )}
 
-                    <div style={{ width: activeTab === 'Images' ? '100%' : '60%', padding: '1.5rem 2rem', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ width: activeTab === 'Images' ? '100%' : '60%', padding: '1.5rem 2rem', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
                         {activeTab === 'Overview' && (
-                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: '0.5rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                                 <div>
                                     <div style={{ color: '#64748b', fontWeight: 500, marginBottom: '0.3rem', fontSize: '0.9rem' }}>{car.brand}</div>
-                                    <h1 style={{ fontSize: '1.8rem', margin: '0 0 0.5rem 0', lineHeight: 1.2, color: '#0f172a', fontWeight: 700 }}>{car.name}</h1>
-                                </div>
-                                <div style={{ marginBottom: '1.5rem' }}>
-                                    <CarRating carId={car._id || id} readOnly={false} showBreakdown={true} lightTheme={true} />
+                                    <h1 style={{ fontSize: '1.8rem', margin: '0 0 1rem 0', lineHeight: 1.2, color: '#0f172a', fontWeight: 700 }}>{car.name}</h1>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                                     <div>
@@ -277,7 +273,7 @@ const CarDetailsPage = () => {
                             </div>
                         )}
 
-                        <div style={{ display: 'flex', gap: '1rem', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid #e2e8f0', flexShrink: 0 }}>
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                             {localStorage.getItem('adminToken') ? (
                                 <button
                                     className="btn"
