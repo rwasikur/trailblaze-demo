@@ -32,7 +32,9 @@ const Car = sequelize.define('Car', {
     seller_email: { type: DataTypes.STRING, defaultValue: 'contact@trailblazeauto.com' },
     availability_status: { type: DataTypes.STRING, defaultValue: 'Available' }, // 'Available', 'Pending', 'Unavailable'
     requested_by: { type: DataTypes.STRING, defaultValue: '' },
-    clickCount: { type: DataTypes.INTEGER, defaultValue: 0 }
+    clickCount: { type: DataTypes.INTEGER, defaultValue: 0 },
+    rating_sum: { type: DataTypes.INTEGER, defaultValue: 0 },
+    rating_count: { type: DataTypes.INTEGER, defaultValue: 0 }
 }, {
     timestamps: true,
     indexes: [

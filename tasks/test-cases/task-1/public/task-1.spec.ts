@@ -9,9 +9,8 @@ test.describe('Task 1 - Public Logic Tests - Car Rating System', () => {
         await page.waitForSelector('.car-card');
         const firstCarCard = page.locator('.car-card').first();
         const ratingElement = firstCarCard.locator('.car-rating-component');
-
         await expect(ratingElement).toBeVisible();
-        await expect(ratingElement).toContainText('reviews');
+        await expect(ratingElement).toContainText('ratings');
         expect(await ratingElement.locator('span:has-text("★")').count()).toBeGreaterThanOrEqual(5);
     });
 
@@ -71,4 +70,20 @@ test.describe('Task 1 - Public Logic Tests - Car Rating System', () => {
             await expect(page.getByText('Very Good')).toBeVisible();
         }
     });
+
+    test('Validate that API response structure formats ratings adequately', async ({ page, request }) => {
+        // Testing backend integration fetching ratings directly
+        const carsResponse = await request.get('http://localhost/api/cars');
+        const carsData = await carsResponse.json();
+
+        if (carsData && carsData.cars && carsData.cars.length > 0) {
+            const firstCarId = carsData.cars[0]._id;
+            const res = await request.get(`http://localhost/api/cars/${firstCarId}/ratings`);
+            expect(res.ok()).toBeTruthy();
+            const data = await res.json();
+            expect(data).toHaveProperty('rating_count');
+            expect(data).toHaveProperty('rating_sum');
+        }
+    });
+
 });

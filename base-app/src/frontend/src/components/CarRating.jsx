@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+import api from '../api';
+
 const ratingFeedback = {
     1: 'Poor',
     2: 'Fair',
@@ -8,60 +10,46 @@ const ratingFeedback = {
     5: 'Excellent'
 };
 
-// Simulated mock database of ratings for different cars to populate initially
-const mockRatingsDB = {
-    1: [5, 4, 4, 3, 5],
-    2: [4, 4, 4, 5],
-    3: [5, 5, 4, 5, 5],
-};
-
 const CarRating = ({ carId, readOnly = false, showBreakdown = false, lightTheme = false }) => {
-    const getStoredRatings = () => {
-        try {
-            const storedData = localStorage.getItem('carRatingsDB');
-            if (storedData) {
-                const db = JSON.parse(storedData);
-                if (db[carId]) return db[carId];
-            } else {
-                localStorage.setItem('carRatingsDB', JSON.stringify(mockRatingsDB));
-            }
-            return mockRatingsDB[carId] || [4, 4, 5]; // Default fake ratings if not in DB
-        } catch (e) {
-            return [4, 4, 5];
-        }
-    };
-
-    const [ratings, setRatings] = useState(getStoredRatings());
+    const [ratingSum, setRatingSum] = useState(0);
+    const [ratingCount, setRatingCount] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [userRating, setUserRating] = useState(null);
     const [showToast, setShowToast] = useState(false);
 
+    useEffect(() => {
+        const fetchRatings = async () => {
+            try {
+                if (carId) {
+                    const { data } = await api.get(`/api/cars/${carId}/ratings`);
+                    if (data) {
+                        setRatingSum(data.rating_sum || 0);
+                        setRatingCount(data.rating_count || 0);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching ratings', error);
+            }
+        };
+        fetchRatings();
+    }, [carId]);
+
     // Derive counts & average
-    const totalReviews = ratings.length;
-    const averageRating = totalReviews === 0 ? 0 : (ratings.reduce((a, b) => a + b, 0) / totalReviews).toFixed(1);
+    const totalRatings = ratingCount + (userRating ? 1 : 0);
+    const currentSum = ratingSum + (userRating || 0);
+    const averageRating = totalRatings === 0 ? 0 : (currentSum / totalRatings).toFixed(1);
 
-    // Breakdown array creation
-    const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-    ratings.forEach(r => {
-        const rounded = Math.round(r);
-        if (breakdown[rounded] !== undefined) breakdown[rounded]++;
-    });
-
-    const handleRate = (rating) => {
+    const handleRate = async (rating) => {
         if (readOnly || userRating !== null) return;
 
         setUserRating(rating);
-        const newRatings = [...ratings, rating];
-        setRatings(newRatings);
 
-        // Save to simulated DB in localStorage
         try {
-            const storedData = localStorage.getItem('carRatingsDB');
-            const db = storedData ? JSON.parse(storedData) : mockRatingsDB;
-            db[carId] = newRatings;
-            localStorage.setItem('carRatingsDB', JSON.stringify(db));
+            if (carId) {
+                await api.post(`/api/cars/${carId}/rate`, { rating });
+            }
         } catch (e) {
-            console.error("Could not save to localStorage", e);
+            console.error("Could not save rating to backend", e);
         }
 
         setShowToast(true);
@@ -118,7 +106,7 @@ const CarRating = ({ carId, readOnly = false, showBreakdown = false, lightTheme 
 
                 <div style={{ fontSize: readOnly ? '0.85rem' : '1rem', color: lightTheme ? '#777777' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ fontWeight: 'bold', color: lightTheme ? '#111111' : 'var(--text-main)' }}>{averageRating}</span>
-                    <span>({totalReviews} reviews)</span>
+                    <span>({totalRatings} ratings)</span>
                 </div>
             </div>
 
@@ -151,41 +139,6 @@ const CarRating = ({ carId, readOnly = false, showBreakdown = false, lightTheme 
                 </div>
             )}
 
-            {!readOnly && showBreakdown && (
-                <div style={{
-                    marginTop: '1.5rem',
-                    padding: '1.5rem',
-                    background: lightTheme ? '#f8fafc' : 'rgba(255,255,255,0.03)',
-                    borderRadius: '12px',
-                    border: lightTheme ? '1px solid #e2e8f0' : 'none',
-                    maxWidth: '400px'
-                }}>
-                    <h4 style={{ marginBottom: '1rem', color: lightTheme ? '#0f172a' : 'var(--text-main)', fontWeight: '600' }}>Rating Breakdown</h4>
-                    {[5, 4, 3, 2, 1].map(star => {
-                        const count = breakdown[star];
-                        const percentage = totalReviews === 0 ? 0 : Math.round((count / totalReviews) * 100);
-                        return (
-                            <div key={star} style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem', gap: '12px' }}>
-                                <span style={{ width: '45px', fontSize: '0.85rem', color: lightTheme ? '#64748b' : 'var(--text-muted)', textAlign: 'left' }}>
-                                    {star} ★
-                                </span>
-                                <div style={{ flex: 1, height: '6px', background: lightTheme ? '#e2e8f0' : 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
-                                    <div style={{
-                                        height: '100%',
-                                        width: `${percentage}%`,
-                                        background: 'var(--star-filled, #f4c150)',
-                                        transition: 'width 0.8s ease-out',
-                                        borderRadius: '3px'
-                                    }}></div>
-                                </div>
-                                <span style={{ width: '45px', fontSize: '0.85rem', color: lightTheme ? '#64748b' : 'var(--text-muted)', textAlign: 'right' }}>
-                                    {percentage}%
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
         </div>
     );
 };
