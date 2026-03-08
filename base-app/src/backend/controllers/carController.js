@@ -90,48 +90,9 @@ const bookCar = async (req, res) => {
     }
 };
 
-const rateCar = async (req, res) => {
-    try {
-        const { rating } = req.body;
-        if (!rating || rating < 1 || rating > 5) {
-            return res.status(400).json({ message: 'Invalid rating' });
-        }
-
-        const car = await Car.findByPk(req.params.id);
-        if (car) {
-            car.rating_sum += rating;
-            car.rating_count += 1;
-            await car.save();
-            res.json({ message: 'Rating saved', car });
-        } else {
-            res.status(404).json({ message: 'Car not found' });
-        }
-    } catch (err) {
-        res.status(500).json({ message: 'Server error: ' + err.message });
-    }
-};
-
-const getCarRatings = async (req, res) => {
-    try {
-        const car = await Car.findByPk(req.params.id);
-        if (car) {
-            res.json({
-                rating_sum: car.rating_sum,
-                rating_count: car.rating_count
-            });
-        } else {
-            res.status(404).json({ message: 'Car not found' });
-        }
-    } catch (err) {
-        res.status(500).json({ message: 'Server error: ' + err.message });
-    }
-};
-
 module.exports = {
     getCars,
     getCarById,
     createCar,
     bookCar,
-    rateCar,
-    getCarRatings
 };
