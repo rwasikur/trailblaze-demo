@@ -2,10 +2,9 @@ require('dotenv').config();
 const Admin = require('./models/Admin');
 const { connectDB } = require('./config/db');
 
-connectDB();
-
 const seedAdmin = async () => {
     try {
+        await connectDB();
         const adminCount = await Admin.count();
         if (adminCount === 0) {
             await Admin.create({
@@ -24,6 +23,7 @@ const seedAdmin = async () => {
     } catch (err) {
         console.error('Seed error:', err);
     }
+    process.exit(0);
 };
 
 seedAdmin();
