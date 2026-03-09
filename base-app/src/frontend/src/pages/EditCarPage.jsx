@@ -64,10 +64,8 @@ const EditCarPage = () => {
             for (const file of files) {
                 const formDataUpload = new FormData();
                 formDataUpload.append('image', file);
-                const { data } = await api.post('/api/upload', formDataUpload, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                });
-                uploadedUrls.push(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${data.url}`);
+                const { data } = await api.post('/api/upload', formDataUpload);
+                uploadedUrls.push(`${import.meta.env.VITE_API_URL || ''}${data.url}`);
             }
             setImages([...images, ...uploadedUrls]);
             toast.success("Image(s) uploaded successfully!");
@@ -117,7 +115,7 @@ const EditCarPage = () => {
         <div style={{
             height: 'calc(100vh - 66px)',
             position: 'relative',
-            padding: '2rem 5% 4rem 5%',
+            padding: '0.5rem 5% 1rem 5%',
             margin: '-2rem -6%',
             overflow: 'hidden',
             backgroundColor: '#f8fafc',
@@ -129,10 +127,12 @@ const EditCarPage = () => {
                 .admin-light-panel { color: #000; }
                 .admin-light-panel label { color: #2D3748 !important; font-weight: 600; font-size: 0.8rem; }
                 .admin-light-panel input, .admin-light-panel textarea, .admin-light-panel select { color: #000 !important; background: rgba(0,0,0,0.05) !important; border-color: #ccc !important; padding: 0.5rem !important; }
+                .no-scrollbar::-webkit-scrollbar { display: none; }
+                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
 
             <div className="admin-light-panel" style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexShrink: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexShrink: 0 }}>
                     <div>
                         <h1 className="page-title" style={{ margin: 0, fontSize: '1.8rem', color: '#0f172a', fontWeight: 700, letterSpacing: '-0.5px', textShadow: 'none', textAlign: 'left' }}>Edit</h1>
                         <p style={{ margin: '0.2rem 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Update vehicle metadata and availability status below.</p>
@@ -140,7 +140,7 @@ const EditCarPage = () => {
                     <button onClick={() => navigate('/admin/inventory')} className="btn" style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#475569', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Back to Inventory</button>
                 </div>
 
-                <div style={{ animation: 'fadeIn 0.3s ease-out', flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
+                <div className="no-scrollbar" style={{ animation: 'fadeIn 0.3s ease-out', flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
                     <form onSubmit={handleEditCar} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
                             <div className="form-group" style={{ marginBottom: 0 }}>
@@ -156,12 +156,16 @@ const EditCarPage = () => {
                                 <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
                             </div>
                             <div className="form-group" style={{ marginBottom: 0 }}>
-                                <label>Price (₹)</label>
+                                <label>Price ($)</label>
                                 <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
                             </div>
                             <div className="form-group" style={{ marginBottom: 0 }}>
                                 <label>Transmission</label>
-                                <input type="text" value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required />
+                                <select value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', background: 'rgba(0,0,0,0.05)', color: '#000' }}>
+                                    <option value="">Select</option>
+                                    <option value="Automatic">Automatic</option>
+                                    <option value="Manual">Manual</option>
+                                </select>
                             </div>
                             <div className="form-group" style={{ marginBottom: 0 }}>
                                 <label>Fuel Type</label>
@@ -185,11 +189,26 @@ const EditCarPage = () => {
                             </div>
                             <div className="form-group" style={{ marginBottom: 0 }}>
                                 <label>Exterior Color</label>
-                                <input type="text" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })} />
+                                <select value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', background: 'rgba(0,0,0,0.05)', color: '#000' }}>
+                                    <option value="">Select</option>
+                                    <option value="Black">Black</option>
+                                    <option value="White">White</option>
+                                    <option value="Silver">Silver</option>
+                                    <option value="Grey">Grey</option>
+                                    <option value="Blue">Blue</option>
+                                    <option value="Red">Red</option>
+                                </select>
                             </div>
                             <div className="form-group" style={{ marginBottom: 0 }}>
                                 <label>Interior Color</label>
-                                <input type="text" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })} />
+                                <select value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', background: 'rgba(0,0,0,0.05)', color: '#000' }}>
+                                    <option value="">Select</option>
+                                    <option value="Black">Black</option>
+                                    <option value="White">White</option>
+                                    <option value="Beige">Beige</option>
+                                    <option value="Brown">Brown</option>
+                                    <option value="Grey">Grey</option>
+                                </select>
                             </div>
                             <div className="form-group" style={{ marginBottom: 0 }}>
                                 <label>Number of Owners</label>

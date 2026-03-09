@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('TrailblazeAuto Public UI Tests', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('http://localhost:5173/');
+        await page.goto('http://localhost/');
+        await page.evaluate(() => localStorage.clear());
     });
 
     test('should load the homepage and check title', async ({ page }) => {
@@ -17,22 +18,27 @@ test.describe('TrailblazeAuto Public UI Tests', () => {
     });
 
     test('should navigate to car details', async ({ page }) => {
-        await page.goto('http://localhost:5173/browse');
+        await page.goto('http://localhost/browse');
         // Click on the first "View Details" button
         await page.locator('button:has-text("View Details")').first().click();
         await expect(page).toHaveURL(/.*car\/.*/);
-        // Ensure one of the valid state buttons displays
+        // Wait for the action button to appear
+        await page.waitForSelector('button:has-text("Book Now"), button:has-text("Currently Unavailable")', { timeout: 10000 });
+
+        // Check that Share button is removed
+        await expect(page.locator('button:has-text("Share")')).toBeHidden();
+
         const buttonText = await page.locator('button').allTextContents();
-        const hasBookingBtn = buttonText.some(t => t.includes('Book This Vehicle') || t.includes('Currently Unavailable'));
+        const hasBookingBtn = buttonText.some(t => t.includes('Book Now') || t.includes('Currently Unavailable'));
         expect(hasBookingBtn).toBeTruthy();
     });
 
     test('should submit a booking request (if Available)', async ({ page }) => {
-        await page.goto('http://localhost:5173/browse');
+        await page.goto('http://localhost/browse');
         await page.locator('button:has-text("View Details")').first().click();
 
         // Check if button is disabled ("Currently Unavailable") before filling
-        const bookingButton = page.locator('button:has-text("Book This Vehicle")');
+        const bookingButton = page.locator('button:has-text("Book Now")');
         if (await bookingButton.count() > 0 && await bookingButton.isVisible()) {
             await bookingButton.click();
             await expect(page.locator('text=Complete Booking')).toBeVisible();

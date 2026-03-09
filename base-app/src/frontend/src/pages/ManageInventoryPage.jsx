@@ -122,7 +122,7 @@ const ManageInventoryPage = () => {
                                             <td style={{ padding: '0.8rem 1rem', fontSize: '0.85rem', color: '#94a3b8', fontFamily: 'monospace' }}>...{car._id.substring(car._id.length - 6)}</td>
                                             <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', fontWeight: 600, color: '#1e293b' }}>{car.name}</td>
                                             <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', color: '#475569' }}>{car.brand}</td>
-                                            <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', color: '#475569', fontWeight: 500 }}>₹{car.price_per_day}</td>
+                                            <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', color: '#475569', fontWeight: 500 }}>${car.price_per_day}</td>
                                             <td style={{ padding: '0.8rem 1rem', fontSize: '0.85rem', color: '#64748b', fontStyle: car.requested_by ? 'normal' : 'italic' }}>
                                                 {car.requested_by ? (
                                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#f1f5f9', padding: '0.2rem 0.6rem', borderRadius: '12px', color: '#334155' }}>👤 {car.requested_by}</span>

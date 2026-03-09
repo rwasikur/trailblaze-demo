@@ -5,14 +5,13 @@ services:
   backend:
     container_name: trailblazeauto-backend-private
     ports:
-      - "8001:8000"
+      - "8001:3000"
     environment:
       - DEBUG=1
-      - SQLITE_DB_NAME=/tmp/db_private.sqlite3
-      - INIT_SCRIPT=node ../evaluation/scripts/seed_private.js
+      - DATABASE_URL=postgres://trailblaze:trailblazepass@postgres:5432/trailblaze_private
+      - INIT_SCRIPT=node scripts/seed_private.js
     volumes:
       - trailblazeauto_private_uploads:/app/uploads
-      - sqlite_private_data:/app/db_data
 volumes:
   trailblazeauto_private_uploads:
   sqlite_private_data:
