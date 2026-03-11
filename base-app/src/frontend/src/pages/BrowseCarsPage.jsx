@@ -22,8 +22,8 @@ const BrowseCarsPage = () => {
     }, []);
 
     return (
-        <div style={{ backgroundColor: '#ffffff', height: 'calc(100vh - 66px)', overflowY: 'auto', margin: '-2rem -5.5% -2rem -5.5%', padding: '2rem 5%' }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ backgroundColor: '#ffffff', height: 'calc(100vh - 66px)', overflowY: 'auto', width: '100vw', marginLeft: 'calc(-50vw + 50%)', position: 'relative', marginTop: '-2rem', paddingTop: '2rem', paddingBottom: '2rem' }}>
+            <div style={{ padding: '0 5%' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.5rem', margin: 0, color: '#0f172a', fontWeight: 800, letterSpacing: '-0.5px' }}>Browse Cars</h1>
                 </div>

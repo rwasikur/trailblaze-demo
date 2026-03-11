@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
+import { SearchX } from 'lucide-react';
 const CarDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -49,7 +50,29 @@ const CarDetailsPage = () => {
     };
 
     if (loading) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading details...</p>;
-    if (!car) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Car not found.</p>;
+    if (!car) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 84px)', color: '#334155', fontFamily: 'Inter, sans-serif', backgroundColor: '#f8fafc', margin: '-2rem -5.5% -2rem -5.5%' }}>
+                <div style={{ background: '#ffffff', padding: '3rem 4rem', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', border: '1px solid #e2e8f0' }}>
+                    <div style={{ background: '#f1f5f9', padding: '1.5rem', borderRadius: '50%', marginBottom: '1.5rem' }}>
+                        <SearchX size={48} color="#64748b" />
+                    </div>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.5rem 0' }}>Car Not Found</h2>
+                    <p style={{ color: '#64748b', margin: '0 0 2rem 0', maxWidth: '350px', lineHeight: 1.5 }}>
+                        We couldn't find the vehicle you're looking for. It may have been sold, removed, or the link might be broken.
+                    </p>
+                    <button
+                        onClick={() => navigate('/browse')}
+                        style={{ background: '#0f172a', color: '#ffffff', border: 'none', padding: '0.8rem 2rem', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem' }}
+                        onMouseOver={(e) => e.target.style.background = '#334155'}
+                        onMouseOut={(e) => e.target.style.background = '#0f172a'}
+                    >
+                        Browse Catalogue
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const allImages = [car.image_url || '/car3.avif'];
     if (car.secondary_images && Array.isArray(car.secondary_images)) {

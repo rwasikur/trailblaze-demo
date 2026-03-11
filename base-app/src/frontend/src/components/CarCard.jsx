@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const CarCard = ({ car }) => {
     return (
         <div className="car-card">
-            <img src={car.imageUrl || 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=800'} alt={`${car.make} ${car.model}`} className="car-image" />
+            <img src={car.imageUrl || '/car3.avif'} alt={`${car.make} ${car.model}`} className="car-image" />
             <div className="car-content">
                 <h3 className="car-title">{car.make} {car.model}</h3>
                 <div className="car-price">${car.price.toLocaleString()}</div>
