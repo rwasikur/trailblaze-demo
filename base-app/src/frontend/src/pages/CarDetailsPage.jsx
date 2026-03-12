@@ -88,13 +88,8 @@ const CarDetailsPage = () => {
     };
 
     return (
-        <div style={{ backgroundColor: '#ffffff', height: 'calc(100vh - 66px)', margin: '-2rem -5.5% -2rem -5.5%', padding: '1rem 5%', boxSizing: 'border-box', fontFamily: 'Inter, sans-serif', color: '#334155', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexShrink: 0 }}>
-                    <button onClick={() => navigate(-1)} className="btn" style={{ background: '#ffffff', border: '1px solid #e2e8f0', color: '#475569', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>
-                        &larr; Back to Catalogue
-                    </button>
-                </div>
+        <div style={{ backgroundColor: '#ffffff', height: 'calc(100vh - 66px)', margin: '-2rem -5.5% -2rem -5.5%', padding: '1rem', boxSizing: 'border-box', fontFamily: 'Inter, sans-serif', color: '#334155', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
                 {/* Sub-Navigation Tabs */}
                 <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0 1.5rem', marginBottom: '1.5rem', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '2rem', overflowX: 'auto', whiteSpace: 'nowrap', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
