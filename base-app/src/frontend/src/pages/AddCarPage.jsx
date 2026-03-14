@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
+import { ArrowLeft, Upload, X, Star } from 'lucide-react';
 
 const AddCarPage = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '', price_per_day: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '', number_of_owners: '', registration_city: '', insurance_validity: '', description: '', availability_status: 'Available'
+        name: '', brand: '', model_year: '', transmission: '', fuel_type: '',
+        seating_capacity: '', price_per_day: '', range: '', body_type: '',
+        mileage: '', exterior_color: '', interior_color: '', number_of_owners: '',
+        registration_city: '', insurance_validity: '', description: '',
+        availability_status: 'Available'
     });
     const [images, setImages] = useState([]);
     const [uploading, setUploading] = useState(false);
@@ -17,7 +22,6 @@ const AddCarPage = () => {
     const uploadFileHandler = async (e) => {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
-
         setUploading(true);
         try {
             const uploadedUrls = [];
@@ -43,42 +47,28 @@ const AddCarPage = () => {
         if (index === 0) return;
         const newImages = [...images];
         const [selected] = newImages.splice(index, 1);
-        newImages.unshift(selected); // move to front
+        newImages.unshift(selected);
         setImages(newImages);
     };
 
     const removeImage = (index) => {
-        const newImages = images.filter((_, i) => i !== index);
-        setImages(newImages);
+        setImages(images.filter((_, i) => i !== index));
     };
 
-    const nextStep = (e) => {
-        if (e) e.preventDefault();
-        setCurrentStep(prev => Math.min(prev + 1, steps.length));
-    };
-
-    const prevStep = (e) => {
-        if (e) e.preventDefault();
-        setCurrentStep(prev => Math.max(prev - 1, 1));
-    };
+    const nextStep = (e) => { if (e) e.preventDefault(); setCurrentStep(prev => Math.min(prev + 1, steps.length)); };
+    const prevStep = (e) => { if (e) e.preventDefault(); setCurrentStep(prev => Math.max(prev - 1, 1)); };
 
     const handleAddCar = async (e) => {
         e.preventDefault();
-
-        if (currentStep !== steps.length) {
-            return nextStep();
-        }
-
+        if (currentStep !== steps.length) return nextStep();
         try {
             const payload = {
                 ...formData,
                 image_url: images.length > 0 ? images[0] : '',
                 secondary_images: images.length > 1 ? images.slice(1) : []
             };
-
             const token = localStorage.getItem('adminToken');
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-            await api.post('/api/admin/add-car', payload, config);
+            await api.post('/api/admin/add-car', payload, { headers: { Authorization: `Bearer ${token}` } });
             toast.success('Vehicle added successfully!');
             navigate('/admin/dashboard');
         } catch (err) {
@@ -86,201 +76,298 @@ const AddCarPage = () => {
         }
     };
 
+    const inputStyle = {
+        width: '100%', padding: '0.7rem 1rem',
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '8px', color: 'var(--text-main)',
+        fontFamily: "'DM Sans', sans-serif", fontSize: '0.9rem',
+        outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s'
+    };
+
+    const labelStyle = {
+        display: 'block', marginBottom: '0.4rem',
+        fontSize: '0.78rem', fontWeight: 600,
+        color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px'
+    };
+
+    const Field = ({ label, children }) => (
+        <div style={{ marginBottom: 0 }}>
+            <label style={labelStyle}>{label}</label>
+            {children}
+        </div>
+    );
+
     return (
         <div style={{
-            height: 'calc(100vh - 66px)',
-            position: 'relative',
-            padding: '2rem 5% 4rem 5%',
+            minHeight: 'calc(100vh - 66px)',
+            backgroundColor: 'var(--bg-color)',
+            padding: '2rem 5%',
             margin: '-2rem -6%',
-            overflow: 'hidden',
-            backgroundColor: '#f8fafc',
-            display: 'flex',
-            flexDirection: 'column'
+            color: 'var(--text-main)',
+            display: 'flex', flexDirection: 'column'
         }}>
-
-            <style>{`
-                .admin-light-panel { color: #000; }
-                .admin-light-panel label { color: #2D3748 !important; font-weight: 600; font-size: 0.8rem; }
-                .admin-light-panel input, .admin-light-panel textarea, .admin-light-panel select { color: #000 !important; background: rgba(0,0,0,0.05) !important; border-color: #ccc !important; padding: 0.5rem !important; }
-            `}</style>
-
-            <div className="admin-light-panel" style={{ width: '100%', padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexShrink: 0, paddingBottom: '1rem', borderBottom: '1px solid #e2e8f0' }}>
-                    <div>
-                        <h1 className="page-title" style={{ margin: 0, fontSize: '1.8rem', color: '#0f172a', fontWeight: 700, letterSpacing: '-0.5px', textShadow: 'none', textAlign: 'left' }}>Add New Vehicle</h1>
-                        <p style={{ margin: '0.2rem 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Enter the details below to add a new car to the dealership catalogue.</p>
-                    </div>
-                    <button onClick={() => navigate('/admin/dashboard')} className="btn" style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#475569', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Back to Dashboard</button>
+            {/* ── HEADER ── */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                    <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.5px', fontFamily: "'Syne', sans-serif", color: 'var(--text-main)' }}>
+                        Add New Vehicle
+                    </h1>
+                    <p style={{ margin: '0.25rem 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+                        Enter the details below to add a new car to the dealership catalogue.
+                    </p>
                 </div>
+                <button onClick={() => navigate('/admin/dashboard')} className="btn btn-slate"
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem' }}>
+                    <ArrowLeft size={15} /> Back to Dashboard
+                </button>
+            </div>
 
-                {/* Step Indicator */}
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem', flexShrink: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', width: '80%', maxWidth: '700px' }}>
-                        {steps.map((step, idx) => (
-                            <React.Fragment key={idx}>
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: currentStep >= idx + 1 ? '#0f172a' : '#e2e8f0', color: currentStep >= idx + 1 ? '#fff' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1rem', transition: 'all 0.3s ease', boxShadow: currentStep >= idx + 1 ? '0 4px 6px -1px rgba(15, 23, 42, 0.2)' : 'none' }}>
-                                        {idx + 1}
-                                    </div>
-                                    <span style={{ fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 600, color: currentStep >= idx + 1 ? '#0f172a' : '#94a3b8', transition: 'all 0.3s ease' }}>{step}</span>
+            {/* ── STEP INDICATOR ── */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: '640px' }}>
+                    {steps.map((step, idx) => (
+                        <React.Fragment key={idx}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <div style={{
+                                    width: '36px', height: '36px', borderRadius: '50%',
+                                    background: currentStep >= idx + 1 ? 'var(--accent)' : 'var(--surface)',
+                                    border: currentStep >= idx + 1 ? 'none' : '1px solid var(--glass-border)',
+                                    color: currentStep >= idx + 1 ? '#fff' : 'var(--text-muted)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontWeight: 800, fontSize: '0.9rem', transition: 'all 0.3s',
+                                    boxShadow: currentStep >= idx + 1 ? '0 4px 12px var(--accent-glow)' : 'none'
+                                }}>
+                                    {idx + 1}
                                 </div>
-                                {idx < steps.length - 1 && (
-                                    <div style={{ flex: 1, height: '3px', backgroundColor: currentStep > idx + 1 ? '#0f172a' : '#e2e8f0', margin: '0 1rem', transform: 'translateY(-12px)', transition: 'all 0.3s ease', borderRadius: '3px' }} />
-                                )}
-                            </React.Fragment>
-                        ))}
-                    </div>
+                                <span style={{
+                                    fontSize: '0.75rem', marginTop: '0.4rem', fontWeight: 600,
+                                    color: currentStep >= idx + 1 ? 'var(--text-main)' : 'var(--text-muted)',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    {step}
+                                </span>
+                            </div>
+                            {idx < steps.length - 1 && (
+                                <div style={{
+                                    flex: 1, height: '2px', margin: '0 0.75rem',
+                                    marginBottom: '1.2rem',
+                                    background: currentStep > idx + 1 ? 'var(--accent)' : 'var(--glass-border)',
+                                    transition: 'background 0.3s', borderRadius: '2px'
+                                }} />
+                            )}
+                        </React.Fragment>
+                    ))}
                 </div>
+            </div>
 
-                <div style={{ animation: 'fadeIn 0.3s ease-out', flex: 1, overflowY: 'auto', padding: '0.5rem 1rem', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-                    <form onSubmit={handleAddCar} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        <div style={{ flex: 1 }}>
-                            {currentStep === 1 && (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', padding: '1rem' }}>
-                                    <h3 style={{ gridColumn: '1 / -1', margin: '0 0 0.5rem 0', color: '#0f172a', fontWeight: 700, fontSize: '1.2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.8rem' }}>Basic Information</h3>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Car Name</label>
-                                        <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Brand</label>
-                                        <input type="text" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Model Year</label>
-                                        <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Price (₹)</label>
-                                        <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
-                                    </div>
+            {/* ── FORM CARD ── */}
+            <div style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '16px',
+                flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden'
+            }}>
+                <form onSubmit={handleAddCar} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '2rem' }}>
+
+                        {/* STEP 1 */}
+                        {currentStep === 1 && (
+                            <div>
+                                <h3 style={{ margin: '0 0 1.5rem', fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)', paddingBottom: '0.75rem', borderBottom: '1px solid var(--glass-border)' }}>
+                                    Basic Information
+                                </h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.25rem' }}>
+                                    <Field label="Car Name">
+                                        <input style={inputStyle} type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required placeholder="e.g. Model 3" />
+                                    </Field>
+                                    <Field label="Brand">
+                                        <input style={inputStyle} type="text" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required placeholder="e.g. Tesla" />
+                                    </Field>
+                                    <Field label="Model Year">
+                                        <input style={inputStyle} type="text" inputMode="numeric" pattern="[0-9]*" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required placeholder="e.g. 2023" />
+                                    </Field>
+                                    <Field label="Price (₹)">
+                                        <input style={inputStyle} type="text" inputMode="numeric" pattern="[0-9]*" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required placeholder="e.g. 4500000" />
+                                    </Field>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {currentStep === 2 && (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', padding: '1rem' }}>
-                                    <h3 style={{ gridColumn: '1 / -1', margin: '0 0 0.5rem 0', color: '#0f172a', fontWeight: 700, fontSize: '1.2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.8rem' }}>Specifications</h3>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Transmission</label>
-                                        <input type="text" value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Fuel Type</label>
-                                        <input type="text" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Seating Capacity</label>
-                                        <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Range (e.g. 350km)</label>
-                                        <input type="text" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Body Type (e.g. SUV)</label>
-                                        <input type="text" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Mileage (e.g. 15,000 km)</label>
-                                        <input type="text" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
-                                    </div>
-                                </div>
-                            )}
-
-                            {currentStep === 3 && (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', padding: '1rem' }}>
-                                    <h3 style={{ gridColumn: '1 / -1', margin: '0 0 0.5rem 0', color: '#0f172a', fontWeight: 700, fontSize: '1.2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.8rem' }}>Registration & Details</h3>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Exterior Color</label>
-                                        <input type="text" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })} />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Interior Color</label>
-                                        <input type="text" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })} />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Number of Owners</label>
-                                        <input type="number" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value })} />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Registration City</label>
-                                        <input type="text" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Insurance Validity</label>
-                                        <input type="text" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Availability</label>
-                                        <select value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a', appearance: 'none' }}>
-                                            <option value="Available">Available</option>
-                                            <option value="Unavailable">Unavailable</option>
+                        {/* STEP 2 */}
+                        {currentStep === 2 && (
+                            <div>
+                                <h3 style={{ margin: '0 0 1.5rem', fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)', paddingBottom: '0.75rem', borderBottom: '1px solid var(--glass-border)' }}>
+                                    Specifications
+                                </h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
+                                    <Field label="Transmission">
+                                        <select style={{ ...inputStyle, appearance: 'none' }} value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required>
+                                            <option value="" style={{ background: '#1c2a38' }}>Select...</option>
+                                            <option value="Automatic" style={{ background: '#1c2a38' }}>Automatic</option>
+                                            <option value="Manual" style={{ background: '#1c2a38' }}>Manual</option>
+                                            <option value="CVT" style={{ background: '#1c2a38' }}>CVT</option>
+                                            <option value="EV" style={{ background: '#1c2a38' }}>EV (Single Speed)</option>
                                         </select>
-                                    </div>
-                                    <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                                        <label>Description</label>
-                                        <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="3" style={{ width: '100%', resize: 'vertical' }}></textarea>
+                                    </Field>
+                                    <Field label="Fuel Type">
+                                        <select style={{ ...inputStyle, appearance: 'none' }} value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required>
+                                            <option value="" style={{ background: '#1c2a38' }}>Select...</option>
+                                            <option value="Petrol" style={{ background: '#1c2a38' }}>Petrol</option>
+                                            <option value="Diesel" style={{ background: '#1c2a38' }}>Diesel</option>
+                                            <option value="Electric" style={{ background: '#1c2a38' }}>Electric</option>
+                                            <option value="Hybrid" style={{ background: '#1c2a38' }}>Hybrid</option>
+                                            <option value="CNG" style={{ background: '#1c2a38' }}>CNG</option>
+                                        </select>
+                                    </Field>
+                                    <Field label="Body Type">
+                                        <select style={{ ...inputStyle, appearance: 'none' }} value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })}>
+                                            <option value="" style={{ background: '#1c2a38' }}>Select...</option>
+                                            <option value="Sedan" style={{ background: '#1c2a38' }}>Sedan</option>
+                                            <option value="SUV" style={{ background: '#1c2a38' }}>SUV</option>
+                                            <option value="Hatchback" style={{ background: '#1c2a38' }}>Hatchback</option>
+                                            <option value="Luxury" style={{ background: '#1c2a38' }}>Luxury</option>
+                                            <option value="Sports" style={{ background: '#1c2a38' }}>Sports</option>
+                                            <option value="MUV" style={{ background: '#1c2a38' }}>MUV</option>
+                                            <option value="Coupe" style={{ background: '#1c2a38' }}>Coupe</option>
+                                        </select>
+                                    </Field>
+                                    <Field label="Seating Capacity">
+                                        <input style={inputStyle} type="text" inputMode="numeric" pattern="[0-9]*" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required placeholder="e.g. 5" />
+                                    </Field>
+                                    <Field label="Range / Mileage">
+                                        <input style={inputStyle} type="text" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} placeholder="e.g. 350km or 18kmpl" />
+                                    </Field>
+                                    <Field label="Odometer (km)">
+                                        <input style={inputStyle} type="text" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} placeholder="e.g. 15,000 km" />
+                                    </Field>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* STEP 3 */}
+                        {currentStep === 3 && (
+                            <div>
+                                <h3 style={{ margin: '0 0 1.5rem', fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)', paddingBottom: '0.75rem', borderBottom: '1px solid var(--glass-border)' }}>
+                                    Registration & Details
+                                </h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
+                                    <Field label="Exterior Color">
+                                        <input style={inputStyle} type="text" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })} placeholder="e.g. Pearl White" />
+                                    </Field>
+                                    <Field label="Interior Color">
+                                        <input style={inputStyle} type="text" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })} placeholder="e.g. Black" />
+                                    </Field>
+                                    <Field label="Number of Owners">
+                                        <input style={inputStyle} type="number" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value })} placeholder="e.g. 1" />
+                                    </Field>
+                                    <Field label="Registration City">
+                                        <input style={inputStyle} type="text" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} placeholder="e.g. Hyderabad" />
+                                    </Field>
+                                    <Field label="Insurance Validity">
+                                        <input style={inputStyle} type="text" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} placeholder="e.g. Dec 2025" />
+                                    </Field>
+                                    <Field label="Availability">
+                                        <select style={{ ...inputStyle, appearance: 'none' }} value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}>
+                                            <option value="Available" style={{ background: '#1c2a38' }}>Available</option>
+                                            <option value="Unavailable" style={{ background: '#1c2a38' }}>Unavailable</option>
+                                        </select>
+                                    </Field>
+                                    <div style={{ gridColumn: '1 / -1' }}>
+                                        <Field label="Description">
+                                            <textarea
+                                                value={formData.description}
+                                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                rows="3"
+                                                placeholder="Brief description of the vehicle..."
+                                                style={{ ...inputStyle, resize: 'vertical' }}
+                                            />
+                                        </Field>
                                     </div>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {currentStep === 4 && (
-                                <div style={{ display: 'grid', gap: '1.5rem', padding: '1rem', flex: 1 }}>
-                                    <h3 style={{ margin: '0 0 0.5rem 0', color: '#0f172a', fontWeight: 700, fontSize: '1.2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.8rem' }}>Vehicle Media</h3>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Upload Images <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>(Drag & Drop or Click)</span></label>
-                                        <div style={{ border: '2px dashed #cbd5e1', padding: '2rem 1rem', textAlign: 'center', borderRadius: '12px', cursor: 'pointer', background: '#f8fafc', position: 'relative', transition: 'border-color 0.2s', ':hover': { borderColor: '#94a3b8' } }}>
-                                            <input type="file" multiple onChange={uploadFileHandler} accept="image/*" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', zIndex: 2 }} />
-                                            <div style={{ color: '#475569', pointerEvents: 'none' }}>
-                                                <p style={{ fontSize: '2rem', margin: '0 0 0.5rem 0' }}>📸</p>
-                                                <p style={{ margin: 0, fontWeight: 600 }}>Click or Drag & Drop images here</p>
-                                            </div>
-                                        </div>
-                                        {uploading && <small style={{ color: '#059669', fontWeight: 'bold', display: 'block', margin: '1rem 0' }}>Uploading files, please wait...</small>}
+                        {/* STEP 4 */}
+                        {currentStep === 4 && (
+                            <div>
+                                <h3 style={{ margin: '0 0 1.5rem', fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)', paddingBottom: '0.75rem', borderBottom: '1px solid var(--glass-border)' }}>
+                                    Vehicle Media
+                                </h3>
 
-                                        {images.length > 0 && (
-                                            <div style={{ marginTop: '1.5rem' }}>
-                                                <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontWeight: 600 }}>Uploaded Views (First image is the cover)</label>
-                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
-                                                    {images.map((img, index) => (
-                                                        <div key={index} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', border: index === 0 ? '3px solid #059669' : '1px solid #cbd5e1', background: '#fff' }}>
-                                                            {index === 0 && <div style={{ position: 'absolute', top: 0, left: 0, background: '#059669', color: '#fff', fontSize: '0.65rem', padding: '0.3rem 0.6rem', fontWeight: 'bold', borderBottomRightRadius: '8px', zIndex: 10 }}>PRIMARY</div>}
-                                                            <img src={img} alt={`View ${index + 1}`} style={{ width: '100%', height: '120px', objectFit: 'cover', display: 'block' }} />
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', background: '#f1f5f9' }}>
-                                                                <button type="button" onClick={() => makePrimary(index)} disabled={index === 0} style={{ border: 'none', background: 'transparent', color: index === 0 ? '#94a3b8' : '#3b82f6', fontSize: '0.8rem', cursor: index === 0 ? 'default' : 'pointer', fontWeight: 'bold', padding: 0 }}>Make Cover</button>
-                                                                <button type="button" onClick={() => removeImage(index)} style={{ border: 'none', background: 'transparent', color: '#ef4444', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}>Remove</button>
-                                                            </div>
+                                {/* Upload zone */}
+                                <div style={{ position: 'relative', border: '2px dashed var(--glass-border)', borderRadius: '12px', padding: '2.5rem 1rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', cursor: 'pointer', marginBottom: '1.5rem', transition: 'border-color 0.2s' }}
+                                    onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(58,123,213,0.4)'}
+                                    onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--glass-border)'}
+                                >
+                                    <input type="file" multiple onChange={uploadFileHandler} accept="image/*"
+                                        style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', zIndex: 2 }} />
+                                    <Upload size={32} style={{ color: 'var(--text-muted)', marginBottom: '0.75rem' }} />
+                                    <p style={{ margin: 0, fontWeight: 600, color: 'var(--text-main)', fontSize: '0.95rem' }}>Click or Drag & Drop images here</p>
+                                    <p style={{ margin: '0.3rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>PNG, JPG, WEBP supported</p>
+                                </div>
+
+                                {uploading && (
+                                    <p style={{ color: '#22c55e', fontWeight: 600, fontSize: '0.85rem', marginBottom: '1rem' }}>
+                                        Uploading files, please wait...
+                                    </p>
+                                )}
+
+                                {images.length > 0 && (
+                                    <div>
+                                        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.75rem' }}>
+                                            Uploaded Images — First image is the cover
+                                        </p>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.85rem' }}>
+                                            {images.map((img, index) => (
+                                                <div key={index} style={{
+                                                    borderRadius: '10px', overflow: 'hidden',
+                                                    border: index === 0 ? '2px solid #22c55e' : '1px solid var(--glass-border)',
+                                                    background: 'var(--surface)', position: 'relative'
+                                                }}>
+                                                    {index === 0 && (
+                                                        <div style={{ position: 'absolute', top: 0, left: 0, background: '#22c55e', color: '#fff', fontSize: '0.6rem', padding: '0.2rem 0.5rem', fontWeight: 800, letterSpacing: '0.5px', zIndex: 2 }}>
+                                                            PRIMARY
                                                         </div>
-                                                    ))}
+                                                    )}
+                                                    <img src={img} alt={`View ${index + 1}`} style={{ width: '100%', height: '110px', objectFit: 'cover', display: 'block' }} />
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.3)' }}>
+                                                        <button type="button" onClick={() => makePrimary(index)} disabled={index === 0}
+                                                            style={{ border: 'none', background: 'transparent', color: index === 0 ? 'var(--text-muted)' : 'var(--accent-light)', fontSize: '0.75rem', cursor: index === 0 ? 'default' : 'pointer', fontWeight: 600, padding: 0, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                                            <Star size={11} /> Cover
+                                                        </button>
+                                                        <button type="button" onClick={() => removeImage(index)}
+                                                            style={{ border: 'none', background: 'transparent', color: '#f87171', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600, padding: 0, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                                            <X size={11} /> Remove
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', borderTop: '1px solid #e2e8f0', marginTop: 'auto' }}>
-                            <button
-                                type="button"
-                                onClick={prevStep}
-                                disabled={currentStep === 1}
-                                style={{ padding: '0.6rem 2rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#475569', fontWeight: 600, cursor: currentStep === 1 ? 'not-allowed' : 'pointer', opacity: currentStep === 1 ? 0.5 : 1 }}
-                            >
-                                Previous
-                            </button>
-
-                            <button
-                                type="submit"
-                                disabled={uploading}
-                                className="btn"
-                                style={{ padding: '0.6rem 2.5rem', borderRadius: '8px', background: currentStep === steps.length ? '#059669' : '#0f172a', color: '#ffffff', fontWeight: 600, border: 'none', cursor: uploading ? 'not-allowed' : 'pointer', opacity: uploading ? 0.7 : 1 }}
-                            >
-                                {currentStep === steps.length ? (uploading ? 'Processing...' : 'Save Vehicle to Fleet') : 'Next Step'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    {/* ── NAVIGATION BUTTONS ── */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1.25rem 2rem', borderTop: '1px solid var(--glass-border)' }}>
+                        <button type="button" onClick={prevStep} disabled={currentStep === 1}
+                            className="btn btn-slate"
+                            style={{ opacity: currentStep === 1 ? 0.4 : 1, cursor: currentStep === 1 ? 'not-allowed' : 'pointer' }}>
+                            ← Previous
+                        </button>
+                        <button type="submit" disabled={uploading} className="btn"
+                            style={{
+                                background: currentStep === steps.length ? '#22c55e' : 'var(--accent)',
+                                opacity: uploading ? 0.6 : 1,
+                                cursor: uploading ? 'not-allowed' : 'pointer',
+                                padding: '0.6rem 2.5rem', fontWeight: 700
+                            }}>
+                            {currentStep === steps.length ? (uploading ? 'Processing...' : '✓ Save Vehicle') : 'Next Step →'}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );

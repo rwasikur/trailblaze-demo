@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Share2, ChevronLeft, ChevronRight, X, Fuel, Users, Gauge, Settings, MapPin, Shield, Calendar } from 'lucide-react';
 import api from '../api';
 import { toast } from 'react-toastify';
+
 const CarDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -28,11 +30,11 @@ const CarDetailsPage = () => {
         fetchCar();
     }, [id]);
 
+    // ── All booking logic unchanged ──
     const handleBook = async () => {
         if (!bookingName || bookingName.trim() === '' || !bookingPhone || bookingPhone.trim() === '') {
             return toast.error("Please enter your name and contact info.");
         }
-
         try {
             await api.post(`/api/cars/${id}/book`, { requested_by: `${bookingName.trim()} (${bookingPhone.trim()})` });
             toast.success("Booking request submitted! We will contact you soon.");
@@ -48,276 +50,562 @@ const CarDetailsPage = () => {
         }
     };
 
-    if (loading) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading details...</p>;
-    if (!car) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Car not found.</p>;
+    if (loading) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: 'var(--text-muted)' }}>
+            Loading details...
+        </div>
+    );
+    if (!car) return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: 'var(--text-muted)' }}>
+            Car not found.
+        </div>
+    );
 
     const allImages = [car.image_url || '/car3.avif'];
     if (car.secondary_images && Array.isArray(car.secondary_images)) {
         allImages.push(...car.secondary_images);
     }
 
-    const nextImage = () => {
-        setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
-    };
+    const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+    const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
 
-    const prevImage = () => {
-        setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
-    };
+    const tabs = [
+        { id: 'Overview', label: 'Overview' },
+        { id: 'Specs', label: 'Specs' },
+        { id: 'Price', label: 'Price' },
+        { id: 'Colours', label: 'Colours' },
+        { id: 'Range', label: 'Range' },
+        { id: 'Images', label: 'Images' },
+    ];
+
+    const isAvailable = car.availability_status === 'Available';
 
     return (
-        <div style={{ backgroundColor: '#ffffff', height: 'calc(100vh - 66px)', margin: '-2rem -5.5% -2rem -5.5%', padding: '1rem 5%', boxSizing: 'border-box', fontFamily: 'Inter, sans-serif', color: '#334155', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexShrink: 0 }}>
-                    <button onClick={() => navigate(-1)} className="btn" style={{ background: '#ffffff', border: '1px solid #e2e8f0', color: '#475569', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>
-                        &larr; Back to Catalogue
+        <div style={{
+            backgroundColor: 'var(--bg-color)',
+            minHeight: 'calc(100vh - 66px)',
+            margin: '-2rem -5.5% -2rem -5.5%',
+            padding: '1.5rem 5%',
+            fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--text-main)'
+        }}>
+            <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+
+                {/* ── TOP BAR ── */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                    <button
+                        onClick={() => navigate(-1)}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '0.4rem',
+                            background: 'var(--surface)', border: '1px solid var(--glass-border)',
+                            color: 'var(--text-muted)', borderRadius: '8px',
+                            padding: '0.45rem 1rem', fontSize: '0.85rem',
+                            fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+                            fontFamily: "'DM Sans', sans-serif"
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-main)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
+                    >
+                        <ArrowLeft size={15} /> Back to Catalogue
                     </button>
-                    <button className="btn" style={{ background: '#ffffff', border: '1px solid #e2e8f0', color: '#475569', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>
-                        Share
+                    <button
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '0.4rem',
+                            background: 'var(--surface)', border: '1px solid var(--glass-border)',
+                            color: 'var(--text-muted)', borderRadius: '8px',
+                            padding: '0.45rem 1rem', fontSize: '0.85rem',
+                            fontWeight: 600, cursor: 'pointer',
+                            fontFamily: "'DM Sans', sans-serif"
+                        }}
+                    >
+                        <Share2 size={14} /> Share
                     </button>
                 </div>
 
-                {/* Sub-Navigation Tabs */}
-                <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0 1.5rem', marginBottom: '1.5rem', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '2rem', overflowX: 'auto', whiteSpace: 'nowrap', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-                    {[
-                        { id: 'Overview', label: `${car.brand} ${car.name}` },
-                        { id: 'Price', label: 'Price' },
-                        { id: 'Specs', label: 'Specs' },
-                        { id: 'Colours', label: 'Colours' },
-                        { id: 'Range', label: 'Range' },
-                        { id: 'Images', label: 'Images' }
-                    ].map((tab, idx) => (
-                        <div
+                {/* ── TAB BAR ── */}
+                <div style={{
+                    background: 'var(--surface)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: '12px',
+                    padding: '0 1.25rem',
+                    marginBottom: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0',
+                    overflowX: 'auto',
+                    scrollbarWidth: 'none'
+                }}>
+                    {/* Car name — left anchor */}
+                    <div style={{
+                        padding: '0.9rem 1.25rem 0.9rem 0',
+                        marginRight: '1.25rem',
+                        borderRight: '1px solid var(--glass-border)',
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontWeight: 800,
+                        fontSize: '0.98rem',
+                        color: 'var(--text-main)',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0
+                    }}>
+                        {car.brand} {car.name}
+                    </div>
+
+                    {tabs.map(tab => (
+                        <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             style={{
-                                padding: '1rem 0',
-                                color: activeTab === tab.id ? '#0f172a' : '#64748b',
+                                padding: '0.9rem 1rem',
+                                background: 'none',
+                                border: 'none',
+                                borderBottom: activeTab === tab.id ? '2px solid var(--accent)' : '2px solid transparent',
+                                color: activeTab === tab.id ? 'var(--text-main)' : 'var(--text-muted)',
                                 fontWeight: activeTab === tab.id ? 700 : 500,
-                                fontSize: idx === 0 ? '1.05rem' : '1rem',
-                                borderRight: idx === 0 ? '1px solid #e2e8f0' : 'none',
-                                paddingRight: idx === 0 ? '2rem' : '0',
+                                fontSize: '0.88rem',
                                 cursor: 'pointer',
-                                borderBottom: activeTab === tab.id ? '2px solid #0f172a' : '2px solid transparent',
-                                transition: 'all 0.2s ease'
+                                whiteSpace: 'nowrap',
+                                transition: 'all 0.2s',
+                                fontFamily: "'DM Sans', sans-serif"
                             }}
                         >
                             {tab.label}
-                        </div>
+                        </button>
                     ))}
                 </div>
 
-                <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)', overflow: 'hidden', display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0 }}>
+                {/* ── MAIN CONTENT CARD ── */}
+                <div style={{
+                    background: 'var(--surface)',
+                    borderRadius: '16px',
+                    border: '1px solid var(--glass-border)',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    minHeight: '460px'
+                }}>
+                    {/* ── LEFT: Image Panel ── */}
                     {activeTab !== 'Images' && (
-                        <div style={{ width: '40%', background: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', boxSizing: 'border-box', position: 'relative' }}>
-                            <img src={allImages[currentImageIndex]} alt={`${car.brand} ${car.name}`} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px', transition: 'opacity 0.2s ease' }} />
+                        <div style={{
+                            width: '42%',
+                            background: 'linear-gradient(160deg, #0f1923 0%, #1a2d3e 100%)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '1.5rem',
+                            position: 'relative',
+                            flexShrink: 0
+                        }}>
+                            <img
+                                src={allImages[currentImageIndex]}
+                                alt={`${car.brand} ${car.name}`}
+                                style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain', borderRadius: '8px', transition: 'opacity 0.2s ease' }}
+                            />
 
                             {allImages.length > 1 && (
                                 <>
-                                    <button onClick={prevImage} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', zIndex: 10 }}>
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                    <button onClick={prevImage} style={{
+                                        position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)',
+                                        background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)',
+                                        borderRadius: '50%', width: '36px', height: '36px',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        cursor: 'pointer', color: 'var(--text-main)', zIndex: 10, transition: 'background 0.2s'
+                                    }}>
+                                        <ChevronLeft size={18} />
                                     </button>
-                                    <button onClick={nextImage} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', zIndex: 10 }}>
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                    <button onClick={nextImage} style={{
+                                        position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)',
+                                        background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)',
+                                        borderRadius: '50%', width: '36px', height: '36px',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        cursor: 'pointer', color: 'var(--text-main)', zIndex: 10, transition: 'background 0.2s'
+                                    }}>
+                                        <ChevronRight size={18} />
                                     </button>
 
-                                    <div style={{ position: 'absolute', bottom: '1rem', display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.4)', padding: '0.4rem 0.8rem', borderRadius: '20px' }}>
+                                    {/* Dot indicators */}
+                                    <div style={{ position: 'absolute', bottom: '1rem', display: 'flex', gap: '6px' }}>
                                         {allImages.map((_, idx) => (
-                                            <div key={idx} onClick={() => setCurrentImageIndex(idx)} style={{ width: '8px', height: '8px', borderRadius: '50%', background: currentImageIndex === idx ? '#ffffff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'background 0.2s ease' }} />
+                                            <div
+                                                key={idx}
+                                                onClick={() => setCurrentImageIndex(idx)}
+                                                style={{
+                                                    width: currentImageIndex === idx ? '20px' : '8px',
+                                                    height: '8px', borderRadius: '4px',
+                                                    background: currentImageIndex === idx ? 'var(--accent)' : 'rgba(255,255,255,0.2)',
+                                                    cursor: 'pointer', transition: 'all 0.25s'
+                                                }}
+                                            />
                                         ))}
                                     </div>
                                 </>
                             )}
+
+                            {/* Availability badge on image */}
+                            <div style={{
+                                position: 'absolute', top: '1rem', left: '1rem',
+                                padding: '0.25rem 0.75rem', borderRadius: '100px',
+                                fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px',
+                                background: isAvailable ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+                                border: `1px solid ${isAvailable ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+                                color: isAvailable ? '#4ade80' : '#f87171'
+                            }}>
+                                {car.availability_status || 'Available'}
+                            </div>
                         </div>
                     )}
 
-                    <div style={{ width: activeTab === 'Images' ? '100%' : '60%', padding: '1.5rem 2rem', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+                    {/* ── RIGHT: Content Panel ── */}
+                    <div style={{
+                        flex: 1,
+                        padding: '1.75rem 2rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflowY: 'auto'
+                    }}>
+
+                        {/* ── OVERVIEW TAB ── */}
                         {activeTab === 'Overview' && (
-                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                                <div>
-                                    <div style={{ color: '#64748b', fontWeight: 500, marginBottom: '0.3rem', fontSize: '0.9rem' }}>{car.brand}</div>
-                                    <h1 style={{ fontSize: '1.8rem', margin: '0 0 1rem 0', lineHeight: 1.2, color: '#0f172a', fontWeight: 700 }}>{car.name}</h1>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                                    <div>
-                                        <div style={{ fontSize: '1.1rem', color: '#0f172a', fontWeight: 700 }}>₹{car.price_per_day?.toLocaleString()}</div>
-                                        <div style={{ color: '#64748b', fontSize: '0.75rem' }}>Ex-showroom</div>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ marginBottom: '1.25rem' }}>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '0.3rem' }}>
+                                        {car.brand}
                                     </div>
+                                    <h1 style={{ fontSize: '1.9rem', margin: '0 0 0.25rem', lineHeight: 1.15, color: 'var(--text-main)', fontWeight: 900, fontFamily: "'DM Sans', sans-serif", letterSpacing: '-0.5px' }}>
+                                        {car.name}
+                                    </h1>
+                                    {car.category && (
+                                        <span style={{ display: 'inline-block', padding: '0.2rem 0.7rem', background: 'rgba(58,123,213,0.12)', border: '1px solid rgba(58,123,213,0.25)', borderRadius: '100px', fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-light)', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+                                            {car.category}
+                                        </span>
+                                    )}
                                 </div>
 
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', padding: '1rem 0' }}>
-                                    <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid #e2e8f0' }}>
-                                        <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                        </div>
-                                        <div style={{ fontSize: '1rem', fontWeight: 600, color: '#0f172a', marginBottom: '0.2rem' }}>{car.range || 'N/A'}</div>
-                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Range</div>
+                                {/* Price */}
+                                <div style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)' }}>
+                                    <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-main)', fontFamily: "'DM Sans', sans-serif", letterSpacing: '-1px' }}>
+                                        ₹{car.price_per_day?.toLocaleString()}
                                     </div>
-                                    <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid #e2e8f0' }}>
-                                        <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.64A1 1 0 0012.5 7H7.5a1 1 0 00-.8.4L4 11l-2 1.15V16h3m8 0a2 2 0 11-4 0m4 0a2 2 0 10-4 0m-10 0a2 2 0 11-4 0m4 0a2 2 0 10-4 0"></path></svg>
-                                        </div>
-                                        <div style={{ fontSize: '1rem', fontWeight: 600, color: '#0f172a', marginBottom: '0.2rem' }}>{car.body_type || 'N/A'}</div>
-                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Body type</div>
-                                    </div>
-                                    <div style={{ textAlign: 'center', flex: 1 }}>
-                                        <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center' }}>
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
-                                        </div>
-                                        <div style={{ fontSize: '1rem', fontWeight: 600, color: '#0f172a', marginBottom: '0.2rem' }}>{car.fuel_type || 'N/A'}</div>
-                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Fuel type</div>
-                                    </div>
+                                    <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.2rem' }}>Ex-showroom price</div>
                                 </div>
+
+                                {/* Quick specs row */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                                    {[
+                                        { icon: <Gauge size={18} />, label: 'Range', value: car.range || 'N/A' },
+                                        { icon: <Settings size={18} />, label: 'Body Type', value: car.body_type || 'N/A' },
+                                        { icon: <Fuel size={18} />, label: 'Fuel', value: car.fuel_type || 'N/A' },
+                                    ].map((spec, i) => (
+                                        <div key={i} style={{
+                                            background: 'rgba(255,255,255,0.03)',
+                                            border: '1px solid var(--glass-border)',
+                                            borderRadius: '10px',
+                                            padding: '0.85rem',
+                                            textAlign: 'center'
+                                        }}>
+                                            <div style={{ color: 'var(--accent-light)', marginBottom: '0.4rem', display: 'flex', justifyContent: 'center' }}>{spec.icon}</div>
+                                            <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.15rem' }}>{spec.value}</div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{spec.label}</div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Description snippet */}
+                                {car.description && (
+                                    <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: 1.7, marginBottom: '1.25rem' }}>
+                                        {car.description}
+                                    </p>
+                                )}
                             </div>
                         )}
 
-                        {activeTab !== 'Overview' && (
-                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                                {activeTab === 'Specs' && (
-                                    <>
-                                        <h3 style={{ flexShrink: 0, marginBottom: '0.6rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.4rem', color: '#0f172a', fontWeight: 700, fontSize: '0.95rem' }}>Vehicle Specifications</h3>
-                                        <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, paddingRight: '0.5rem' }}>
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                                                <div><span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '0.2rem' }}>Mileage</span><div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a' }}>{car.mileage || 'N/A'}</div></div>
-                                                <div><span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '0.2rem' }}>Transmission</span><div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a' }}>{car.transmission || 'N/A'}</div></div>
-                                                <div><span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '0.2rem' }}>Number of Owners</span><div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a' }}>{car.number_of_owners || 'N/A'}</div></div>
-                                                <div><span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '0.2rem' }}>Registration City</span><div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a' }}>{car.registration_city || 'N/A'}</div></div>
-                                                <div><span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '0.2rem' }}>Insurance Validity</span><div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a' }}>{car.insurance_validity || 'N/A'}</div></div>
-                                                <div><span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '0.2rem' }}>Seating Capacity</span><div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a' }}>{car.seating_capacity ? `${car.seating_capacity} Seats` : 'N/A'}</div></div>
-                                            </div>
-                                            <h4 style={{ fontSize: '0.9rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#0f172a' }}>Description</h4>
-                                            <p style={{ lineHeight: '1.6', color: '#475569', fontSize: '0.85rem', margin: 0, paddingBottom: '1rem' }}>{car.description || 'Currently details not available.'}</p>
+                        {/* ── SPECS TAB ── */}
+                        {activeTab === 'Specs' && (
+                            <div style={{ flex: 1 }}>
+                                <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1rem', fontWeight: 800, marginBottom: '1.25rem', color: 'var(--text-main)' }}>
+                                    Vehicle Specifications
+                                </h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                                    {[
+                                        { label: 'Mileage', value: car.mileage },
+                                        { label: 'Transmission', value: car.transmission },
+                                        { label: 'Number of Owners', value: car.number_of_owners },
+                                        { label: 'Registration City', value: car.registration_city },
+                                        { label: 'Insurance Validity', value: car.insurance_validity },
+                                        { label: 'Seating Capacity', value: car.seating_capacity ? `${car.seating_capacity} Seats` : null },
+                                        { label: 'Body Type', value: car.body_type },
+                                        { label: 'Fuel Type', value: car.fuel_type },
+                                    ].map((spec, i) => (
+                                        <div key={i} style={{
+                                            background: 'rgba(255,255,255,0.025)',
+                                            border: '1px solid var(--glass-border)',
+                                            borderRadius: '10px', padding: '0.9rem 1rem'
+                                        }}>
+                                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '0.3rem' }}>{spec.label}</div>
+                                            <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-main)' }}>{spec.value || 'N/A'}</div>
                                         </div>
+                                    ))}
+                                </div>
+                                {car.description && (
+                                    <>
+                                        <h4 style={{ fontSize: '0.88rem', fontWeight: 700, marginBottom: '0.6rem', color: 'var(--text-main)' }}>Description</h4>
+                                        <p style={{ lineHeight: 1.7, color: 'var(--text-muted)', fontSize: '0.88rem' }}>{car.description}</p>
                                     </>
                                 )}
+                            </div>
+                        )}
 
-                                {activeTab === 'Price' && (
-                                    <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, paddingRight: '0.5rem' }}>
-                                        <h3 style={{ marginBottom: '1rem', color: '#0f172a', fontWeight: 700 }}>Price Breakdown</h3>
-                                        {car.price_per_day ? (
-                                            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                                    <span style={{ color: '#64748b' }}>Ex-Showroom Price</span>
-                                                    <span style={{ fontWeight: 600 }}>₹{car.price_per_day.toLocaleString()}</span>
-                                                </div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
-                                                    <span style={{ color: '#64748b' }}>Estimated Registration & Insurance</span>
-                                                    <span style={{ fontWeight: 600, color: '#94a3b8' }}>Varies by City</span>
-                                                </div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-                                                    <span style={{ fontWeight: 700, color: '#0f172a' }}>Estimated On-Road</span>
-                                                    <span style={{ fontWeight: 700, color: '#059669' }}>Request Final Quote</span>
-                                                </div>
+                        {/* ── PRICE TAB ── */}
+                        {activeTab === 'Price' && (
+                            <div style={{ flex: 1 }}>
+                                <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1rem', fontWeight: 800, marginBottom: '1.25rem', color: 'var(--text-main)' }}>
+                                    Price Breakdown
+                                </h3>
+                                {car.price_per_day ? (
+                                    <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid var(--glass-border)', borderRadius: '12px', overflow: 'hidden' }}>
+                                        {[
+                                            { label: 'Ex-Showroom Price', value: `₹${car.price_per_day.toLocaleString()}`, highlight: false },
+                                            { label: 'Estimated Registration & Insurance', value: 'Varies by City', highlight: false },
+                                        ].map((row, i) => (
+                                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 1.25rem', borderBottom: '1px solid var(--glass-border)' }}>
+                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{row.label}</span>
+                                                <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.9rem' }}>{row.value}</span>
                                             </div>
-                                        ) : (
-                                            <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Currently details not available.</p>
-                                        )}
+                                        ))}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1.1rem 1.25rem', background: 'rgba(58,123,213,0.06)' }}>
+                                            <span style={{ fontWeight: 800, color: 'var(--text-main)', fontFamily: "'DM Sans', sans-serif" }}>Estimated On-Road</span>
+                                            <span style={{ fontWeight: 800, color: 'var(--accent-light)' }}>Request Final Quote</span>
+                                        </div>
                                     </div>
-                                )}
-
-
-
-                                {activeTab === 'Colours' && (
-                                    <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, paddingRight: '0.5rem' }}>
-                                        <h3 style={{ marginBottom: '1rem', color: '#0f172a', fontWeight: 700 }}>Available Colours</h3>
-                                        {car.exterior_color || car.interior_color ? (
-                                            <>
-                                                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', background: '#f8fafc', padding: '1.2rem', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                                                    <div><span style={{ color: '#64748b', fontSize: '0.8rem', display: 'block', marginBottom: '0.2rem' }}>Exterior Color</span><div style={{ fontSize: '1rem', fontWeight: 600, color: '#0f172a' }}>{car.exterior_color || 'N/A'}</div></div>
-                                                    <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: '1.5rem' }}><span style={{ color: '#64748b', fontSize: '0.8rem', display: 'block', marginBottom: '0.2rem' }}>Interior Color</span><div style={{ fontSize: '1rem', fontWeight: 600, color: '#0f172a' }}>{car.interior_color || 'N/A'}</div></div>
-                                                </div>
-                                                <p style={{ marginTop: '1rem', color: '#64748b', fontSize: '0.85rem' }}>Ask us about customizing your order if you are looking for a specific interior or exterior finish.</p>
-                                            </>
-                                        ) : (
-                                            <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Currently details not available.</p>
-                                        )}
-                                    </div>
-                                )}
-
-                                {activeTab === 'Range' && (
-                                    <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, paddingRight: '0.5rem' }}>
-                                        <h3 style={{ marginBottom: '1rem', color: '#0f172a', fontWeight: 700 }}>Range & Performance</h3>
-                                        {car.range ? (
-                                            <div style={{ background: '#f8fafc', padding: '2rem 1.5rem', borderRadius: '8px', border: '1px solid #f1f5f9', textAlign: 'center' }}>
-                                                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#4A6572', marginBottom: '0.5rem' }}>{car.range}</div>
-                                                <div style={{ color: '#64748b', fontSize: '1rem', fontWeight: 600 }}>Estimated Range / Fuel Efficiency</div>
-                                                <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#94a3b8' }}>*Actual range may vary based on driving conditions and environment.</p>
-                                            </div>
-                                        ) : (
-                                            <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Currently details not available.</p>
-                                        )}
-                                    </div>
-                                )}
-
-                                {activeTab === 'Images' && (
-                                    <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, paddingRight: '0.5rem' }}>
-                                        {allImages.length > 0 ? (
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
-                                                {allImages.map((img, idx) => (
-                                                    <div key={idx} onClick={() => setFullScreenImage(img)} style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative', cursor: 'zoom-in' }}>
-                                                        <img src={img} alt={`View ${idx + 1}`} style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block', transition: 'transform 0.2s' }} />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Currently details not available.</p>
-                                        )}
-                                    </div>
+                                ) : (
+                                    <p style={{ color: 'var(--text-muted)' }}>Price details not available.</p>
                                 )}
                             </div>
                         )}
 
-                        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                        {/* ── COLOURS TAB ── */}
+                        {activeTab === 'Colours' && (
+                            <div style={{ flex: 1 }}>
+                                <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1rem', fontWeight: 800, marginBottom: '1.25rem', color: 'var(--text-main)' }}>
+                                    Available Colours
+                                </h3>
+                                {car.exterior_color || car.interior_color ? (
+                                    <>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                                            {[
+                                                { label: 'Exterior Color', value: car.exterior_color },
+                                                { label: 'Interior Color', value: car.interior_color },
+                                            ].map((c, i) => (
+                                                <div key={i} style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '1.25rem' }}>
+                                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '0.4rem' }}>{c.label}</div>
+                                                    <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)' }}>{c.value || 'N/A'}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.6 }}>
+                                            Ask us about customizing your order if you are looking for a specific interior or exterior finish.
+                                        </p>
+                                    </>
+                                ) : (
+                                    <p style={{ color: 'var(--text-muted)' }}>Colour details not available.</p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ── RANGE TAB ── */}
+                        {activeTab === 'Range' && (
+                            <div style={{ flex: 1 }}>
+                                <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1rem', fontWeight: 800, marginBottom: '1.25rem', color: 'var(--text-main)' }}>
+                                    Range & Performance
+                                </h3>
+                                {car.range ? (
+                                    <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '2.5rem', textAlign: 'center' }}>
+                                        <div style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--accent-light)', marginBottom: '0.5rem', fontFamily: "'DM Sans', sans-serif", letterSpacing: '-1px' }}>
+                                            {car.range}
+                                        </div>
+                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 600 }}>Estimated Range / Fuel Efficiency</div>
+                                        <p style={{ marginTop: '1rem', fontSize: '0.78rem', color: 'var(--text-faint)' }}>
+                                            *Actual range may vary based on driving conditions and environment.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <p style={{ color: 'var(--text-muted)' }}>Range details not available.</p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ── IMAGES TAB (full width) ── */}
+                        {activeTab === 'Images' && (
+                            <div style={{ flex: 1 }}>
+                                <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1rem', fontWeight: 800, marginBottom: '1.25rem', color: 'var(--text-main)' }}>
+                                    Photo Gallery
+                                </h3>
+                                {allImages.length > 0 ? (
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '0.85rem' }}>
+                                        {allImages.map((img, idx) => (
+                                            <div
+                                                key={idx}
+                                                onClick={() => setFullScreenImage(img)}
+                                                style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--glass-border)', cursor: 'zoom-in', transition: 'transform 0.2s, border-color 0.2s' }}
+                                                onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.borderColor = 'rgba(58,123,213,0.4)'; }}
+                                                onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
+                                            >
+                                                <img src={img} alt={`View ${idx + 1}`} style={{ width: '100%', height: '180px', objectFit: 'cover', display: 'block' }} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p style={{ color: 'var(--text-muted)' }}>No images available.</p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ── BOOK BUTTON ── */}
+                        <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--glass-border)' }}>
                             <button
                                 className="btn"
-                                style={{ flex: 1, padding: '0.8rem', background: '#0a0a0a', color: '#ffffff', borderRadius: '8px', fontWeight: 600, border: 'none', cursor: 'pointer', opacity: car.availability_status !== 'Available' ? 0.7 : 1 }}
-                                onClick={() => setShowModal(true)}
-                                disabled={car.availability_status !== 'Available'}
+                                style={{
+                                    width: '100%', padding: '0.9rem',
+                                    fontSize: '0.95rem', fontWeight: 700,
+                                    borderRadius: '10px',
+                                    background: isAvailable ? 'var(--accent)' : 'var(--surface-raised)',
+                                    color: isAvailable ? '#fff' : 'var(--text-muted)',
+                                    border: isAvailable ? 'none' : '1px solid var(--glass-border)',
+                                    cursor: isAvailable ? 'pointer' : 'not-allowed',
+                                    opacity: isAvailable ? 1 : 0.7,
+                                    boxShadow: isAvailable ? '0 8px 24px var(--accent-glow)' : 'none',
+                                    transition: 'all 0.3s'
+                                }}
+                                onClick={() => isAvailable && setShowModal(true)}
+                                disabled={!isAvailable}
                             >
-                                {car.availability_status === 'Available' ? 'Book Now' : 'Currently Unavailable'}
+                                {isAvailable ? 'Request a Booking' : 'Currently Unavailable'}
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
+            {/* ── FULLSCREEN IMAGE MODAL ── */}
             {fullScreenImage && (
-                <div onClick={() => setFullScreenImage(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, backdropFilter: 'blur(8px)' }}>
-                    <button onClick={() => setFullScreenImage(null)} style={{ position: 'absolute', top: '1.5rem', right: '2rem', background: 'transparent', border: 'none', color: '#ffffff', fontSize: '2.5rem', cursor: 'pointer', zIndex: 1101, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.1)', transition: 'background-color 0.2s ease' }}>&times;</button>
-                    <img src={fullScreenImage} alt="Maximized View" style={{ maxWidth: '90%', maxHeight: '90vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }} onClick={(e) => e.stopPropagation()} />
+                <div
+                    onClick={() => setFullScreenImage(null)}
+                    style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, backdropFilter: 'blur(8px)' }}
+                >
+                    <button
+                        onClick={() => setFullScreenImage(null)}
+                        style={{
+                            position: 'absolute', top: '1.5rem', right: '2rem',
+                            background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+                            color: '#fff', width: '42px', height: '42px',
+                            borderRadius: '50%', cursor: 'pointer', fontSize: '1.2rem',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            zIndex: 1101
+                        }}
+                    >
+                        <X size={20} />
+                    </button>
+                    <img
+                        src={fullScreenImage}
+                        alt="Full View"
+                        style={{ maxWidth: '90%', maxHeight: '90vh', objectFit: 'contain', borderRadius: '10px', boxShadow: '0 30px 60px rgba(0,0,0,0.6)' }}
+                        onClick={(e) => e.stopPropagation()}
+                    />
                 </div>
             )}
 
+            {/* ── BOOKING MODAL ── */}
             {showModal && (
-                <div onClick={() => setShowModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
-                    <div onClick={(e) => e.stopPropagation()} style={{ width: '90%', maxWidth: '440px', background: '#ffffff', padding: '2.5rem', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
-                        <h2 style={{ margin: '0 0 0.5rem 0', color: '#0f172a', fontSize: '1.2rem', fontWeight: 700, letterSpacing: '-0.5px' }}>Complete Booking</h2>
-                        <p style={{ color: '#64748b', margin: '0 0 2rem 0', fontSize: '0.85rem', lineHeight: 1.5 }}>To request the <strong style={{ color: '#0f172a' }}>{car.brand} {car.name}</strong>, please enter your contact details below. We'll reach out shortly.</p>
+                <div
+                    onClick={() => setShowModal(false)}
+                    style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(6px)' }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            width: '90%', maxWidth: '440px',
+                            background: 'var(--surface)',
+                            border: '1px solid var(--glass-border)',
+                            padding: '2rem', borderRadius: '18px',
+                            boxShadow: '0 30px 60px rgba(0,0,0,0.5)'
+                        }}
+                    >
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <h2 style={{ margin: '0 0 0.4rem', color: 'var(--text-main)', fontSize: '1.2rem', fontWeight: 800, fontFamily: "'DM Sans', sans-serif" }}>
+                                Request a Booking
+                            </h2>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0 }}>
+                                Enquiring about the <strong style={{ color: 'var(--text-main)' }}>{car.brand} {car.name}</strong>. Enter your details and we'll reach out shortly.
+                            </p>
+                        </div>
 
                         <div style={{ marginBottom: '1rem' }}>
-                            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>Full Name</label>
+                            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                Full Name
+                            </label>
                             <input
                                 type="text"
-                                placeholder="e.g. John Doe"
+                                placeholder="e.g. Rahul Sharma"
                                 value={bookingName}
                                 onChange={(e) => setBookingName(e.target.value)}
-                                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a', fontFamily: 'Inter', fontSize: '1rem' }}
+                                style={{
+                                    width: '100%', padding: '0.75rem 1rem',
+                                    borderRadius: '10px', border: '1px solid var(--glass-border)',
+                                    background: 'rgba(255,255,255,0.03)', color: 'var(--text-main)',
+                                    fontFamily: "'DM Sans', sans-serif", fontSize: '0.93rem', outline: 'none',
+                                    boxSizing: 'border-box'
+                                }}
                             />
                         </div>
 
-                        <div style={{ marginBottom: '2rem' }}>
-                            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.5rem' }}>Phone Number / Email</label>
+                        <div style={{ marginBottom: '1.75rem' }}>
+                            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                Phone Number / Email
+                            </label>
                             <input
                                 type="text"
                                 placeholder="e.g. +91 98765 43210"
                                 value={bookingPhone}
                                 onChange={(e) => setBookingPhone(e.target.value)}
-                                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a', fontFamily: 'Inter', fontSize: '1rem' }}
+                                style={{
+                                    width: '100%', padding: '0.75rem 1rem',
+                                    borderRadius: '10px', border: '1px solid var(--glass-border)',
+                                    background: 'rgba(255,255,255,0.03)', color: 'var(--text-main)',
+                                    fontFamily: "'DM Sans', sans-serif", fontSize: '0.93rem', outline: 'none',
+                                    boxSizing: 'border-box'
+                                }}
                             />
                         </div>
 
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button onClick={() => setShowModal(false)} className="btn" style={{ flex: 1, background: '#ffffff', color: '#475569', border: '1px solid #cbd5e1', fontWeight: 600 }}>Cancel</button>
-                            <button onClick={handleBook} className="btn" style={{ flex: 2, background: '#4A6572', color: '#ffffff', border: 'none', fontWeight: 600 }} disabled={!bookingName.trim()}>Submit Request</button>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <button
+                                onClick={() => setShowModal(false)}
+                                style={{
+                                    flex: 1, padding: '0.8rem',
+                                    background: 'transparent', color: 'var(--text-muted)',
+                                    border: '1px solid var(--glass-border)', borderRadius: '10px',
+                                    fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                                    fontSize: '0.9rem', cursor: 'pointer'
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleBook}
+                                disabled={!bookingName.trim()}
+                                style={{
+                                    flex: 2, padding: '0.8rem',
+                                    background: bookingName.trim() ? 'var(--accent)' : 'var(--surface-raised)',
+                                    color: bookingName.trim() ? '#fff' : 'var(--text-muted)',
+                                    border: 'none', borderRadius: '10px',
+                                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                                    fontSize: '0.9rem', cursor: bookingName.trim() ? 'pointer' : 'not-allowed',
+                                    boxShadow: bookingName.trim() ? '0 4px 16px var(--accent-glow)' : 'none',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                Submit Request
+                            </button>
                         </div>
                     </div>
                 </div>
