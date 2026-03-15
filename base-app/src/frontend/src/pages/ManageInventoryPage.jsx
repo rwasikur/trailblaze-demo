@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
 import { ArrowLeft, Plus, Pencil, Trash2, ChevronDown, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
+import DeleteModal from '../components/DeleteModal';
 
 const ManageInventoryPage = () => {
     const navigate = useNavigate();
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeDropdown, setActiveDropdown] = useState(null);
+    const [deleteModal, setDeleteModal] = useState({ isOpen: false, car: null });
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
@@ -31,19 +33,26 @@ const ManageInventoryPage = () => {
         }
     };
 
-    const deleteCarHandler = async (id) => {
-        if (window.confirm('Are you sure you want to delete this vehicle?')) {
-            try {
-                const token = localStorage.getItem('adminToken');
-                await api.delete(`/api/admin/cars/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                fetchCars(token);
-                toast.success('Vehicle deleted successfully.');
-            } catch (err) {
-                console.error('Failed to delete car:', err);
-                toast.error('Error deleting vehicle.');
-            }
+    const deleteCarHandler = (car) => {
+        setDeleteModal({ isOpen: true, car });
+    };
+
+    const confirmDeleteHandler = async () => {
+        const id = deleteModal.car?._id;
+        if (!id) return;
+        
+        try {
+            const token = localStorage.getItem('adminToken');
+            await api.delete(`/api/admin/cars/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchCars(token);
+            toast.success('Vehicle deleted successfully.');
+        } catch (err) {
+            console.error('Failed to delete car:', err);
+            toast.error('Error deleting vehicle.');
+        } finally {
+            setDeleteModal({ isOpen: false, car: null });
         }
     };
 
@@ -69,16 +78,17 @@ const ManageInventoryPage = () => {
 
     return (
         <div style={{
-            minHeight: 'calc(100vh - 66px)',
+            minHeight: 'calc(100vh - 84px)',
             backgroundColor: 'var(--bg-color)',
-            padding: '2rem 5%',
-            margin: '-2rem -6%',
+            padding: '1.25rem 3%',
+            margin: '0',
             color: 'var(--text-main)'
         }}>
+            <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
             {/* ── HEADER ── */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                    <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.5px', fontFamily: "'Syne', sans-serif", color: 'var(--text-main)' }}>
+                    <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.5px', fontFamily: "'DM Sans', sans-serif", color: 'var(--text-main)' }}>
                         Manage Inventory
                     </h1>
                     <p style={{ margin: '0.25rem 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
@@ -164,7 +174,7 @@ const ManageInventoryPage = () => {
 
                                             {/* Price */}
                                             <td style={{ padding: '0.85rem 1rem', fontSize: '0.88rem', color: 'var(--text-main)', fontWeight: 600 }}>
-                                                ₹{Number(car.price_per_day).toLocaleString()}
+                                                ${Number(car.price_per_day).toLocaleString()}
                                             </td>
 
                                             {/* Requested by */}
@@ -226,7 +236,8 @@ const ManageInventoryPage = () => {
                                                                 background: '#1c2a38',
                                                                 border: '1px solid var(--glass-border)',
                                                                 borderRadius: '12px', padding: '0.4rem',
-                                                                boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+                                                                boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
+                                                                color: '#ffffff'
                                                             }}>
                                                                 {car.availability_status === 'Pending' && (
                                                                     <>
@@ -247,12 +258,12 @@ const ManageInventoryPage = () => {
                                                                     </button>
                                                                 )}
                                                                 <button onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-car/${car._id}`); }}
-                                                                    className="dropdown-item-dark" style={{ color: 'var(--text-main)' }}>
+                                                                    className="dropdown-item-dark" style={{ color: '#ffffff' }}>
                                                                     <Pencil size={14} /> Edit Vehicle
                                                                 </button>
                                                                 <div style={{ margin: '0.25rem 0', borderTop: '1px solid var(--glass-border)' }} />
-                                                                <button onClick={() => { deleteCarHandler(car._id); setActiveDropdown(null); }}
-                                                                    className="dropdown-item-dark" style={{ color: '#f87171' }}>
+                                                                <button onClick={() => { deleteCarHandler(car); setActiveDropdown(null); }}
+                                                                    className="dropdown-item-dark" style={{ color: '#ff8a8a' }}>
                                                                     <Trash2 size={14} /> Delete Vehicle
                                                                 </button>
                                                             </div>
@@ -288,11 +299,19 @@ const ManageInventoryPage = () => {
                     font-family: 'DM Sans', sans-serif;
                 }
                 .dropdown-item-dark:hover {
-                    background: rgba(255,255,255,0.05);
+                    background: rgba(255,255,255,0.1);
+                    filter: brightness(1.2);
                 }
             `}</style>
+            <DeleteModal 
+                isOpen={deleteModal.isOpen} 
+                carName={deleteModal.car?.name}
+                onConfirm={confirmDeleteHandler}
+                onCancel={() => setDeleteModal({ isOpen: false, car: null })}
+            />
         </div>
-    );
+    </div>
+);
 };
 
 export default ManageInventoryPage;

@@ -37,21 +37,26 @@ const BrowseCarsPage = () => {
     useEffect(() => {
         let result = [...cars];
 
-        // Search — unchanged from original logic
+        // Search
         if (searchTerm) {
             result = result.filter(car =>
-                car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                car.brand.toLowerCase().includes(searchTerm.toLowerCase())
+                (car.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (car.brand || '').toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
 
-        // Fuel filter — unchanged
+        // Fuel filter
         if (fuelFilter !== 'All') result = result.filter(car => car.fuel_type === fuelFilter);
 
-        // Body Type filter — fixed to use body_type field
-        if (categoryFilter !== 'All') result = result.filter(car => car.body_type === categoryFilter || car.category === categoryFilter);
+        // Body Type filter — handles both body_type and category fields
+        if (categoryFilter !== 'All') {
+            result = result.filter(car => 
+                (car.body_type && car.body_type.toUpperCase() === categoryFilter.toUpperCase()) || 
+                (car.category && car.category.toUpperCase() === categoryFilter.toUpperCase())
+            );
+        }
 
-        // Sort — fixed: use price_per_day (the actual backend field) with fallback to price
+        // Sort
         if (sortBy === 'priceLow') {
             result.sort((a, b) => (a.price_per_day ?? a.price ?? 0) - (b.price_per_day ?? b.price ?? 0));
         } else if (sortBy === 'priceHigh') {
@@ -67,12 +72,12 @@ const BrowseCarsPage = () => {
     const hasActiveFilters = searchTerm || fuelFilter !== 'All' || categoryFilter !== 'All';
 
     return (
-        <div style={{ backgroundColor: 'var(--bg-color)', minHeight: 'calc(100vh - 66px)', margin: '-2rem -5.5% -2rem -5.5%' }}>
+        <div style={{ backgroundColor: 'var(--bg-color)', minHeight: 'calc(100vh - 66px)', margin: '0' }}>
 
             {/* ── COMPACT HERO STRIP ── */}
             <div style={{
                 background: 'linear-gradient(135deg, #0f1923 0%, #1c3040 60%, #243b4a 100%)',
-                padding: '2.5rem 5% 2rem',
+                padding: '2rem 3% 1.5rem',
                 borderBottom: '1px solid var(--glass-border)',
                 position: 'relative',
                 overflow: 'hidden'
@@ -83,9 +88,9 @@ const BrowseCarsPage = () => {
                     pointerEvents: 'none'
                 }} />
 
-                <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+                <div style={{ maxWidth: '1350px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
                     <div style={{ marginBottom: '1.25rem', textAlign: 'center' }}>
-                        <h1 style={{ color: 'white', fontSize: '2rem', fontWeight: 900, margin: '0 0 0.3rem', letterSpacing: '-0.5px' }}>
+                        <h1 style={{ color: 'white', fontSize: '1.5rem', fontWeight: 900, margin: '0 0 0.3rem', letterSpacing: '-0.5px' }}>
                             Find Your Perfect Car
                         </h1>
                         <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.88rem', margin: 0 }}>
@@ -133,12 +138,12 @@ const BrowseCarsPage = () => {
             <div style={{
                 background: 'rgba(17,24,32,0.96)',
                 borderBottom: '1px solid var(--glass-border)',
-                padding: '0.75rem 5%',
+                padding: '0.75rem 3%',
                 position: 'sticky', top: '66px', zIndex: 50,
                 backdropFilter: 'blur(16px)'
             }}>
                 <div style={{
-                    maxWidth: '1200px', margin: '0 auto',
+                    maxWidth: '1350px', margin: '0 auto',
                     display: 'flex', alignItems: 'center',
                     gap: '0.75rem', flexWrap: 'wrap'
                 }}>
@@ -194,7 +199,7 @@ const BrowseCarsPage = () => {
             </div>
 
             {/* ── RESULTS ── */}
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 5% 4rem' }}>
+            <div style={{ maxWidth: '1350px', margin: '0 auto', padding: '1.5rem 3% 3rem' }}>
 
                 {/* Results count + active filter tags */}
                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem' }}>
@@ -236,16 +241,16 @@ const BrowseCarsPage = () => {
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {filteredCars.map(car => (
-                            <div key={car._id} className="car-card-list">
+                            <div key={car._id} className="car-card-list" onClick={() => navigate(`/car/${car._id}`)} style={{ cursor: 'pointer' }}>
                                 <div style={{ position: 'relative', flexShrink: 0 }}>
                                     <img
-                                        src={car.image_url || '/car3.avif'}
+                                        src={car.image_url ? (car.image_url.startsWith('http') ? car.image_url : `${import.meta.env.VITE_API_URL || ''}${car.image_url}`) : '/car3.avif'}
                                         alt={`${car.brand} ${car.name}`}
                                         style={{ width: '280px', height: '200px', objectFit: 'cover', display: 'block' }}
                                     />
-                                    {car.body_type && <span className="badge">{car.body_type}</span>}
+                                    {(car.body_type || car.category) && <span className="badge">{car.body_type || car.category}</span>}
                                 </div>
-                                <div className="car-content" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                                <div className="car-content" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flex: 1 }}>
                                     <div style={{ flex: 1 }}>
                                         <h3 style={{ fontSize: '1.25rem', marginBottom: '0.4rem', fontWeight: 700 }}>{car.brand} {car.name}</h3>
                                         <div style={{ display: 'flex', gap: '1.25rem', color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
@@ -258,10 +263,10 @@ const BrowseCarsPage = () => {
                                     </div>
                                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                                         <div style={{ fontSize: '1.55rem', fontWeight: 800, marginBottom: '0.2rem', color: 'var(--text-main)' }}>
-                                            ₹{(car.price_per_day ?? car.price)?.toLocaleString()}
+                                            ${(car.price_per_day ?? car.price ?? 0).toLocaleString()}
                                         </div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Ex-showroom price</div>
-                                        <button className="btn btn-slate" onClick={() => navigate(`/car/${car._id}`)}
+                                        <button className="btn btn-slate" onClick={(e) => { e.stopPropagation(); navigate(`/car/${car._id}`); }}
                                             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
                                             View Details <ArrowRight size={14} />
                                         </button>

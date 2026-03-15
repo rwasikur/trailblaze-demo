@@ -4,38 +4,38 @@
    DESIGN TOKENS
 ───────────────────────────────────────── */
 :root {
-    /* Brand palette — deep navy + steel blue + warm gold accent */
-    --primary: #0d1b2a;
-    --primary-mid: #132233;
-    --bg-color: #111820;
-    --surface: #161f2a;
-    --surface-raised: #1c2a38;
+    /* Brand palette — refined for professional light theme */
+    --primary: #1a202c; /* Darker navy/charcoal for text */
+    --primary-mid: #2d3748;
+    --bg-color: #f4f4f4; /* Office White */
+    --surface: #ffffff; /* Pure white for cards */
+    --surface-raised: #f7fafc; 
 
-    --accent: #3a7bd5;
-    /* vivid steel-blue — primary CTA */
-    --accent-hover: #2d68be;
-    --accent-light: #6faee8;
-    /* lighter for text on dark */
-    --accent-glow: rgba(58, 123, 213, 0.25);
+    --accent: #2563eb; /* Stable professional blue */
+    --accent-hover: #1d4ed8;
+    --accent-light: #3b82f6;
+    --accent-glow: rgba(37, 99, 235, 0.1);
 
-    --gold: #e8a838;
-    /* discount badges / highlights */
-    --success: #22c55e;
-    --danger: #ef4444;
+    --gold: #d97706; /* Darker gold for visibility */
+    --success: #059669;
+    --danger: #dc2626;
 
-    --glass-bg: rgba(255, 255, 255, 0.04);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-hover: rgba(255, 255, 255, 0.07);
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: #e2e8f0;
+    --glass-hover: #f1f5f9;
 
-    --text-main: #e2e8f0;
-    --text-muted: #7a8fa6;
-    --text-faint: #3d5166;
+    --text-main: #1a202c; /* High contrast */
+    --text-muted: #4a5568;
+    --text-faint: #718096;
 
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --radius-sm: 8px;
-    --radius-md: 14px;
-    --radius-lg: 20px;
-    --radius-xl: 28px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 32px;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 10px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
 /* ─────────────────────────────────────────
@@ -59,14 +59,16 @@ body {
     overflow-x: hidden;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5 {
+h1, h2, h3, h4, h5 {
     font-family: 'DM Sans', sans-serif;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
+    color: var(--primary);
 }
+
+h1 { font-size: 1.5rem; font-weight: 800; }
+h2 { font-size: 1.25rem; font-weight: 700; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+h4 { font-size: 1rem; font-weight: 600; }
 
 /* ─────────────────────────────────────────
    LAYOUT
@@ -79,7 +81,10 @@ h5 {
 
 .main-content {
     flex: 1;
-    padding: 2rem 5%;
+    width: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0.5rem 1.5rem;
 }
 
 /* ─────────────────────────────────────────
@@ -90,21 +95,19 @@ h5 {
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 5%;
-    background: rgba(10, 15, 22, 0.9);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--glass-border);
+    background: #0f172a; /* Solid dark slate for better contrast */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .nav-brand {
     font-family: 'DM Sans', sans-serif;
     font-size: 1.4rem;
     font-weight: 800;
-    color: var(--accent-light);
+    color: #ffffff;
     text-decoration: none;
     letter-spacing: -0.8px;
     display: flex;
@@ -114,23 +117,23 @@ h5 {
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem;
 }
 
 .nav-links a {
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
-    padding: 0.45rem 0.9rem;
+    padding: 0.5rem 1rem;
     border-radius: var(--radius-sm);
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.9rem;
     transition: var(--transition);
 }
 
 .nav-links a:hover,
 .nav-links a.active {
-    color: var(--text-main);
-    background: var(--glass-bg);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* ─────────────────────────────────────────

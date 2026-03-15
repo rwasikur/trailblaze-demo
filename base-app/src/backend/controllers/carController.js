@@ -41,26 +41,31 @@ const createCar = async (req, res) => {
     try {
         const { name, brand, model_year, transmission, fuel_type, seating_capacity, price_per_day, range, body_type, mileage, exterior_color, interior_color, number_of_owners, registration_city, insurance_validity, description, image_url, secondary_images, availability_status } = req.body;
 
+        const seller_name = req.admin ? req.admin.full_name : 'TrailblazeAuto Dealership';
+        const seller_email = req.admin ? req.admin.email : 'contact@trailblazeauto.com';
+
         const createdCar = await Car.create({
             name,
             brand,
-            model_year,
+            model_year: model_year !== undefined && model_year !== '' ? parseInt(model_year) : null,
             transmission,
             fuel_type,
-            seating_capacity,
-            price_per_day,
+            seating_capacity: seating_capacity !== undefined && seating_capacity !== '' ? parseInt(seating_capacity) : null,
+            price_per_day: price_per_day !== undefined && price_per_day !== '' ? parseInt(price_per_day) : null,
             range,
             body_type,
             mileage,
             exterior_color,
             interior_color,
-            number_of_owners,
+            number_of_owners: number_of_owners !== undefined && number_of_owners !== '' ? parseInt(number_of_owners) : null,
             registration_city,
             insurance_validity,
             description,
             image_url,
             secondary_images: secondary_images || [],
-            availability_status
+            availability_status,
+            seller_name,
+            seller_email
         });
 
         res.status(201).json(createdCar);

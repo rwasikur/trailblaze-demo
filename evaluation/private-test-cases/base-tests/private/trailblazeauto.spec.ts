@@ -7,6 +7,7 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
 
     test.beforeEach(async ({ page }) => {
         await page.goto('http://localhost/');
+        await page.evaluate(() => localStorage.clear());
     });
 
     test('should contain private seed data in catalogue', async ({ page }) => {
@@ -61,8 +62,10 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
 
         await page.click('button:has-text("Manage Inventory")');
 
-        const editButton = page.locator('button:has-text("Edit Vehicle")').first();
-        if (await editButton.count() > 0) {
+        const targetRow = page.locator('tr').nth(1); // Click first car row
+        if (await targetRow.count() > 0) {
+            await targetRow.locator('button:has-text("Options")').click();
+            const editButton = page.locator('button:has-text("Edit Vehicle")');
             await expect(editButton).toBeVisible();
             await editButton.click();
             await expect(page).toHaveURL(/.*admin\/edit-car\/.*/, { timeout: 10000 });
@@ -77,18 +80,38 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
         await page.click('button[type="submit"]');
 
         await page.click('button:has-text("Add New Vehicle")');
+        await expect(page).toHaveURL(/.*admin\/add-car/);
 
-        await page.fill('input[type="text"]:near(:text("Car Name"))', 'Test Auto');
-        await page.fill('input[type="text"]:near(:text("Brand"))', 'QA Motors');
-        await page.fill('input[type="text"]:near(:text("Model Year"))', '2025');
-        await page.fill('input[type="text"]:near(:text("Transmission"))', 'Automatic');
-        await page.fill('input[type="text"]:near(:text("Fuel Type"))', 'Electric');
-        await page.fill('input[type="text"]:near(:text("Seating Capacity"))', '5');
-        await page.fill('input[type="text"]:near(:text("Price Per Day"))', '5000');
-        await page.fill('textarea:near(:text("Description"))', 'A very neat testing auto created from E2E suite.');
-        await page.click('button:has-text("Save Listing to Fleet")');
+        // Step 1: Basic Info
+        await page.locator('input').nth(0).fill('Test Auto');
+        await page.locator('input').nth(1).fill('QA Motors');
+        await page.locator('input').nth(2).fill('2025');
+        await page.locator('input').nth(3).fill('5000');
+        await page.click('button:has-text("Next Step")');
+        await page.waitForTimeout(1000);
 
-        await expect(page).toHaveURL(/.*admin\/dashboard/, { timeout: 10000 });
+        // Step 2: Specifications
+        await page.waitForSelector('text=Specifications');
+        await page.locator('select').first().selectOption('Automatic');
+        await page.locator('input').nth(0).fill('Electric');
+        await page.locator('input').nth(1).fill('5');
+        await page.click('button:has-text("Next Step")');
+        await page.waitForTimeout(1000);
+
+        // Step 3: Registration & Details
+        await page.waitForSelector('text=Registration & Details');
+        // Inputs in Step 3 starts from index 0 again
+        await page.locator('input').nth(0).fill('1'); // owner
+        await page.locator('input').nth(1).fill('New York'); // city
+        await page.locator('textarea').fill('A very neat testing auto created from E2E suite.');
+        await page.click('button:has-text("Next Step")');
+        await page.waitForTimeout(1000);
+
+        // Step 4: Media
+        await page.waitForSelector('text=Vehicle Media');
+        await page.click('button:has-text("Save Vehicle to Fleet")');
+
+        await expect(page).toHaveURL(/.*admin\/dashboard/, { timeout: 15000 });
         await page.click('button:has-text("Manage Inventory")');
         await expect(page).toHaveURL(/.*admin\/inventory/, { timeout: 10000 });
         await expect(page.locator('text=Test Auto').first()).toBeVisible({ timeout: 5000 });
@@ -101,7 +124,7 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
 
         if (await viewBtn.count() > 0) {
             await viewBtn.first().click();
-            const bookingButton = page.locator('button:has-text("Book This Vehicle")');
+            const bookingButton = page.locator('button:has-text("Book Now")');
             if (await bookingButton.isVisible()) {
                 await bookingButton.click();
                 await page.locator('input').nth(0).fill('Private VIP');
@@ -149,5 +172,51 @@ test.describe('TrailblazeAuto Private UI Tests', () => {
             await page.locator('button:has-text("Delete Vehicle")').first().click();
             await page.waitForTimeout(2000);
         }
+    });
+
+    test('should update admin profile successfully', async ({ page }) => {
+        await page.goto('http://localhost/admin');
+        await page.fill('input[type="email"]', adminEmail);
+        await page.fill('input[type="password"]', 'password123');
+        await page.click('button[type="submit"]');
+
+        await page.click('text=Profile');
+        await expect(page).toHaveURL(/.*admin\/profile/);
+
+        // Update details
+        const updatedName = "Updated Admin Name";
+        await page.fill('input:near(label:has-text("Full Name"))', updatedName);
+        await page.click('button:has-text("Save Changes")');
+        await expect(page.locator('text=Profile updated successfully')).toBeVisible();
+
+        // Verify persistence
+        await page.reload();
+        await expect(page.locator(`input[value="${updatedName}"]`)).toBeVisible();
+    });
+
+    test('should allow admin password update and re-login', async ({ page }) => {
+        const newPassword = 'new-password-789';
+        await page.goto('http://localhost/admin');
+        await page.fill('input[type="email"]', adminEmail);
+        await page.fill('input[type="password"]', 'password123');
+        await page.click('button[type="submit"]');
+
+        await page.click('text=Profile');
+        await page.fill('input[placeholder*="Leave blank"]', newPassword);
+        await page.click('button:has-text("Save Changes")');
+        await expect(page.locator('text=Profile updated successfully')).toBeVisible();
+
+        // Logout and verify new password
+        await page.click('text=Sign Out');
+        await page.goto('http://localhost/admin');
+        await page.fill('input[type="email"]', adminEmail);
+        await page.fill('input[type="password"]', newPassword);
+        await page.click('button[type="submit"]');
+        await expect(page).toHaveURL(/.*admin\/dashboard/);
+    });
+
+    test('should redirect unauthorized users from profile page', async ({ page }) => {
+        await page.goto('http://localhost/admin/profile');
+        await expect(page).toHaveURL(/.*admin/);
     });
 });

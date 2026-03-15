@@ -42,7 +42,7 @@ const AdminDashboard = () => {
         {
             icon: <DollarSign size={22} />,
             label: 'Total Revenue',
-            value: `₹${(stats.totalRevenue || 0).toLocaleString()}`,
+            value: `$${(stats.totalRevenue || 0).toLocaleString()}`,
             color: '#22c55e',
             bg: 'rgba(34,197,94,0.08)',
             border: 'rgba(34,197,94,0.2)'
@@ -67,17 +67,18 @@ const AdminDashboard = () => {
 
     return (
         <div style={{
-            minHeight: 'calc(100vh - 66px)',
+            minHeight: 'calc(100vh - 84px)',
             backgroundColor: 'var(--bg-color)',
-            padding: '2rem 5%',
-            margin: '-2rem -6%',
+            padding: '1.25rem 3%',
+            margin: '0',
             color: 'var(--text-main)',
             overflowX: 'hidden'
         }}>
+            <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
             {/* ── TOP HEADER ── */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                    <h1 style={{ margin: 0, color: 'var(--text-main)', fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.5px', fontFamily: "'DM Sans', sans-serif" }}>
+                    <h1 style={{ margin: 0, color: 'var(--text-main)', fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.5px', fontFamily: "'DM Sans', sans-serif" }}>
                         Dealership Dashboard
                     </h1>
                     <p style={{ margin: '0.25rem 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
@@ -161,6 +162,7 @@ const AdminDashboard = () => {
                         <Plus size={15} /> Add New Vehicle
                     </button>
                 </div>
+            </div>
             </div>
         </div>
     );

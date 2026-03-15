@@ -4,6 +4,17 @@ import api from '../api';
 import { toast } from 'react-toastify';
 import { ArrowLeft, Upload, X, Star } from 'lucide-react';
 
+const Field = ({ label, children, wide }) => (
+    <div style={{ gridColumn: wide ? '1 / -1' : undefined, marginBottom: 0 }}>
+        <label style={{
+            display: 'block', marginBottom: '0.4rem',
+            fontSize: '0.78rem', fontWeight: 600,
+            color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px'
+        }}>{label}</label>
+        {children}
+    </div>
+);
+
 const EditCarPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -66,10 +77,8 @@ const EditCarPage = () => {
             for (const file of files) {
                 const formDataUpload = new FormData();
                 formDataUpload.append('image', file);
-                const { data } = await api.post('/api/upload', formDataUpload, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                });
-                uploadedUrls.push(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${data.url}`);
+                const { data } = await api.post('/api/upload', formDataUpload);
+                uploadedUrls.push(`${import.meta.env.VITE_API_URL || ''}${data.url}`);
             }
             setImages([...images, ...uploadedUrls]);
             toast.success("Image(s) uploaded successfully!");
@@ -104,33 +113,20 @@ const EditCarPage = () => {
             const token = localStorage.getItem('adminToken');
             await api.put(`/api/admin/cars/${id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
             toast.success('Vehicle updated successfully!');
-            navigate('/admin/inventory');
+            navigate('/admin/dashboard'); // Changed from /admin/inventory to /admin/dashboard for consistency
         } catch (err) {
             toast.error('Error: ' + (err.response?.data?.message || err.message));
         }
     };
 
     const inputStyle = {
-        width: '100%', padding: '0.7rem 1rem',
-        background: 'rgba(255,255,255,0.04)',
+        width: '100%', padding: '0.75rem 1rem',
+        background: '#f8fafc',
         border: '1px solid var(--glass-border)',
-        borderRadius: '8px', color: 'var(--text-main)',
-        fontFamily: "'DM Sans', sans-serif", fontSize: '0.9rem',
-        outline: 'none', boxSizing: 'border-box'
+        borderRadius: '10px', color: 'var(--text-main)',
+        fontFamily: "'DM Sans', sans-serif", fontSize: '0.92rem',
+        outline: 'none', boxSizing: 'border-box', transition: 'all 0.2s'
     };
-
-    const labelStyle = {
-        display: 'block', marginBottom: '0.4rem',
-        fontSize: '0.78rem', fontWeight: 600,
-        color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px'
-    };
-
-    const Field = ({ label, children, wide }) => (
-        <div style={{ gridColumn: wide ? '1 / -1' : undefined, marginBottom: 0 }}>
-            <label style={labelStyle}>{label}</label>
-            {children}
-        </div>
-    );
 
     if (loading) return (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: 'var(--text-muted)' }}>
@@ -140,16 +136,17 @@ const EditCarPage = () => {
 
     return (
         <div style={{
-            minHeight: 'calc(100vh - 66px)',
+            minHeight: 'calc(100vh - 84px)',
             backgroundColor: 'var(--bg-color)',
-            padding: '2rem 5%',
-            margin: '-2rem -6%',
+            padding: '1.25rem 3%',
+            margin: '0',
             color: 'var(--text-main)'
         }}>
+            <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
             {/* ── HEADER ── */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                    <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.5px', fontFamily: "'Syne', sans-serif", color: 'var(--text-main)' }}>
+                    <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.5px', fontFamily: "'DM Sans', sans-serif", color: 'var(--text-main)' }}>
                         Edit Vehicle
                     </h1>
                     <p style={{ margin: '0.25rem 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
@@ -163,7 +160,7 @@ const EditCarPage = () => {
             </div>
 
             {/* ── FORM CARD ── */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '2rem' }}>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '1.5rem 2rem' }}>
                 <form onSubmit={handleEditCar}>
                     {/* Section: Basic */}
                     <div style={{ marginBottom: '2rem' }}>
@@ -180,7 +177,7 @@ const EditCarPage = () => {
                             <Field label="Model Year">
                                 <input style={inputStyle} type="text" inputMode="numeric" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
                             </Field>
-                            <Field label="Price (₹)">
+                            <Field label="Price ($)">
                                 <input style={inputStyle} type="text" inputMode="numeric" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
                             </Field>
                             <Field label="Availability">
@@ -277,14 +274,14 @@ const EditCarPage = () => {
                         <h3 style={{ margin: '0 0 1.25rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', paddingBottom: '0.6rem', borderBottom: '1px solid var(--glass-border)' }}>
                             Vehicle Images
                         </h3>
-                        <div style={{ position: 'relative', border: '2px dashed var(--glass-border)', borderRadius: '12px', padding: '2rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', cursor: 'pointer', marginBottom: '1.25rem' }}
+                        <div style={{ position: 'relative', border: '2px dashed var(--glass-border)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', cursor: 'pointer', marginBottom: '1rem' }}
                             onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(58,123,213,0.4)'}
                             onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--glass-border)'}
                         >
                             <input type="file" multiple onChange={uploadFileHandler} accept="image/*"
                                 style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', zIndex: 2 }} />
-                            <Upload size={28} style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }} />
-                            <p style={{ margin: 0, fontWeight: 600, color: 'var(--text-main)', fontSize: '0.9rem' }}>Click or Drag & Drop to upload more images</p>
+                            <Upload size={24} style={{ color: 'var(--text-muted)', marginBottom: '0.4rem' }} />
+                            <p style={{ margin: 0, fontWeight: 600, color: 'var(--text-main)', fontSize: '0.85rem' }}>Click or Drag & Drop to upload more images</p>
                         </div>
 
                         {uploading && <p style={{ color: '#22c55e', fontWeight: 600, fontSize: '0.85rem', marginBottom: '1rem' }}>Uploading...</p>}
@@ -306,7 +303,11 @@ const EditCarPage = () => {
                                                     PRIMARY
                                                 </div>
                                             )}
-                                            <img src={img} alt={`View ${index + 1}`} style={{ width: '100%', height: '100px', objectFit: 'cover', display: 'block' }} />
+                                            <img 
+                                                src={img ? (img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL || ''}${img}`) : '/car3.avif'} 
+                                                alt={`View ${index + 1}`} 
+                                                style={{ width: '100%', height: '100px', objectFit: 'cover', display: 'block' }} 
+                                            />
                                             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0.6rem', background: 'rgba(0,0,0,0.3)' }}>
                                                 <button type="button" onClick={() => makePrimary(index)} disabled={index === 0}
                                                     style={{ border: 'none', background: 'transparent', color: index === 0 ? 'var(--text-muted)' : 'var(--accent-light)', fontSize: '0.72rem', cursor: index === 0 ? 'default' : 'pointer', fontWeight: 600, padding: 0, display: 'flex', alignItems: 'center', gap: '3px' }}>
@@ -337,6 +338,7 @@ const EditCarPage = () => {
                         {uploading ? 'Processing Images...' : '✓ Save Updates to Fleet'}
                     </button>
                 </form>
+            </div>
             </div>
         </div>
     );

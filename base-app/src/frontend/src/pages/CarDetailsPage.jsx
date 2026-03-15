@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Share2, ChevronLeft, ChevronRight, X, Fuel, Users, Gauge, Settings, MapPin, Shield, Calendar } from 'lucide-react';
+import { ArrowLeft, Share2, ChevronLeft, ChevronRight, X, Fuel, Users, Gauge, Settings, MapPin, Shield, Calendar, SearchX } from 'lucide-react';
 import api from '../api';
 import { toast } from 'react-toastify';
 
@@ -30,7 +30,6 @@ const CarDetailsPage = () => {
         fetchCar();
     }, [id]);
 
-    // ── All booking logic unchanged ──
     const handleBook = async () => {
         if (!bookingName || bookingName.trim() === '' || !bookingPhone || bookingPhone.trim() === '') {
             return toast.error("Please enter your name and contact info.");
@@ -55,15 +54,41 @@ const CarDetailsPage = () => {
             Loading details...
         </div>
     );
-    if (!car) return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: 'var(--text-muted)' }}>
-            Car not found.
-        </div>
-    );
 
-    const allImages = [car.image_url || '/car3.avif'];
+    if (!car) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 84px)', color: 'var(--text-main)', fontFamily: "'DM Sans', sans-serif", backgroundColor: 'var(--bg-color)', margin: '-2rem -5.5% -2rem -5.5%' }}>
+                <div style={{ background: 'var(--surface)', padding: '3rem 4rem', borderRadius: '16px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '50%', marginBottom: '1.5rem' }}>
+                        <SearchX size={48} color="var(--text-muted)" />
+                    </div>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-main)', margin: '0 0 0.5rem 0', fontFamily: "'Syne', sans-serif" }}>Car Not Found</h2>
+                    <p style={{ color: 'var(--text-muted)', margin: '0 0 2rem 0', maxWidth: '350px', lineHeight: 1.5, fontSize: '0.9rem' }}>
+                        We couldn't find the vehicle you're looking for. It may have been sold, removed, or the link might be broken.
+                    </p>
+                    <button
+                        onClick={() => navigate('/browse')}
+                        className="btn btn-slate"
+                        style={{ padding: '0.8rem 2.5rem', fontWeight: 700 }}
+                    >
+                        Browse Catalogue
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    const formatUrl = (url) => {
+        if (!url) return '/car3.avif';
+        if (url.startsWith('http')) return url;
+        return `${import.meta.env.VITE_API_URL || ''}${url}`;
+    };
+
+    const allImages = [formatUrl(car.image_url)];
     if (car.secondary_images && Array.isArray(car.secondary_images)) {
-        allImages.push(...car.secondary_images);
+        car.secondary_images.forEach(img => {
+            allImages.push(formatUrl(img));
+        });
     }
 
     const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
@@ -83,16 +108,16 @@ const CarDetailsPage = () => {
     return (
         <div style={{
             backgroundColor: 'var(--bg-color)',
-            minHeight: 'calc(100vh - 66px)',
-            margin: '-2rem -5.5% -2rem -5.5%',
-            padding: '1.5rem 5%',
+            minHeight: 'calc(100vh - 84px)',
+            padding: '1.25rem 3%',
             fontFamily: "'DM Sans', sans-serif",
-            color: 'var(--text-main)'
+            color: 'var(--text-main)',
+            boxSizing: 'border-box'
         }}>
-            <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+            <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
 
                 {/* ── TOP BAR ── */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                     <button
                         onClick={() => navigate(-1)}
                         style={{
@@ -128,7 +153,7 @@ const CarDetailsPage = () => {
                     border: '1px solid var(--glass-border)',
                     borderRadius: '12px',
                     padding: '0 1.25rem',
-                    marginBottom: '1.25rem',
+                    marginBottom: '0.85rem',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0',
@@ -176,12 +201,12 @@ const CarDetailsPage = () => {
                 {/* ── MAIN CONTENT CARD ── */}
                 <div style={{
                     background: 'var(--surface)',
-                    borderRadius: '16px',
                     border: '1px solid var(--glass-border)',
+                    borderRadius: '16px',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'row',
-                    minHeight: '460px'
+                    minHeight: '400px'
                 }}>
                     {/* ── LEFT: Image Panel ── */}
                     {activeTab !== 'Images' && (
@@ -243,9 +268,9 @@ const CarDetailsPage = () => {
 
                             {/* Availability badge on image */}
                             <div style={{
-                                position: 'absolute', top: '1rem', left: '1rem',
-                                padding: '0.25rem 0.75rem', borderRadius: '100px',
-                                fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px',
+                                position: 'absolute', top: '0.75rem', left: '0.75rem',
+                                padding: '0.2rem 0.6rem', borderRadius: '100px',
+                                fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px',
                                 background: isAvailable ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
                                 border: `1px solid ${isAvailable ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
                                 color: isAvailable ? '#4ade80' : '#f87171'
@@ -258,7 +283,7 @@ const CarDetailsPage = () => {
                     {/* ── RIGHT: Content Panel ── */}
                     <div style={{
                         flex: 1,
-                        padding: '1.75rem 2rem',
+                        padding: '1.25rem 1.75rem',
                         display: 'flex',
                         flexDirection: 'column',
                         overflowY: 'auto'
@@ -267,11 +292,11 @@ const CarDetailsPage = () => {
                         {/* ── OVERVIEW TAB ── */}
                         {activeTab === 'Overview' && (
                             <div style={{ flex: 1 }}>
-                                <div style={{ marginBottom: '1.25rem' }}>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '0.3rem' }}>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '0.2rem' }}>
                                         {car.brand}
                                     </div>
-                                    <h1 style={{ fontSize: '1.9rem', margin: '0 0 0.25rem', lineHeight: 1.15, color: 'var(--text-main)', fontWeight: 900, fontFamily: "'DM Sans', sans-serif", letterSpacing: '-0.5px' }}>
+                                    <h1 style={{ fontSize: '1.7rem', margin: '0 0 0.2rem', lineHeight: 1.15, color: 'var(--text-main)', fontWeight: 900, fontFamily: "'DM Sans', sans-serif", letterSpacing: '-0.5px' }}>
                                         {car.name}
                                     </h1>
                                     {car.category && (
@@ -281,38 +306,49 @@ const CarDetailsPage = () => {
                                     )}
                                 </div>
 
-                                {/* Price */}
-                                <div style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--glass-border)' }}>
-                                    <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-main)', fontFamily: "'DM Sans', sans-serif", letterSpacing: '-1px' }}>
-                                        ₹{car.price_per_day?.toLocaleString()}
+                                {/* Seller info snippet */}
+                                <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', border: '1px solid var(--glass-border)', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#fff', fontSize: '0.9rem' }}>
+                                        {car.seller_name ? car.seller_name.charAt(0).toUpperCase() : 'T'}
                                     </div>
-                                    <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.2rem' }}>Ex-showroom price</div>
+                                    <div>
+                                        <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.05rem' }}>Sold by</div>
+                                        <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.85rem' }}>{car.seller_name || 'TrailblazeAuto Dealership'}</div>
+                                    </div>
+                                </div>
+
+                                {/* Price */}
+                                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--glass-border)' }}>
+                                    <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--text-main)', fontFamily: "'DM Sans', sans-serif", letterSpacing: '-1px' }}>
+                                        ${car.price_per_day?.toLocaleString()}
+                                    </div>
+                                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '0.1rem' }}>Ex-showroom price</div>
                                 </div>
 
                                 {/* Quick specs row */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', marginBottom: '1rem' }}>
                                     {[
-                                        { icon: <Gauge size={18} />, label: 'Range', value: car.range || 'N/A' },
-                                        { icon: <Settings size={18} />, label: 'Body Type', value: car.body_type || 'N/A' },
-                                        { icon: <Fuel size={18} />, label: 'Fuel', value: car.fuel_type || 'N/A' },
+                                        { icon: <Gauge size={16} />, label: 'Range', value: car.range || 'N/A' },
+                                        { icon: <Settings size={16} />, label: 'Body Type', value: car.body_type || 'N/A' },
+                                        { icon: <Fuel size={16} />, label: 'Fuel', value: car.fuel_type || 'N/A' },
                                     ].map((spec, i) => (
                                         <div key={i} style={{
                                             background: 'rgba(255,255,255,0.03)',
                                             border: '1px solid var(--glass-border)',
                                             borderRadius: '10px',
-                                            padding: '0.85rem',
+                                            padding: '0.75rem 0.5rem',
                                             textAlign: 'center'
                                         }}>
-                                            <div style={{ color: 'var(--accent-light)', marginBottom: '0.4rem', display: 'flex', justifyContent: 'center' }}>{spec.icon}</div>
-                                            <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.15rem' }}>{spec.value}</div>
-                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{spec.label}</div>
+                                            <div style={{ color: 'var(--accent-light)', marginBottom: '0.3rem', display: 'flex', justifyContent: 'center' }}>{spec.icon}</div>
+                                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.1rem' }}>{spec.value}</div>
+                                            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{spec.label}</div>
                                         </div>
                                     ))}
                                 </div>
 
                                 {/* Description snippet */}
                                 {car.description && (
-                                    <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: 1.7, marginBottom: '1.25rem' }}>
+                                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '1rem' }}>
                                         {car.description}
                                     </p>
                                 )}
@@ -364,8 +400,8 @@ const CarDetailsPage = () => {
                                 {car.price_per_day ? (
                                     <div style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid var(--glass-border)', borderRadius: '12px', overflow: 'hidden' }}>
                                         {[
-                                            { label: 'Ex-Showroom Price', value: `₹${car.price_per_day.toLocaleString()}`, highlight: false },
-                                            { label: 'Estimated Registration & Insurance', value: 'Varies by City', highlight: false },
+                                            { label: 'Ex-Showroom Price', value: `$${car.price_per_day.toLocaleString()}` },
+                                            { label: 'Estimated Registration & Insurance', value: 'Varies by City' },
                                         ].map((row, i) => (
                                             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 1.25rem', borderBottom: '1px solid var(--glass-border)' }}>
                                                 <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{row.label}</span>
@@ -460,27 +496,37 @@ const CarDetailsPage = () => {
                             </div>
                         )}
 
-                        {/* ── BOOK BUTTON ── */}
-                        <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--glass-border)' }}>
-                            <button
-                                className="btn"
-                                style={{
-                                    width: '100%', padding: '0.9rem',
-                                    fontSize: '0.95rem', fontWeight: 700,
-                                    borderRadius: '10px',
-                                    background: isAvailable ? 'var(--accent)' : 'var(--surface-raised)',
-                                    color: isAvailable ? '#fff' : 'var(--text-muted)',
-                                    border: isAvailable ? 'none' : '1px solid var(--glass-border)',
-                                    cursor: isAvailable ? 'pointer' : 'not-allowed',
-                                    opacity: isAvailable ? 1 : 0.7,
-                                    boxShadow: isAvailable ? '0 8px 24px var(--accent-glow)' : 'none',
-                                    transition: 'all 0.3s'
-                                }}
-                                onClick={() => isAvailable && setShowModal(true)}
-                                disabled={!isAvailable}
-                            >
-                                {isAvailable ? 'Request a Booking' : 'Currently Unavailable'}
-                            </button>
+                        {/* ── ACTION BUTTONS ── */}
+                        <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--glass-border)', display: 'flex', gap: '0.75rem' }}>
+                            {localStorage.getItem('adminToken') ? (
+                                <button
+                                    className="btn btn-slate"
+                                    style={{ flex: 1, padding: '0.9rem', fontSize: '0.95rem', fontWeight: 700, borderRadius: '10px' }}
+                                    onClick={() => navigate(`/admin/edit-car/${car._id}`)}
+                                >
+                                    Edit Details
+                                </button>
+                            ) : (
+                                <button
+                                    className="btn"
+                                    style={{
+                                        flex: 1, padding: '0.9rem',
+                                        fontSize: '0.95rem', fontWeight: 700,
+                                        borderRadius: '10px',
+                                        background: isAvailable ? 'var(--accent)' : 'var(--surface-raised)',
+                                        color: isAvailable ? '#fff' : 'var(--text-muted)',
+                                        border: isAvailable ? 'none' : '1px solid var(--glass-border)',
+                                        cursor: isAvailable ? 'pointer' : 'not-allowed',
+                                        opacity: isAvailable ? 1 : 0.7,
+                                        boxShadow: isAvailable ? '0 8px 24px var(--accent-glow)' : 'none',
+                                        transition: 'all 0.3s'
+                                    }}
+                                    onClick={() => isAvailable && setShowModal(true)}
+                                    disabled={!isAvailable}
+                                >
+                                    {isAvailable ? 'Request a Booking' : 'Currently Unavailable'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -506,7 +552,7 @@ const CarDetailsPage = () => {
                         <X size={20} />
                     </button>
                     <img
-                        src={fullScreenImage}
+                        src={formatUrl(fullScreenImage)}
                         alt="Full View"
                         style={{ maxWidth: '90%', maxHeight: '90vh', objectFit: 'contain', borderRadius: '10px', boxShadow: '0 30px 60px rgba(0,0,0,0.6)' }}
                         onClick={(e) => e.stopPropagation()}
@@ -583,7 +629,7 @@ const CarDetailsPage = () => {
                                 style={{
                                     flex: 1, padding: '0.8rem',
                                     background: 'transparent', color: 'var(--text-muted)',
-                                    border: '1px solid var(--glass-border)', borderRadius: '10px',
+                                    border: '1px solid var(--glass-border)', borderRadius: '100px',
                                     fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
                                     fontSize: '0.9rem', cursor: 'pointer'
                                 }}
@@ -597,7 +643,7 @@ const CarDetailsPage = () => {
                                     flex: 2, padding: '0.8rem',
                                     background: bookingName.trim() ? 'var(--accent)' : 'var(--surface-raised)',
                                     color: bookingName.trim() ? '#fff' : 'var(--text-muted)',
-                                    border: 'none', borderRadius: '10px',
+                                    border: 'none', borderRadius: '100px',
                                     fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
                                     fontSize: '0.9rem', cursor: bookingName.trim() ? 'pointer' : 'not-allowed',
                                     boxShadow: bookingName.trim() ? '0 4px 16px var(--accent-glow)' : 'none',

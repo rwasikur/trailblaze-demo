@@ -10,7 +10,7 @@ const HomePage = () => {
     const brands = ["TOYOTA", "BMW", "MERCEDES", "HONDA", "AUDI", "HYUNDAI", "TESLA", "FORD", "VOLKSWAGEN", "NISSAN"];
 
     return (
-        <div style={{ margin: '-2rem -5.5% -2rem -5.5%', background: 'var(--bg-color)' }}>
+        <div style={{ margin: '0', background: 'var(--bg-color)' }}>
 
             {/* ── HERO ── */}
             <section style={{

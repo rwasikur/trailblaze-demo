@@ -23,41 +23,22 @@ const Navbar = () => {
             <Link to="/" className="nav-brand" style={{ display: 'flex', alignItems: 'center' }} aria-label="Trailblaze Auto Logo">
                 <img src="/carlogo.png" alt="Trailblaze Auto Logo" style={{ height: '55px', width: 'auto' }} />
             </Link>
-            <div className="nav-links" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+            <div className="nav-links">
                 {isAdmin && (
-                    <NavLink 
-                        to="/admin/dashboard" 
-                        style={({ isActive }) => ({
-                            color: isActive ? 'var(--accent)' : 'var(--text-main)',
-                            borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
-                            paddingBottom: '4px',
-                            transition: 'var(--transition)'
-                        })}
-                    >
+                    <NavLink to="/admin/dashboard">
                         Dashboard
                     </NavLink>
                 )}
-                <NavLink 
-                    to="/browse"
-                    style={({ isActive }) => ({
-                        color: isActive ? 'var(--accent)' : 'var(--text-main)',
-                        borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
-                        paddingBottom: '4px',
-                        transition: 'var(--transition)'
-                    })}
-                >
+                {isAdmin && (
+                    <NavLink to="/admin/profile">
+                        Profile
+                    </NavLink>
+                )}
+                <NavLink to="/browse">
                     Catalogue
                 </NavLink>
                 {!isAdmin && (
-                    <NavLink 
-                        to="/admin"
-                        style={({ isActive }) => ({
-                            color: isActive ? 'var(--accent)' : 'var(--text-main)',
-                            borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
-                            paddingBottom: '4px',
-                            transition: 'var(--transition)'
-                        })}
-                    >
+                    <NavLink to="/admin">
                         Admin Login
                     </NavLink>
                 )}
@@ -68,7 +49,7 @@ const Navbar = () => {
                             localStorage.removeItem('adminToken');
                             window.dispatchEvent(new Event('authChange'));
                         }}
-                        style={{ color: 'var(--text-muted)', transition: 'var(--transition)' }}
+                        style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 600, fontSize: '0.9rem' }}
                     >
                         Sign Out
                     </Link>

@@ -2,32 +2,42 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: trailblaze-auto-db
-    ports:
-      - "5432:5432"
     environment:
-      - POSTGRES_USER=trailblaze
-      - POSTGRES_PASSWORD=trailblazepass
-      - POSTGRES_DB=trailblaze
+      - POSTGRES_USER=${POSTGRES_USER:-trailblaze}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-trailblazepass}
+      - POSTGRES_DB=${POSTGRES_DB:-trailblaze}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trailblaze}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
 
   backend:
     build:
       context: ./src/backend
     container_name: trailblaze-backend
     restart: always
-    ports:
-      - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./src/backend:/app
       - /app/node_modules
       - car_images:/app/uploads
     environment:
-      - DEBUG=1
-      - DATABASE_URL=postgres://trailblaze:trailblazepass@postgres:5432/trailblaze
-      - JWT_SECRET=09f633cdb908fe68f43f458db444f801de483a5db2fec1d30679b264c6dbfb1d
+      - DEBUG=${DEBUG:-1}
+      - DATABASE_URL=${DATABASE_URL:-postgres://trailblaze:trailblazepass@postgres:5432/trailblaze}
+      - JWT_SECRET=${JWT_SECRET:-09f633cdb908fe68f43f458db444f801de483a5db2fec1d30679b264c6dbfb1d}
+      - DB_HOST=postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
@@ -42,8 +52,10 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
     depends_on:
-      - backend
-      
+      backend:
+        condition: service_healthy
+
+
 volumes:
   pg_data:
   car_images:
