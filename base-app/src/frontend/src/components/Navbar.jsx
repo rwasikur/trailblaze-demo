@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
     const location = useLocation();
@@ -24,36 +24,14 @@ const Navbar = () => {
                 <img src="/carlogo.png" alt="Trailblaze Auto Logo" style={{ height: '55px', width: 'auto' }} />
             </Link>
             <div className="nav-links">
-                {isAdmin && (
-                    <NavLink to="/admin/dashboard">
-                        Dashboard
-                    </NavLink>
-                )}
-                {isAdmin && (
-                    <NavLink to="/admin/profile">
-                        Profile
-                    </NavLink>
-                )}
-                <NavLink to="/browse">
-                    Catalogue
-                </NavLink>
-                {!isAdmin && (
-                    <NavLink to="/admin">
-                        Admin Login
-                    </NavLink>
-                )}
-                {isAdmin && (
-                    <Link 
-                        to="/admin" 
-                        onClick={() => {
-                            localStorage.removeItem('adminToken');
-                            window.dispatchEvent(new Event('authChange'));
-                        }}
-                        style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 600, fontSize: '0.9rem' }}
-                    >
-                        Sign Out
-                    </Link>
-                )}
+                {isAdmin && <Link to="/admin/dashboard">Admin Dashboard</Link>}
+                {isAdmin && <Link to="/admin/profile">Profile</Link>}
+                <Link to="/browse">Catalogue</Link>
+                {!isAdmin && <Link to="/admin">Admin Login</Link>}
+                {isAdmin && <Link to="/admin" onClick={() => {
+                    localStorage.removeItem('adminToken');
+                    window.dispatchEvent(new Event('authChange'));
+                }}>Sign Out</Link>}
             </div>
         </nav>
     );

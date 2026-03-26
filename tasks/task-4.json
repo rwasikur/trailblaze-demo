@@ -1,0 +1,11 @@
+{
+  "task_id": "task-4",
+  "task_name": "Image Upload",
+  "description": "Allow admin to upload multiple images for a car. Store image references and display them in a gallery on the car details page.",
+  "difficulty": "Medium",
+  "acceptance_criteria": [
+    "Admin can upload multiple images per car",
+    "Images are stored and referenced in database",
+    "Gallery displays all images on car details page"
+  ]
+}

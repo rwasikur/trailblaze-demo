@@ -1,0 +1,11 @@
+{
+  "task_id": "task-8",
+  "task_name": "Loan Calculator",
+  "description": "Provide a loan calculator on the car details page to estimate EMI based on user inputs such as down payment, interest rate, and duration.",
+  "difficulty": "Hard",
+  "acceptance_criteria": [
+    "Calculator available on car details page",
+    "Users can input down payment, interest rate, duration",
+    "EMI is calculated and displayed"
+  ]
+}

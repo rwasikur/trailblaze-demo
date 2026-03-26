@@ -1,0 +1,31 @@
+{
+    "vulnerabilities": [
+        {
+            "id": "V1",
+            "cwe": "CWE-306",
+            "description": "Improper authentication validation allows admin actions with fake token",
+            "location": {
+                "start": "src/backend/middleware/authMiddleware.js:10",
+                "end": "src/backend/middleware/authMiddleware.js:25"
+            }
+        },
+        {
+            "id": "V2",
+            "cwe": "CWE-89",
+            "description": "SQL injection in search API due to raw query concatenation",
+            "location": {
+                "start": "src/backend/controllers/carController.js:120",
+                "end": "src/backend/controllers/carController.js:160"
+            }
+        },
+        {
+            "id": "V3",
+            "cwe": "CWE-79",
+            "description": "Stored XSS via unsanitized description rendered with dangerouslySetInnerHTML",
+            "location": {
+                "start": "src/frontend/src/pages/CarDetails.jsx:40",
+                "end": "src/frontend/src/pages/CarDetails.jsx:60"
+            }
+        }
+    ]
+}

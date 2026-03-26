@@ -1,0 +1,11 @@
+{
+  "task_id": "task-6",
+  "task_name": "Search",
+  "description": "Implement a search feature that allows users to find cars by name, description, or specifications using a query input.",
+  "difficulty": "Medium",
+  "acceptance_criteria": [
+    "Users can search by car name",
+    "Users can search by description",
+    "Users can search by specifications"
+  ]
+}

@@ -2,31 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
-import { ArrowLeft, Upload, X, Star } from 'lucide-react';
-
-const Field = ({ label, children, wide }) => (
-    <div style={{ gridColumn: wide ? '1 / -1' : undefined, marginBottom: 0 }}>
-        <label style={{
-            display: 'block', marginBottom: '0.4rem',
-            fontSize: '0.78rem', fontWeight: 600,
-            color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px'
-        }}>{label}</label>
-        {children}
-    </div>
-);
 
 const EditCarPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        name: '', brand: '', model_year: '', transmission: '', fuel_type: '',
-        seating_capacity: '', price_per_day: '', range: '', body_type: '',
-        mileage: '', exterior_color: '', interior_color: '', number_of_owners: '',
-        registration_city: '', insurance_validity: '', description: '',
-        availability_status: 'Available'
+        name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
+        price_per_day: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '',
+        number_of_owners: '', registration_city: '', insurance_validity: '', description: '',
+        availability_status: 'Available', image_url: ''
     });
-    const [images, setImages] = useState([]);
-    const [uploading, setUploading] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -50,14 +35,9 @@ const EditCarPage = () => {
                     registration_city: data.registration_city || '',
                     insurance_validity: data.insurance_validity || '',
                     description: data.description || '',
-                    availability_status: data.availability_status || 'Available'
+                    availability_status: data.availability_status || 'Available',
+                    image_url: data.image_url || ''
                 });
-                const loadedImages = [];
-                if (data.image_url) loadedImages.push(data.image_url);
-                if (data.secondary_images && Array.isArray(data.secondary_images)) {
-                    loadedImages.push(...data.secondary_images);
-                }
-                setImages(loadedImages);
             } catch (error) {
                 console.error('Error fetching car details', error);
                 toast.error("Could not load car details for editing.");
@@ -68,277 +48,144 @@ const EditCarPage = () => {
         fetchCar();
     }, [id]);
 
-    const uploadFileHandler = async (e) => {
-        const files = Array.from(e.target.files);
-        if (files.length === 0) return;
-        setUploading(true);
-        try {
-            const uploadedUrls = [];
-            for (const file of files) {
-                const formDataUpload = new FormData();
-                formDataUpload.append('image', file);
-                const { data } = await api.post('/api/upload', formDataUpload);
-                uploadedUrls.push(`${import.meta.env.VITE_API_URL || ''}${data.url}`);
-            }
-            setImages([...images, ...uploadedUrls]);
-            toast.success("Image(s) uploaded successfully!");
-        } catch (error) {
-            console.error(error);
-            toast.error('Upload failed');
-        } finally {
-            setUploading(false);
-        }
-    };
-
-    const makePrimary = (index) => {
-        if (index === 0) return;
-        const newImages = [...images];
-        const [selected] = newImages.splice(index, 1);
-        newImages.unshift(selected);
-        setImages(newImages);
-    };
-
-    const removeImage = (index) => {
-        setImages(images.filter((_, i) => i !== index));
-    };
-
     const handleEditCar = async (e) => {
         e.preventDefault();
         try {
-            const payload = {
-                ...formData,
-                image_url: images.length > 0 ? images[0] : '',
-                secondary_images: images.length > 1 ? images.slice(1) : []
-            };
             const token = localStorage.getItem('adminToken');
-            await api.put(`/api/admin/cars/${id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            await api.put(`/api/cars/${id}`, formData, config);
             toast.success('Vehicle updated successfully!');
-            navigate('/admin/dashboard'); // Changed from /admin/inventory to /admin/dashboard for consistency
+            navigate('/admin/inventory');
         } catch (err) {
             toast.error('Error: ' + (err.response?.data?.message || err.message));
         }
     };
 
-    const inputStyle = {
-        width: '100%', padding: '0.75rem 1rem',
-        background: '#f8fafc',
-        border: '1px solid var(--glass-border)',
-        borderRadius: '10px', color: 'var(--text-main)',
-        fontFamily: "'DM Sans', sans-serif", fontSize: '0.92rem',
-        outline: 'none', boxSizing: 'border-box', transition: 'all 0.2s'
-    };
-
-    if (loading) return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', color: 'var(--text-muted)' }}>
-            Loading vehicle details...
-        </div>
-    );
+    if (loading) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading details...</p>;
 
     return (
-        <div style={{
-            minHeight: 'calc(100vh - 84px)',
-            backgroundColor: 'var(--bg-color)',
-            padding: '1.25rem 3%',
-            margin: '0',
-            color: 'var(--text-main)'
-        }}>
-            <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
-            {/* ── HEADER ── */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                    <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.5px', fontFamily: "'DM Sans', sans-serif", color: 'var(--text-main)' }}>
-                        Edit Vehicle
-                    </h1>
-                    <p style={{ margin: '0.25rem 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                        Update vehicle metadata and availability status below.
-                    </p>
+        <div style={{ height: 'calc(100vh - 66px)', position: 'relative', padding: '0.5rem 5% 1rem 5%', margin: '-2rem -6%', overflow: 'hidden', backgroundColor: '#f8fafc', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
+            <style>{`
+                .admin-light-panel { color: #000; }
+                .admin-light-panel label { color: #2D3748 !important; font-weight: 600; font-size: 0.8rem; }
+                .admin-light-panel input, .admin-light-panel textarea, .admin-light-panel select { color: #000 !important; background: rgba(0,0,0,0.05) !important; border-color: #ccc !important; padding: 0.5rem !important; }
+                .no-scrollbar::-webkit-scrollbar { display: none; }
+                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            `}</style>
+
+            <div className="admin-light-panel" style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexShrink: 0 }}>
+                    <div>
+                        <h1 style={{ margin: 0, fontSize: '1.8rem', color: '#0f172a', fontWeight: 700 }}>Edit Vehicle</h1>
+                        <p style={{ margin: '0.2rem 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Update vehicle metadata and availability status below.</p>
+                    </div>
+                    <button onClick={() => navigate('/admin/inventory')} className="btn" style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#475569', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>Back to Inventory</button>
                 </div>
-                <button onClick={() => navigate('/admin/inventory')} className="btn btn-slate"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem' }}>
-                    <ArrowLeft size={15} /> Back to Inventory
-                </button>
-            </div>
 
-            {/* ── FORM CARD ── */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '1.5rem 2rem' }}>
-                <form onSubmit={handleEditCar}>
-                    {/* Section: Basic */}
-                    <div style={{ marginBottom: '2rem' }}>
-                        <h3 style={{ margin: '0 0 1.25rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', paddingBottom: '0.6rem', borderBottom: '1px solid var(--glass-border)' }}>
-                            Basic Information
-                        </h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
-                            <Field label="Car Name">
-                                <input style={inputStyle} type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-                            </Field>
-                            <Field label="Brand">
-                                <input style={inputStyle} type="text" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required />
-                            </Field>
-                            <Field label="Model Year">
-                                <input style={inputStyle} type="text" inputMode="numeric" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
-                            </Field>
-                            <Field label="Price ($)">
-                                <input style={inputStyle} type="text" inputMode="numeric" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
-                            </Field>
-                            <Field label="Availability">
-                                <select style={{ ...inputStyle, appearance: 'none' }} value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}>
-                                    <option value="Available" style={{ background: '#1c2a38' }}>Available</option>
-                                    <option value="Pending" style={{ background: '#1c2a38' }}>Pending</option>
-                                    <option value="Unavailable" style={{ background: '#1c2a38' }}>Unavailable</option>
+                <div className="no-scrollbar" style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
+                    <form onSubmit={handleEditCar} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Car Name</label>
+                                <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Brand</label>
+                                <input type="text" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Model Year</label>
+                                <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Price ($)</label>
+                                <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Transmission</label>
+                                <select value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', background: 'rgba(0,0,0,0.05)', color: '#000' }}>
+                                    <option value="">Select</option>
+                                    <option value="Automatic">Automatic</option>
+                                    <option value="Manual">Manual</option>
                                 </select>
-                            </Field>
-                        </div>
-                    </div>
-
-                    {/* Section: Specs */}
-                    <div style={{ marginBottom: '2rem' }}>
-                        <h3 style={{ margin: '0 0 1.25rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', paddingBottom: '0.6rem', borderBottom: '1px solid var(--glass-border)' }}>
-                            Specifications
-                        </h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
-                            <Field label="Transmission">
-                                <select style={{ ...inputStyle, appearance: 'none' }} value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })}>
-                                    <option value="" style={{ background: '#1c2a38' }}>Select...</option>
-                                    <option value="Automatic" style={{ background: '#1c2a38' }}>Automatic</option>
-                                    <option value="Manual" style={{ background: '#1c2a38' }}>Manual</option>
-                                    <option value="CVT" style={{ background: '#1c2a38' }}>CVT</option>
-                                    <option value="EV" style={{ background: '#1c2a38' }}>EV (Single Speed)</option>
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Fuel Type</label>
+                                <input type="text" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Seating Capacity</label>
+                                <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Range (e.g. 350km)</label>
+                                <input type="text" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Body Type (e.g. SUV)</label>
+                                <input type="text" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Mileage (e.g. 15,000 km)</label>
+                                <input type="text" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Exterior Color</label>
+                                <select value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', background: 'rgba(0,0,0,0.05)', color: '#000' }}>
+                                    <option value="">Select</option>
+                                    <option value="Black">Black</option>
+                                    <option value="White">White</option>
+                                    <option value="Silver">Silver</option>
+                                    <option value="Grey">Grey</option>
+                                    <option value="Blue">Blue</option>
+                                    <option value="Red">Red</option>
                                 </select>
-                            </Field>
-                            <Field label="Fuel Type">
-                                <select style={{ ...inputStyle, appearance: 'none' }} value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })}>
-                                    <option value="" style={{ background: '#1c2a38' }}>Select...</option>
-                                    <option value="Petrol" style={{ background: '#1c2a38' }}>Petrol</option>
-                                    <option value="Diesel" style={{ background: '#1c2a38' }}>Diesel</option>
-                                    <option value="Electric" style={{ background: '#1c2a38' }}>Electric</option>
-                                    <option value="Hybrid" style={{ background: '#1c2a38' }}>Hybrid</option>
-                                    <option value="CNG" style={{ background: '#1c2a38' }}>CNG</option>
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Interior Color</label>
+                                <select value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', background: 'rgba(0,0,0,0.05)', color: '#000' }}>
+                                    <option value="">Select</option>
+                                    <option value="Black">Black</option>
+                                    <option value="White">White</option>
+                                    <option value="Beige">Beige</option>
+                                    <option value="Brown">Brown</option>
+                                    <option value="Grey">Grey</option>
                                 </select>
-                            </Field>
-                            <Field label="Body Type">
-                                <select style={{ ...inputStyle, appearance: 'none' }} value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })}>
-                                    <option value="" style={{ background: '#1c2a38' }}>Select...</option>
-                                    <option value="Sedan" style={{ background: '#1c2a38' }}>Sedan</option>
-                                    <option value="SUV" style={{ background: '#1c2a38' }}>SUV</option>
-                                    <option value="Hatchback" style={{ background: '#1c2a38' }}>Hatchback</option>
-                                    <option value="Luxury" style={{ background: '#1c2a38' }}>Luxury</option>
-                                    <option value="Sports" style={{ background: '#1c2a38' }}>Sports</option>
-                                    <option value="MUV" style={{ background: '#1c2a38' }}>MUV</option>
-                                    <option value="Coupe" style={{ background: '#1c2a38' }}>Coupe</option>
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Number of Owners</label>
+                                <input type="number" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Registration City</label>
+                                <input type="text" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Insurance Validity</label>
+                                <input type="text" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label>Availability</label>
+                                <select value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: 'rgba(255,255,255,0.05)', color: '#000', appearance: 'none' }}>
+                                    <option value="Available">Available</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Unavailable">Unavailable</option>
                                 </select>
-                            </Field>
-                            <Field label="Seating Capacity">
-                                <input style={inputStyle} type="text" inputMode="numeric" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} />
-                            </Field>
-                            <Field label="Range / Mileage">
-                                <input style={inputStyle} type="text" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
-                            </Field>
-                            <Field label="Odometer (km)">
-                                <input style={inputStyle} type="text" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
-                            </Field>
-                        </div>
-                    </div>
-
-                    {/* Section: Registration */}
-                    <div style={{ marginBottom: '2rem' }}>
-                        <h3 style={{ margin: '0 0 1.25rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', paddingBottom: '0.6rem', borderBottom: '1px solid var(--glass-border)' }}>
-                            Registration & Details
-                        </h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
-                            <Field label="Exterior Color">
-                                <input style={inputStyle} type="text" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })} />
-                            </Field>
-                            <Field label="Interior Color">
-                                <input style={inputStyle} type="text" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })} />
-                            </Field>
-                            <Field label="Number of Owners">
-                                <input style={inputStyle} type="number" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value })} />
-                            </Field>
-                            <Field label="Registration City">
-                                <input style={inputStyle} type="text" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
-                            </Field>
-                            <Field label="Insurance Validity">
-                                <input style={inputStyle} type="text" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} />
-                            </Field>
-                            <div style={{ gridColumn: '1 / -1' }}>
-                                <Field label="Description">
-                                    <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="3"
-                                        style={{ ...inputStyle, resize: 'vertical' }} />
-                                </Field>
+                            </div>
+                            <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
+                                <label>Description</label>
+                                <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="2" style={{ width: '100%', resize: 'vertical' }}></textarea>
+                            </div>
+                            <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
+                                <label>Image URL</label>
+                                <input type="text" placeholder="https://example.com/car-image.jpg" value={formData.image_url} onChange={(e) => setFormData({ ...formData, image_url: e.target.value })} />
                             </div>
                         </div>
-                    </div>
-
-                    {/* Section: Images */}
-                    <div style={{ marginBottom: '2rem' }}>
-                        <h3 style={{ margin: '0 0 1.25rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', paddingBottom: '0.6rem', borderBottom: '1px solid var(--glass-border)' }}>
-                            Vehicle Images
-                        </h3>
-                        <div style={{ position: 'relative', border: '2px dashed var(--glass-border)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', cursor: 'pointer', marginBottom: '1rem' }}
-                            onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(58,123,213,0.4)'}
-                            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--glass-border)'}
-                        >
-                            <input type="file" multiple onChange={uploadFileHandler} accept="image/*"
-                                style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', zIndex: 2 }} />
-                            <Upload size={24} style={{ color: 'var(--text-muted)', marginBottom: '0.4rem' }} />
-                            <p style={{ margin: 0, fontWeight: 600, color: 'var(--text-main)', fontSize: '0.85rem' }}>Click or Drag & Drop to upload more images</p>
-                        </div>
-
-                        {uploading && <p style={{ color: '#22c55e', fontWeight: 600, fontSize: '0.85rem', marginBottom: '1rem' }}>Uploading...</p>}
-
-                        {images.length > 0 && (
-                            <div>
-                                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.75rem' }}>
-                                    Uploaded Images — First image is the cover
-                                </p>
-                                <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap' }}>
-                                    {images.map((img, index) => (
-                                        <div key={index} style={{
-                                            width: '160px', borderRadius: '10px', overflow: 'hidden',
-                                            border: index === 0 ? '2px solid #22c55e' : '1px solid var(--glass-border)',
-                                            background: 'var(--surface)', position: 'relative', flexShrink: 0
-                                        }}>
-                                            {index === 0 && (
-                                                <div style={{ position: 'absolute', top: 0, left: 0, background: '#22c55e', color: '#fff', fontSize: '0.6rem', padding: '0.2rem 0.5rem', fontWeight: 800, zIndex: 2 }}>
-                                                    PRIMARY
-                                                </div>
-                                            )}
-                                            <img 
-                                                src={img ? (img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL || ''}${img}`) : '/car3.avif'} 
-                                                alt={`View ${index + 1}`} 
-                                                style={{ width: '100%', height: '100px', objectFit: 'cover', display: 'block' }} 
-                                            />
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0.6rem', background: 'rgba(0,0,0,0.3)' }}>
-                                                <button type="button" onClick={() => makePrimary(index)} disabled={index === 0}
-                                                    style={{ border: 'none', background: 'transparent', color: index === 0 ? 'var(--text-muted)' : 'var(--accent-light)', fontSize: '0.72rem', cursor: index === 0 ? 'default' : 'pointer', fontWeight: 600, padding: 0, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                                    <Star size={10} /> Cover
-                                                </button>
-                                                <button type="button" onClick={() => removeImage(index)}
-                                                    style={{ border: 'none', background: 'transparent', color: '#f87171', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 600, padding: 0, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                                    <X size={10} /> Remove
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Submit */}
-                    <button type="submit" className="btn" disabled={uploading}
-                        style={{
-                            width: '100%', padding: '0.85rem',
-                            fontSize: '0.95rem', fontWeight: 700,
-                            background: '#22c55e',
-                            opacity: uploading ? 0.6 : 1,
-                            cursor: uploading ? 'not-allowed' : 'pointer',
-                            borderRadius: '10px'
-                        }}>
-                        {uploading ? 'Processing Images...' : '✓ Save Updates to Fleet'}
-                    </button>
-                </form>
-            </div>
+                        <button type="submit" className="btn btn-slate" style={{ flexShrink: 0, color: '#fff', width: '100%', marginTop: '1rem' }}>
+                            Save Updates to Fleet
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     );

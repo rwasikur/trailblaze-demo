@@ -1,0 +1,11 @@
+{
+  "task_id": "task-7",
+  "task_name": "Discount Banner",
+  "description": "Highlight cars with active discounts on the homepage using a banner or special styling.",
+  "difficulty": "Medium",
+  "acceptance_criteria": [
+    "Discounted cars are highlighted on homepage",
+    "Banner displays active discounts",
+    "Special styling distinguishes discounted cars"
+  ]
+}
