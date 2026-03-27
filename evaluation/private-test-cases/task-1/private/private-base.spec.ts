@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Private Seed Tests', () => {
-    const API_URL = 'http://localhost';
+    const API_URL = '';
 
     test.describe.configure({ mode: 'serial' });
 

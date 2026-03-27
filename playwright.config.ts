@@ -8,7 +8,7 @@ export default defineConfig({
     workers: 1,
     reporter: [['html', { open: 'never' }]],
     use: {
-        baseURL: 'http://localhost',
+        baseURL: process.env.API_URL ? process.env.API_URL : 'http://localhost',
         trace: 'on-first-retry',
     },
     projects: [

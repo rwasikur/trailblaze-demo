@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Base Application Core Tests', () => {
-    const API_URL = 'http://localhost';
+    const API_URL = '';
     let sampleCarId: string;
 
     test.describe.configure({ mode: 'serial' });
