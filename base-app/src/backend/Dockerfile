@@ -2,7 +2,7 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-# CRITICAL: Install health check tools and Python BEFORE copying code
+# Install tools BEFORE copying code
 RUN apk update && \
     apk add --no-cache curl netcat-openbsd python3 py3-pip build-base g++
 
@@ -12,9 +12,9 @@ RUN npm install
 # Copy application code
 COPY . .
 
-# CRITICAL: chmod MUST come AFTER COPY
+# chmod AFTER copy
 RUN chmod +x entrypoint.sh
 
 EXPOSE 3000
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["sh", "./entrypoint.sh"]

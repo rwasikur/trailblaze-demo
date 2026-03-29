@@ -21,11 +21,11 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.status(200).json({ status: 'healthy' });
 });
 
 app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, console.log(`Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
