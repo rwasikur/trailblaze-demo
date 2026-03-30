@@ -69,9 +69,9 @@ const AdminProfile = () => {
     return (
         <div style={{
             minHeight: 'calc(100vh - 66px)',
-            backgroundColor: 'var(--bg-color)',
-            padding: '1.5rem 2%',
-            margin: '0',
+            backgroundColor: '#ffffff',
+            padding: '2rem 5%',
+            margin: '-2rem -5.5%', /* Overrides parent padding to stretch full screen */
             fontFamily: 'Inter, sans-serif',
             color: '#1e293b',
             boxSizing: 'border-box',
@@ -85,7 +85,7 @@ const AdminProfile = () => {
                     alignItems: 'baseline'
                 }}>
                     <div>
-                        <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>Account Settings</h1>
+                        <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 700, color: '#0f172a' }}>Account Settings</h1>
                         <p style={{ margin: '0.4rem 0 0 0', color: '#64748b', fontSize: '0.95rem' }}>Update your profile and security credentials.</p>
                     </div>
                 </div>

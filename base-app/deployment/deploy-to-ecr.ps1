@@ -100,6 +100,5 @@ Write-Host "  - $ECR_REGISTRY/$APPLICATION_NAME-frontend:$IMAGE_TAG" -Foreground
 Write-Host "  - $ECR_REGISTRY/$APPLICATION_NAME-nginx:$IMAGE_TAG" -ForegroundColor Gray
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor White
-Write-Host "  1. Register ECS task definition: aws ecs register-task-definition --cli-input-json file://ecs-task.json --region $REGION" -ForegroundColor Gray
+Write-Host "  1. Register ECS task definition: aws ecs register-task-definition --cli-input-json file://deployment/ecs-task.json --region $REGION" -ForegroundColor Gray
 Write-Host "  2. Update ECS service or create new task" -ForegroundColor Gray
-

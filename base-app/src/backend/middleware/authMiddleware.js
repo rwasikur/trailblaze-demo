@@ -1,31 +1,12 @@
-const jwt = require('jsonwebtoken');
-const Admin = require('../models/Admin');
-
 const protect = async (req, res, next) => {
-    let token;
+    const authHeader = req.headers.authorization;
 
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        try {
-            token = req.headers.authorization.split(' ')[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-            req.admin = await Admin.findByPk(decoded.id, {
-                attributes: { exclude: ['password'] }
-            });
-            if (!req.admin) {
-                return res.status(401).json({ message: 'Not authorized, admin not found' });
-            }
-
-            next();
-        } catch (error) {
-            console.error(error);
-            return res.status(401).json({ message: 'Not authorized, token failed' });
-        }
+    if (!authHeader || !authHeader.startsWith('Bearer')) {
+        return res.status(401).json({ message: 'No token' });
     }
 
-    if (!token) {
-        return res.status(401).json({ message: 'Not authorized, no token' });
-    }
+    // 💣 VULNERABILITY: skip ALL validation
+    next();
 };
 
 module.exports = { protect };

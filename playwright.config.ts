@@ -1,14 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-    testDir: './private-test-cases',
+    testDir: '.',
     fullyParallel: false,
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
     workers: 1,
-    reporter: 'html',
+    reporter: [['html', { open: 'never' }]],
     use: {
-        baseURL: process.env.API_URL || 'http://localhost',
+        baseURL: process.env.API_URL ? process.env.API_URL : 'http://localhost',
         trace: 'on-first-retry',
     },
     projects: [
