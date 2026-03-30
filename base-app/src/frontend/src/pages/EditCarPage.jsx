@@ -7,7 +7,10 @@ const EditCarPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '', price_per_day: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '', number_of_owners: '', registration_city: '', insurance_validity: '', description: '', availability_status: 'Available', image_url: ''
+        name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
+        price_per_day: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '',
+        number_of_owners: '', registration_city: '', insurance_validity: '', description: '',
+        availability_status: 'Available', image_url: ''
     });
     const [loading, setLoading] = useState(true);
 
@@ -61,17 +64,7 @@ const EditCarPage = () => {
     if (loading) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading details...</p>;
 
     return (
-        <div style={{
-            height: 'calc(100vh - 66px)',
-            position: 'relative',
-            padding: '0.5rem 5% 1rem 5%',
-            margin: '-2rem -6%',
-            overflow: 'hidden',
-            backgroundColor: '#f8fafc',
-            display: 'flex',
-            flexDirection: 'column',
-            fontFamily: 'Inter, sans-serif'
-        }}>
+        <div style={{ height: 'calc(100vh - 66px)', position: 'relative', padding: '0.5rem 5% 1rem 5%', margin: '-2rem -6%', overflow: 'hidden', backgroundColor: '#f8fafc', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, sans-serif' }}>
             <style>{`
                 .admin-light-panel { color: #000; }
                 .admin-light-panel label { color: #2D3748 !important; font-weight: 600; font-size: 0.8rem; }
@@ -83,13 +76,13 @@ const EditCarPage = () => {
             <div className="admin-light-panel" style={{ width: '100%', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexShrink: 0 }}>
                     <div>
-                        <h1 className="page-title" style={{ margin: 0, fontSize: '1.8rem', color: '#0f172a', fontWeight: 700, letterSpacing: '-0.5px', textShadow: 'none', textAlign: 'left' }}>Edit</h1>
+                        <h1 style={{ margin: 0, fontSize: '1.8rem', color: '#0f172a', fontWeight: 700 }}>Edit Vehicle</h1>
                         <p style={{ margin: '0.2rem 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Update vehicle metadata and availability status below.</p>
                     </div>
-                    <button onClick={() => navigate('/admin/inventory')} className="btn" style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#475569', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Back to Inventory</button>
+                    <button onClick={() => navigate('/admin/inventory')} className="btn" style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#475569', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>Back to Inventory</button>
                 </div>
 
-                <div className="no-scrollbar" style={{ animation: 'fadeIn 0.3s ease-out', flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
+                <div className="no-scrollbar" style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
                     <form onSubmit={handleEditCar} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
                             <div className="form-group" style={{ marginBottom: 0 }}>
@@ -173,32 +166,19 @@ const EditCarPage = () => {
                             </div>
                             <div className="form-group" style={{ marginBottom: 0 }}>
                                 <label>Availability</label>
-                                <select value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.05)', color: '#000', appearance: 'none' }}>
-                                    <option value="Available" style={{ color: '#000' }}>Available</option>
-                                    <option value="Pending" style={{ color: '#000' }}>Pending</option>
-                                    <option value="Unavailable" style={{ color: '#000' }}>Unavailable</option>
+                                <select value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: 'rgba(255,255,255,0.05)', color: '#000', appearance: 'none' }}>
+                                    <option value="Available">Available</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Unavailable">Unavailable</option>
                                 </select>
                             </div>
                             <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
                                 <label>Description</label>
-                                <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="1" style={{ width: '100%', resize: 'vertical' }}></textarea>
+                                <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="2" style={{ width: '100%', resize: 'vertical' }}></textarea>
                             </div>
                             <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
                                 <label>Image URL</label>
-                                <input
-                                    type="text"
-                                    placeholder="https://example.com/car.jpg"
-                                    value={formData.image_url}
-                                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                                />
-                                {formData.image_url && (
-                                    <img
-                                        src={formData.image_url}
-                                        alt="Preview"
-                                        style={{ marginTop: '0.5rem', width: '200px', height: '130px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' }}
-                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                )}
+                                <input type="text" placeholder="https://example.com/car-image.jpg" value={formData.image_url} onChange={(e) => setFormData({ ...formData, image_url: e.target.value })} />
                             </div>
                         </div>
                         <button type="submit" className="btn btn-slate" style={{ flexShrink: 0, color: '#fff', width: '100%', marginTop: '1rem' }}>

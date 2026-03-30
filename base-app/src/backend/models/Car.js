@@ -31,10 +31,8 @@ const Car = sequelize.define('Car', {
     seller_name: { type: DataTypes.STRING, defaultValue: 'TrailblazeAuto Dealership' },
     seller_email: { type: DataTypes.STRING, defaultValue: 'contact@trailblazeauto.com' },
     availability_status: { type: DataTypes.STRING, defaultValue: 'Available' },
-    clickCount: { type: DataTypes.INTEGER, defaultValue: 0 },
-    requested_by: { type: DataTypes.STRING, defaultValue: '' },
 }, {
-    timestamps: true
+    timestamps: true,
 });
 
 module.exports = Car;

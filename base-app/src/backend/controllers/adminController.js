@@ -1,5 +1,28 @@
 const Car = require('../models/Car');
 
+const getAllCars = async (req, res) => {
+    try {
+        const cars = await Car.findAll({ order: [['createdAt', 'DESC']] });
+        res.json(cars);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error: ' + err.message });
+    }
+};
+
+const deleteCar = async (req, res) => {
+    try {
+        const car = await Car.findByPk(req.params.id);
+        if (car) {
+            await car.destroy();
+            res.json({ message: 'Car removed successfully' });
+        } else {
+            res.status(404).json({ message: 'Car not found' });
+        }
+    } catch (err) {
+        res.status(500).json({ message: 'Server error: ' + err.message });
+    }
+};
+
 const updateCarStatus = async (req, res) => {
     try {
         const car = await Car.findByPk(req.params.id);
@@ -41,29 +64,6 @@ const updateCar = async (req, res) => {
 
             const updatedCar = await car.save();
             res.json(updatedCar);
-        } else {
-            res.status(404).json({ message: 'Car not found' });
-        }
-    } catch (err) {
-        res.status(500).json({ message: 'Server error: ' + err.message });
-    }
-};
-
-const getAllCars = async (req, res) => {
-    try {
-        const cars = await Car.findAll({ order: [['createdAt', 'DESC']] });
-        res.json(cars);
-    } catch (err) {
-        res.status(500).json({ message: 'Server error: ' + err.message });
-    }
-};
-
-const deleteCar = async (req, res) => {
-    try {
-        const car = await Car.findByPk(req.params.id);
-        if (car) {
-            await car.destroy();
-            res.json({ message: 'Car removed successfully' });
         } else {
             res.status(404).json({ message: 'Car not found' });
         }

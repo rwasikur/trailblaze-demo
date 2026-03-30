@@ -1,7 +1,5 @@
-const path = require('path');
-const appRoot = '/app';
-const { connectDB } = require(path.join(appRoot, 'config/db'));
-const Car = require(path.join(appRoot, 'models/Car'));
+const { connectDB } = require('../config/db');
+const Car = require('../models/Car');
 
 const private_cars = [
     {

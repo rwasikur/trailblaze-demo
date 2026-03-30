@@ -33,13 +33,17 @@ const CarDetailsPage = () => {
         allImages.push(...car.secondary_images);
     }
 
-    const nextImage = () => {
-        setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
-    };
+    const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+    const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
 
-    const prevImage = () => {
-        setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
-    };
+    const tabs = [
+        { id: 'Overview', label: `${car.brand} ${car.name}` },
+        { id: 'Price', label: 'Price' },
+        { id: 'Specs', label: 'Specs' },
+        { id: 'Colours', label: 'Colours' },
+        { id: 'Range', label: 'Range' },
+        { id: 'Images', label: 'Images' },
+    ];
 
     return (
         <div style={{ backgroundColor: '#ffffff', height: 'calc(100vh - 66px)', margin: '-2rem -5.5% -2rem -5.5%', padding: '1rem 5%', boxSizing: 'border-box', fontFamily: 'Inter, sans-serif', color: '#334155', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -52,14 +56,7 @@ const CarDetailsPage = () => {
 
                 {/* Sub-Navigation Tabs */}
                 <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0 1.5rem', marginBottom: '1.5rem', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '2rem', overflowX: 'auto', whiteSpace: 'nowrap', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-                    {[
-                        { id: 'Overview', label: `${car.brand} ${car.name}` },
-                        { id: 'Price', label: 'Price' },
-                        { id: 'Specs', label: 'Specs' },
-                        { id: 'Colours', label: 'Colours' },
-                        { id: 'Range', label: 'Range' },
-                        { id: 'Images', label: 'Images' },
-                    ].map((tab, idx) => (
+                    {tabs.map((tab, idx) => (
                         <div
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
@@ -80,11 +77,10 @@ const CarDetailsPage = () => {
                     ))}
                 </div>
 
-                <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)', overflow: 'hidden', display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0 }}>
+                <div style={{ background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)', overflow: 'hidden', display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0 }}>
                     {activeTab !== 'Images' && (
                         <div style={{ width: '40%', background: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', boxSizing: 'border-box', position: 'relative' }}>
                             <img src={allImages[currentImageIndex]} alt={`${car.brand} ${car.name}`} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px', transition: 'opacity 0.2s ease' }} />
-
                             {allImages.length > 1 && (
                                 <>
                                     <button onClick={prevImage} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', zIndex: 10 }}>
@@ -93,7 +89,6 @@ const CarDetailsPage = () => {
                                     <button onClick={nextImage} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', zIndex: 10 }}>
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                     </button>
-
                                     <div style={{ position: 'absolute', bottom: '1rem', display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.4)', padding: '0.4rem 0.8rem', borderRadius: '20px' }}>
                                         {allImages.map((_, idx) => (
                                             <div key={idx} onClick={() => setCurrentImageIndex(idx)} style={{ width: '8px', height: '8px', borderRadius: '50%', background: currentImageIndex === idx ? '#ffffff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'background 0.2s ease' }} />
@@ -169,39 +164,34 @@ const CarDetailsPage = () => {
                                                 <div><span style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '0.2rem' }}>Seating Capacity</span><div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#0f172a' }}>{car.seating_capacity ? `${car.seating_capacity} Seats` : 'N/A'}</div></div>
                                             </div>
                                             <h4 style={{ fontSize: '0.9rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#0f172a' }}>Description</h4>
-                                            <div
-                                                style={{ lineHeight: '1.6', color: '#475569', fontSize: '0.85rem', margin: 0, paddingBottom: '1rem' }}
-                                                dangerouslySetInnerHTML={{
-                                                    __html: car.description || 'Currently details not available.'
-                                                }}
+                                            <div style={{ lineHeight: '1.6', color: '#475569', fontSize: '0.85rem', margin: 0, paddingBottom: '1rem' }}
+                                                dangerouslySetInnerHTML={{ __html: car.description || 'Currently details not available.' }}
                                             />
                                         </div>
                                     </>
                                 )}
 
                                 {activeTab === 'Price' && (
-                                    <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                                        <div>
-                                            <h3 style={{ marginBottom: '1rem', color: '#0f172a', fontWeight: 700 }}>Price Breakdown</h3>
-                                            {car.price_per_day ? (
-                                                <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                                        <span style={{ color: '#64748b' }}>Ex-Showroom Price</span>
-                                                        <span style={{ fontWeight: 600 }}>${car.price_per_day.toLocaleString()}</span>
-                                                    </div>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
-                                                        <span style={{ color: '#64748b' }}>Estimated Registration & Insurance</span>
-                                                        <span style={{ fontWeight: 600, color: '#94a3b8' }}>Varies by City</span>
-                                                    </div>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-                                                        <span style={{ fontWeight: 700, color: '#0f172a' }}>Estimated Vehicle Price</span>
-                                                        <span style={{ fontWeight: 700, color: '#059669' }}>${car.price_per_day.toLocaleString()}</span>
-                                                    </div>
+                                    <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, paddingRight: '0.5rem' }}>
+                                        <h3 style={{ marginBottom: '1rem', color: '#0f172a', fontWeight: 700 }}>Price Breakdown</h3>
+                                        {car.price_per_day ? (
+                                            <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                                    <span style={{ color: '#64748b' }}>Ex-Showroom Price</span>
+                                                    <span style={{ fontWeight: 600 }}>${car.price_per_day.toLocaleString()}</span>
                                                 </div>
-                                            ) : (
-                                                <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Currently details not available.</p>
-                                            )}
-                                        </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
+                                                    <span style={{ color: '#64748b' }}>Estimated Registration & Insurance</span>
+                                                    <span style={{ fontWeight: 600, color: '#94a3b8' }}>Varies by City</span>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+                                                    <span style={{ fontWeight: 700, color: '#0f172a' }}>Estimated Vehicle Price</span>
+                                                    <span style={{ fontWeight: 700, color: '#059669' }}>${car.price_per_day.toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Currently details not available.</p>
+                                        )}
                                     </div>
                                 )}
 
@@ -243,7 +233,7 @@ const CarDetailsPage = () => {
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
                                                 {allImages.map((img, idx) => (
                                                     <div key={idx} onClick={() => setFullScreenImage(img)} style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative', cursor: 'zoom-in' }}>
-                                                        <img src={img} alt={`View ${idx + 1}`} style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block', transition: 'transform 0.2s' }} />
+                                                        <img src={img} alt={`View ${idx + 1}`} style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }} />
                                                     </div>
                                                 ))}
                                             </div>
@@ -255,8 +245,8 @@ const CarDetailsPage = () => {
                             </div>
                         )}
 
-                        {localStorage.getItem('adminToken') && (
-                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                            {localStorage.getItem('adminToken') && (
                                 <button
                                     className="btn"
                                     style={{ flex: 1, padding: '0.8rem', background: '#0a0a0a', color: '#ffffff', borderRadius: '8px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
@@ -264,16 +254,16 @@ const CarDetailsPage = () => {
                                 >
                                     Edit Details
                                 </button>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
 
             {fullScreenImage && (
-                <div onClick={() => setFullScreenImage(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, backdropFilter: 'blur(8px)' }}>
-                    <button onClick={() => setFullScreenImage(null)} style={{ position: 'absolute', top: '1.5rem', right: '2rem', background: 'transparent', border: 'none', color: '#ffffff', fontSize: '2.5rem', cursor: 'pointer', zIndex: 1101, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.1)', transition: 'background-color 0.2s ease' }}>&times;</button>
-                    <img src={fullScreenImage} alt="Maximized View" style={{ maxWidth: '90%', maxHeight: '90vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }} onClick={(e) => e.stopPropagation()} />
+                <div onClick={() => setFullScreenImage(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, backdropFilter: 'blur(8px)' }}>
+                    <button onClick={() => setFullScreenImage(null)} style={{ position: 'absolute', top: '1.5rem', right: '2rem', background: 'transparent', border: 'none', color: '#ffffff', fontSize: '2.5rem', cursor: 'pointer', zIndex: 1101, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.1)' }}>&times;</button>
+                    <img src={fullScreenImage} alt="Maximized View" style={{ maxWidth: '90%', maxHeight: '90vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} onClick={(e) => e.stopPropagation()} />
                 </div>
             )}
         </div>
