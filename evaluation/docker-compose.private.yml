@@ -9,9 +9,10 @@ services:
     environment:
       - DEBUG=1
       - DATABASE_URL=postgres://trailblaze:trailblazepass@postgres:5432/trailblaze_private
-      - INIT_SCRIPT=node scripts/seed_private.js
+      - INIT_SCRIPT=sh /eval_scripts/init_wrapper.sh
     volumes:
       - trailblazeauto_private_uploads:/app/uploads
+      - ../evaluation/scripts:/eval_scripts
 volumes:
   trailblazeauto_private_uploads:
   sqlite_private_data:

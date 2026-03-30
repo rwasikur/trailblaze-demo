@@ -1,0 +1,21 @@
+{
+  "task_id": "task-3",
+  "task_name": "Sorting",
+  "description": "Enable sorting of cars based on price, year, or popularity in ascending or descending order.",
+  "difficulty": "Easy",
+  "category": "feature",
+  "points": 50,
+  "hints": [
+    "Backend needs sort and order query parameters",
+    "Frontend needs sort dropdown or buttons",
+    "Popularity can be tracked via view counts"
+  ],
+  "test_dir": "tasks/test-cases/task-3/public",
+  "test_files": [
+    "test-1.spec.ts",
+    "test-2.spec.ts",
+    "test-3.spec.ts",
+    "test-4.spec.ts",
+    "test-5.spec.ts"
+  ]
+}

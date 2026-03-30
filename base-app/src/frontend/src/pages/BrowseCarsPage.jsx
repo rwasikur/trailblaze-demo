@@ -5,13 +5,23 @@ import api from '../api';
 const BrowseCarsPage = () => {
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [sortOption, setSortOption] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchCars = async () => {
             setLoading(true);
             try {
-                const { data } = await api.get('/api/cars');
+                const params = new URLSearchParams();
+                if (sortOption) {
+                    const parts = sortOption.split('-');
+                    if (parts.length === 2) {
+                        params.append('sort', parts[0]);
+                        params.append('order', parts[1]);
+                    }
+                }
+
+                const { data } = await api.get(`/api/cars?${params.toString()}`);
                 setCars(data.cars || []);
             } catch (error) {
                 console.error('Error fetching cars', error);
@@ -21,13 +31,28 @@ const BrowseCarsPage = () => {
             }
         };
         fetchCars();
-    }, []);
+    }, [sortOption]);
 
     return (
         <div style={{ backgroundColor: '#ffffff', height: 'calc(100vh - 66px)', overflowY: 'auto', margin: '-2rem -5.5% -2rem -5.5%', padding: '2rem 5%' }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <h1 style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.8rem', margin: 0, color: '#0f172a', fontWeight: 800, letterSpacing: '-0.5px' }}>Browse Cars</h1>
+                </div>
+
+                <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '16px', marginBottom: '2rem', border: '1px solid #e2e8f0', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
+                    <div style={{ flex: '1 1 200px' }}>
+                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>Sort By</label>
+                        <select value={sortOption} onChange={e => setSortOption(e.target.value)} style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }}>
+                            <option value="">Newest Added</option>
+                            <option value="price-asc">Price: Low to High</option>
+                            <option value="price-desc">Price: High to Low</option>
+                            <option value="year-desc">Year: Newest First</option>
+                            <option value="year-asc">Year: Oldest First</option>
+                            <option value="popularity-desc">Popularity: Most Popular</option>
+                            <option value="popularity-asc">Popularity: Least Popular</option>
+                        </select>
+                    </div>
                 </div>
 
                 {loading ? (
@@ -53,7 +78,7 @@ const BrowseCarsPage = () => {
                                     )}
                                 </div>
                                 <div className="car-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                                    <div style={{ marginBottom: '0.5rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                                         <h3 className="car-title" style={{ fontSize: '1.25rem', margin: 0, fontWeight: 700, color: '#0f172a', lineHeight: 1.2 }}>{car.brand} {car.name}</h3>
                                     </div>
                                     <div style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>

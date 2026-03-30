@@ -6,10 +6,7 @@ import { toast } from 'react-toastify';
 const AddCarPage = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
-        price_per_day: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '',
-        number_of_owners: '', registration_city: '', insurance_validity: '', description: '',
-        availability_status: 'Available', image_url: ''
+        name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '', price_per_day: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '', number_of_owners: '', registration_city: '', insurance_validity: '', description: '', availability_status: 'Available', image_url: ''
     });
     const [currentStep, setCurrentStep] = useState(1);
 
@@ -44,7 +41,17 @@ const AddCarPage = () => {
     };
 
     return (
-        <div style={{ height: 'calc(100vh - 66px)', position: 'relative', padding: '0.5rem 5% 1rem 5%', margin: '-2rem -6%', overflow: 'hidden', backgroundColor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+        <div style={{
+            height: 'calc(100vh - 66px)',
+            position: 'relative',
+            padding: '0.5rem 5% 1rem 5%',
+            margin: '-2rem -6%',
+            overflow: 'hidden',
+            backgroundColor: '#f8fafc',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
+
             <style>{`
                 .admin-light-panel { color: #000; }
                 .admin-light-panel label { color: #2D3748 !important; font-weight: 600; font-size: 0.8rem; }
@@ -56,10 +63,10 @@ const AddCarPage = () => {
             <div className="admin-light-panel" style={{ width: '100%', padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexShrink: 0, paddingBottom: '0.5rem', borderBottom: '1px solid #e2e8f0' }}>
                     <div>
-                        <h1 style={{ margin: 0, fontSize: '1.8rem', color: '#0f172a', fontWeight: 700 }}>Add New Vehicle</h1>
+                        <h1 className="page-title" style={{ margin: 0, fontSize: '1.8rem', color: '#0f172a', fontWeight: 700, letterSpacing: '-0.5px', textShadow: 'none', textAlign: 'left' }}>Add New Vehicle</h1>
                         <p style={{ margin: '0.2rem 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Enter the details below to add a new car to the dealership catalogue.</p>
                     </div>
-                    <button onClick={() => navigate('/admin/dashboard')} className="btn" style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#475569', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>Back to Dashboard</button>
+                    <button onClick={() => navigate('/admin/dashboard')} className="btn" style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#475569', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Back to Dashboard</button>
                 </div>
 
                 {/* Step Indicator */}
@@ -68,20 +75,20 @@ const AddCarPage = () => {
                         {steps.map((step, idx) => (
                             <React.Fragment key={idx}>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: currentStep >= idx + 1 ? '#0f172a' : '#e2e8f0', color: currentStep >= idx + 1 ? '#fff' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1rem' }}>
+                                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: currentStep >= idx + 1 ? '#0f172a' : '#e2e8f0', color: currentStep >= idx + 1 ? '#fff' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1rem', transition: 'all 0.3s ease', boxShadow: currentStep >= idx + 1 ? '0 4px 6px -1px rgba(15, 23, 42, 0.2)' : 'none' }}>
                                         {idx + 1}
                                     </div>
-                                    <span style={{ fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 600, color: currentStep >= idx + 1 ? '#0f172a' : '#94a3b8' }}>{step}</span>
+                                    <span style={{ fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 600, color: currentStep >= idx + 1 ? '#0f172a' : '#94a3b8', transition: 'all 0.3s ease' }}>{step}</span>
                                 </div>
                                 {idx < steps.length - 1 && (
-                                    <div style={{ flex: 1, height: '3px', backgroundColor: currentStep > idx + 1 ? '#0f172a' : '#e2e8f0', margin: '0 1rem', transform: 'translateY(-12px)', borderRadius: '3px' }} />
+                                    <div style={{ flex: 1, height: '3px', backgroundColor: currentStep > idx + 1 ? '#0f172a' : '#e2e8f0', margin: '0 1rem', transform: 'translateY(-12px)', transition: 'all 0.3s ease', borderRadius: '3px' }} />
                                 )}
                             </React.Fragment>
                         ))}
                     </div>
                 </div>
 
-                <div className="no-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '0.5rem 1rem', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+                <div className="no-scrollbar" style={{ animation: 'fadeIn 0.3s ease-out', flex: 1, overflowY: 'auto', padding: '0.5rem 1rem', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
                     <form onSubmit={handleAddCar} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                         <div style={{ flex: 1 }}>
                             {currentStep === 1 && (
@@ -180,7 +187,7 @@ const AddCarPage = () => {
                                     </div>
                                     <div className="form-group" style={{ marginBottom: 0 }}>
                                         <label>Availability</label>
-                                        <select value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a' }}>
+                                        <select value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a', appearance: 'none' }}>
                                             <option value="Available">Available</option>
                                             <option value="Unavailable">Unavailable</option>
                                         </select>
@@ -199,14 +206,20 @@ const AddCarPage = () => {
                                         <label>Image URL</label>
                                         <input
                                             type="text"
-                                            placeholder="https://example.com/car-image.jpg"
+                                            placeholder="https://example.com/car.jpg"
                                             value={formData.image_url}
                                             onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                                         />
                                     </div>
                                     {formData.image_url && (
                                         <div style={{ marginTop: '0.5rem' }}>
-                                            <img src={formData.image_url} alt="Preview" style={{ width: '200px', height: '140px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' }} onError={(e) => e.target.style.display = 'none'} />
+                                            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontWeight: 600, fontSize: '0.8rem' }}>Preview</label>
+                                            <img
+                                                src={formData.image_url}
+                                                alt="Preview"
+                                                style={{ width: '240px', height: '160px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                            />
                                         </div>
                                     )}
                                 </div>
@@ -214,10 +227,20 @@ const AddCarPage = () => {
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', borderTop: '1px solid #e2e8f0', marginTop: 'auto' }}>
-                            <button type="button" onClick={prevStep} disabled={currentStep === 1} style={{ padding: '0.6rem 2rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#475569', fontWeight: 600, cursor: currentStep === 1 ? 'not-allowed' : 'pointer', opacity: currentStep === 1 ? 0.5 : 1 }}>
+                            <button
+                                type="button"
+                                onClick={prevStep}
+                                disabled={currentStep === 1}
+                                style={{ padding: '0.6rem 2rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#475569', fontWeight: 600, cursor: currentStep === 1 ? 'not-allowed' : 'pointer', opacity: currentStep === 1 ? 0.5 : 1 }}
+                            >
                                 Previous
                             </button>
-                            <button type="submit" className="btn" style={{ padding: '0.6rem 2.5rem', borderRadius: '8px', background: currentStep === steps.length ? '#059669' : '#0f172a', color: '#ffffff', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+
+                            <button
+                                type="submit"
+                                className="btn"
+                                style={{ padding: '0.6rem 2.5rem', borderRadius: '8px', background: currentStep === steps.length ? '#059669' : '#0f172a', color: '#ffffff', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                            >
                                 {currentStep === steps.length ? 'Save Vehicle to Fleet' : 'Next Step'}
                             </button>
                         </div>
