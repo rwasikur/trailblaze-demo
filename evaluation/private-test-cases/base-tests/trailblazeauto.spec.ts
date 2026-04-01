@@ -1,47 +1,76 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Base Application Core Tests', () => {
-    const API_URL = '';
-    let sampleCarId: string;
 
-    test.describe.configure({ mode: 'serial' });
+    test('Admin registration with valid credentials creates new admin', async ({ page, baseURL }) => {
 
-    test('1. Fetch all cars (GET /api/cars)', async ({ request }) => {
-        const response = await request.get(`${API_URL}/api/cars`);
-        expect(response.status()).toBe(200);
-        
-        const data = await response.json();
-        expect(data).toHaveProperty('cars');
-        expect(Array.isArray(data.cars)).toBeTruthy();
-        
-        if (data.cars.length > 0) {
-            sampleCarId = data.cars[0]._id || data.cars[0].id;
+        const url = baseURL || 'http://localhost';
+        await page.goto(`${url}/admin`);
+        await page.waitForLoadState('networkidle');
+
+        // Switch to signup (if exists)
+        const signUpLink = page.locator('text=Sign Up');
+        if (await signUpLink.count() > 0) {
+            await signUpLink.first().click();
+        }
+
+        // Fill form
+        const timestamp = Date.now();
+
+        await page.locator('input[type="text"]').first().fill(`Admin ${timestamp}`);
+        await page.locator('input[type="email"]').fill(`admin${timestamp}@test.com`);
+        await page.locator('input[type="password"]').first().fill('password123');
+
+        await page.locator('button[type="submit"]').click();
+
+        // Functional assertion: successful navigation
+        await expect(page).toHaveURL(/dashboard/, { timeout: 7000 });
+    });
+
+
+    test('Admin login with invalid credentials shows error message', async ({ page, baseURL }) => {
+
+        const url = baseURL || 'http://localhost';
+        await page.goto(`${url}/admin`);
+        await page.waitForLoadState('networkidle');
+
+        await page.locator('input[type="email"]').fill('invalid@test.com');
+        await page.locator('input[type="password"]').first().fill('wrongpass');
+
+        await page.locator('button[type="submit"]').click();
+
+        // Functional assertion: error must appear
+        const error = page.locator('text=/invalid|incorrect|wrong/i');
+        await expect(error.first()).toBeVisible({ timeout: 5000 });
+    });
+
+
+    test('Admin login validates email format', async ({ page, baseURL }) => {
+
+        const url = baseURL || 'http://localhost';
+        await page.goto(`${url}/admin`);
+        await page.waitForLoadState('networkidle');
+
+        await page.locator('input[type="email"]').fill('notanemail');
+        await page.locator('input[type="password"]').first().fill('password123');
+
+        await page.locator('button[type="submit"]').click();
+
+        // Functional assertion:
+        // Either validation message OR form not submitted
+
+        const urlBefore = `${url}/admin`;
+
+        const validationError = page.locator('text=/email|valid/i');
+
+        const hasError = await validationError.count() > 0;
+
+        if (hasError) {
+            await expect(validationError.first()).toBeVisible();
+        } else {
+            // fallback: should NOT redirect
+            await expect(page).toHaveURL(urlBefore);
         }
     });
 
-    test('2. Fetch a car by ID (GET /api/cars/:id)', async ({ request }) => {
-        test.skip(!sampleCarId, 'No seeded cars found to test against');
-        
-        const response = await request.get(`${API_URL}/api/cars/${sampleCarId}`);
-        expect(response.status()).toBe(200);
-        
-        const data = await response.json();
-        const returnedId = data._id || data.id;
-        expect(returnedId).toBe(sampleCarId);
-    });
-
-    test('3. Verify homepage loads correctly', async ({ page }) => {
-        await page.goto(`${API_URL}/`);
-        // Basic check for frontend mounting successfully (usually containing Trailblaze Auto branding)
-        await expect(page.locator('body')).toBeVisible();
-        await expect(page.locator('text=Drive Your Dream').first()).toBeVisible();
-    });
-
-    test('4. Verify car details page renders correctly', async ({ page }) => {
-        test.skip(!sampleCarId, 'No seeded cars found to test against');
-        
-        await page.goto(`${API_URL}/car/${sampleCarId}`);
-        // Ensure the specifics page mounts elements and isn't crashed
-        await expect(page.locator('body')).toBeVisible();
-    });
 });

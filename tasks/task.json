@@ -1,0 +1,24 @@
+{
+  "tasks": [
+    {
+      "task_id": "base-1",
+      "difficulty": "Easy",
+      "description": "Verify core application functionality including homepage, car listing API, car details page, admin authentication (registration, login), and email validation.",
+      "branch": "main",
+      "test_case_location": "base-tests/",
+      "acceptance_criteria": [
+        "Homepage loads successfully without errors",
+        "Branding text 'Drive Your Dream' is visible on the homepage",
+        "Navigation and main content elements are present on the page",
+        "GET /api/cars returns HTTP 200 with proper car data structure",
+        "Each car in API response has _id, brand, name, and price_per_day fields",
+        "Car details page loads for valid car ID",
+        "Car details page displays car brand, name, and price",
+        "Admin registration page loads and creates new admin account",
+        "Admin login validates credentials correctly",
+        "Invalid login credentials show 'Invalid email or password' error",
+        "Email format validation works on login form"
+      ]
+    }
+  ]
+}
