@@ -4,7 +4,8 @@ WORKDIR /app
 
 # CRITICAL: Paths relative to build context (base-app/)
 COPY src/frontend/package*.json ./
-RUN npm install
+# Use the lockfile for repeatable production builds.
+RUN npm ci
 COPY src/frontend/ .
 RUN npm run build
 

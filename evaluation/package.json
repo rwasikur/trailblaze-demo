@@ -1,0 +1,8 @@
+{
+  "name": "trailblazeauto-evaluation",
+  "private": true,
+  "version": "0.0.0",
+  "devDependencies": {
+    "@types/node": "25.0.10"
+  }
+}

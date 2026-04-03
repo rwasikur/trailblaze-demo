@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Card, CardContent } from '../components/ui/Card';
 
 const AddCarPage = () => {
     const navigate = useNavigate();
@@ -44,185 +47,157 @@ const AddCarPage = () => {
     };
 
     return (
-        <div style={{ height: 'calc(100vh - 66px)', position: 'relative', padding: '0.5rem 5% 1rem 5%', margin: '-2rem -6%', overflow: 'hidden', backgroundColor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
-            <style>{`
-                .admin-light-panel { color: #000; }
-                .admin-light-panel label { color: #2D3748 !important; font-weight: 600; font-size: 0.8rem; }
-                .admin-light-panel input, .admin-light-panel textarea, .admin-light-panel select { color: #000 !important; background: rgba(0,0,0,0.05) !important; border-color: #ccc !important; padding: 0.5rem !important; }
-                .no-scrollbar::-webkit-scrollbar { display: none; }
-                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-            `}</style>
-
-            <div className="admin-light-panel" style={{ width: '100%', padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexShrink: 0, paddingBottom: '0.5rem', borderBottom: '1px solid #e2e8f0' }}>
+        <div className="min-h-full bg-slate-50 py-10 px-6 font-sans text-slate-800">
+            <div className="max-w-4xl mx-auto space-y-8 flex flex-col h-full">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 shrink-0">
                     <div>
-                        <h1 style={{ margin: 0, fontSize: '1.8rem', color: '#0f172a', fontWeight: 700 }}>Add New Vehicle</h1>
-                        <p style={{ margin: '0.2rem 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Enter the details below to add a new car to the dealership catalogue.</p>
+                        <h1 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Add New Vehicle</h1>
+                        <p className="text-slate-500 mt-2 text-base">Enter the details below to add a new car to the dealership catalogue.</p>
                     </div>
-                    <button onClick={() => navigate('/admin/dashboard')} className="btn" style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#475569', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>Back to Dashboard</button>
+                    <Button variant="outline" onClick={() => navigate('/admin/dashboard')} className="text-sm font-semibold h-11 border-slate-300">
+                        Back to Dashboard
+                    </Button>
                 </div>
 
                 {/* Step Indicator */}
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', flexShrink: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', width: '80%', maxWidth: '700px' }}>
+                <div className="flex justify-center shrink-0">
+                    <div className="flex items-center w-full max-w-2xl">
                         {steps.map((step, idx) => (
                             <React.Fragment key={idx}>
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: currentStep >= idx + 1 ? '#0f172a' : '#e2e8f0', color: currentStep >= idx + 1 ? '#fff' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1rem' }}>
+                                <div className="flex flex-col items-center">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors duration-300 ${currentStep >= idx + 1 ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-500'}`}>
                                         {idx + 1}
                                     </div>
-                                    <span style={{ fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 600, color: currentStep >= idx + 1 ? '#0f172a' : '#94a3b8' }}>{step}</span>
+                                    <span className={`text-xs mt-2 font-bold ${currentStep >= idx + 1 ? 'text-slate-900' : 'text-slate-400'}`}>{step}</span>
                                 </div>
                                 {idx < steps.length - 1 && (
-                                    <div style={{ flex: 1, height: '3px', backgroundColor: currentStep > idx + 1 ? '#0f172a' : '#e2e8f0', margin: '0 1rem', transform: 'translateY(-12px)', borderRadius: '3px' }} />
+                                    <div className="flex-1 h-1 mx-4 -translate-y-3 rounded-full overflow-hidden bg-slate-200">
+                                        <div className={`h-full bg-slate-900 transition-all duration-500 ease-in-out ${currentStep > idx + 1 ? 'w-full' : 'w-0'}`} />
+                                    </div>
                                 )}
                             </React.Fragment>
                         ))}
                     </div>
                 </div>
 
-                <div className="no-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '0.5rem 1rem', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
-                    <form onSubmit={handleAddCar} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        <div style={{ flex: 1 }}>
-                            {currentStep === 1 && (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', padding: '1rem' }}>
-                                    <h3 style={{ gridColumn: '1 / -1', margin: '0 0 0.5rem 0', color: '#0f172a', fontWeight: 700, fontSize: '1.2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.8rem' }}>Basic Information</h3>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Car Name</label>
-                                        <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Brand</label>
-                                        <input type="text" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Model Year</label>
-                                        <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Price ($)</label>
-                                        <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
-                                    </div>
-                                </div>
-                            )}
-
-                            {currentStep === 2 && (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', padding: '1rem' }}>
-                                    <h3 style={{ gridColumn: '1 / -1', margin: '0 0 0.5rem 0', color: '#0f172a', fontWeight: 700, fontSize: '1.2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.8rem' }}>Specifications</h3>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Transmission</label>
-                                        <select value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', background: 'rgba(0,0,0,0.05)', color: '#000' }}>
-                                            <option value="">Select</option>
-                                            <option value="Automatic">Automatic</option>
-                                            <option value="Manual">Manual</option>
-                                        </select>
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Fuel Type</label>
-                                        <input type="text" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Seating Capacity</label>
-                                        <input type="text" inputMode="numeric" pattern="[0-9]*" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Range (e.g. 350km)</label>
-                                        <input type="text" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Body Type (e.g. SUV)</label>
-                                        <input type="text" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Mileage (e.g. 15,000 km)</label>
-                                        <input type="text" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
-                                    </div>
-                                </div>
-                            )}
-
-                            {currentStep === 3 && (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', padding: '1rem' }}>
-                                    <h3 style={{ gridColumn: '1 / -1', margin: '0 0 0.5rem 0', color: '#0f172a', fontWeight: 700, fontSize: '1.2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.8rem' }}>Registration & Details</h3>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Exterior Color</label>
-                                        <select value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', background: 'rgba(0,0,0,0.05)', color: '#000' }}>
-                                            <option value="">Select</option>
-                                            <option value="Black">Black</option>
-                                            <option value="White">White</option>
-                                            <option value="Silver">Silver</option>
-                                            <option value="Grey">Grey</option>
-                                            <option value="Blue">Blue</option>
-                                            <option value="Red">Red</option>
-                                        </select>
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Interior Color</label>
-                                        <select value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', background: 'rgba(0,0,0,0.05)', color: '#000' }}>
-                                            <option value="">Select</option>
-                                            <option value="Black">Black</option>
-                                            <option value="White">White</option>
-                                            <option value="Beige">Beige</option>
-                                            <option value="Brown">Brown</option>
-                                            <option value="Grey">Grey</option>
-                                        </select>
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Number of Owners</label>
-                                        <input type="number" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value })} />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Registration City</label>
-                                        <input type="text" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Insurance Validity</label>
-                                        <input type="text" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} />
-                                    </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Availability</label>
-                                        <select value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })} style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a' }}>
-                                            <option value="Available">Available</option>
-                                            <option value="Unavailable">Unavailable</option>
-                                        </select>
-                                    </div>
-                                    <div className="form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                                        <label>Description</label>
-                                        <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="3" style={{ width: '100%', resize: 'vertical' }}></textarea>
-                                    </div>
-                                </div>
-                            )}
-
-                            {currentStep === 4 && (
-                                <div style={{ display: 'grid', gap: '1.5rem', padding: '1rem' }}>
-                                    <h3 style={{ margin: '0 0 0.5rem 0', color: '#0f172a', fontWeight: 700, fontSize: '1.2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.8rem' }}>Vehicle Media</h3>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label>Image URL</label>
-                                        <input
-                                            type="text"
-                                            placeholder="https://example.com/car-image.jpg"
-                                            value={formData.image_url}
-                                            onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                                        />
-                                    </div>
-                                    {formData.image_url && (
-                                        <div style={{ marginTop: '0.5rem' }}>
-                                            <img src={formData.image_url} alt="Preview" style={{ width: '200px', height: '140px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' }} onError={(e) => e.target.style.display = 'none'} />
+                <Card className="flex-1 border-slate-200 shadow-sm overflow-hidden bg-white flex flex-col min-h-0">
+                    <CardContent className="p-0 flex flex-col h-full">
+                        <form onSubmit={handleAddCar} className="flex flex-col h-full">
+                            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+                                {currentStep === 1 && (
+                                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                                        <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Basic Information</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <Input label="Car Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                                            <Input label="Brand" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required />
+                                            <Input label="Model Year" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
+                                            <Input label="Price ($)" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
                                         </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
+                                    </div>
+                                )}
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', borderTop: '1px solid #e2e8f0', marginTop: 'auto' }}>
-                            <button type="button" onClick={prevStep} disabled={currentStep === 1} style={{ padding: '0.6rem 2rem', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#475569', fontWeight: 600, cursor: currentStep === 1 ? 'not-allowed' : 'pointer', opacity: currentStep === 1 ? 0.5 : 1 }}>
-                                Previous
-                            </button>
-                            <button type="submit" className="btn" style={{ padding: '0.6rem 2.5rem', borderRadius: '8px', background: currentStep === steps.length ? '#059669' : '#0f172a', color: '#ffffff', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-                                {currentStep === steps.length ? 'Save Vehicle to Fleet' : 'Next Step'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                                {currentStep === 2 && (
+                                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                                        <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Specifications</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-bold text-slate-700">Transmission</label>
+                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required>
+                                                    <option value="">Select</option>
+                                                    <option value="Automatic">Automatic</option>
+                                                    <option value="Manual">Manual</option>
+                                                </select>
+                                            </div>
+                                            <Input label="Fuel Type" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required />
+                                            <Input label="Seating Capacity" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
+                                            <Input label="Range (e.g. 350km)" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
+                                            <Input label="Body Type (e.g. SUV)" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
+                                            <Input label="Mileage (e.g. 15,000 km)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {currentStep === 3 && (
+                                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                                        <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Registration & Details</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-bold text-slate-700">Exterior Color</label>
+                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })}>
+                                                    <option value="">Select</option>
+                                                    <option value="Black">Black</option>
+                                                    <option value="White">White</option>
+                                                    <option value="Silver">Silver</option>
+                                                    <option value="Grey">Grey</option>
+                                                    <option value="Blue">Blue</option>
+                                                    <option value="Red">Red</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-bold text-slate-700">Interior Color</label>
+                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })}>
+                                                    <option value="">Select</option>
+                                                    <option value="Black">Black</option>
+                                                    <option value="White">White</option>
+                                                    <option value="Beige">Beige</option>
+                                                    <option value="Brown">Brown</option>
+                                                    <option value="Grey">Grey</option>
+                                                </select>
+                                            </div>
+                                            <Input label="Number of Owners" type="number" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value })} />
+                                            <Input label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
+                                            <Input label="Insurance Validity" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} />
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-bold text-slate-700">Availability</label>
+                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}>
+                                                    <option value="Available">Available</option>
+                                                    <option value="Unavailable">Unavailable</option>
+                                                </select>
+                                            </div>
+                                            <div className="md:col-span-3 space-y-2">
+                                                <label className="block text-sm font-bold text-slate-700">Description</label>
+                                                <textarea 
+                                                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all resize-y min-h-[120px]" 
+                                                    value={formData.description} 
+                                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
+                                                    rows="3"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {currentStep === 4 && (
+                                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                                        <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Vehicle Media</h3>
+                                        <div className="space-y-6">
+                                            <Input 
+                                                label="Image URL" 
+                                                placeholder="https://example.com/car-image.jpg"
+                                                value={formData.image_url}
+                                                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                                            />
+                                            {formData.image_url && (
+                                                <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 max-w-sm">
+                                                    <img src={formData.image_url} alt="Preview" className="w-full h-48 object-cover" onError={(e) => e.target.style.display = 'none'} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-between shrink-0">
+                                <Button type="button" variant="outline" onClick={prevStep} disabled={currentStep === 1} className="h-11 px-8 font-bold border-slate-300">
+                                    Previous
+                                </Button>
+                                <Button type="submit" variant={currentStep === steps.length ? 'primary' : 'slate'} className="h-11 px-8 font-bold shadow-sm">
+                                    {currentStep === steps.length ? 'Save Vehicle to Fleet' : 'Next Step'}
+                                </Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

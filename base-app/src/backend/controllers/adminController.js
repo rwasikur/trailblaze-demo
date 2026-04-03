@@ -9,20 +9,6 @@ const getAllCars = async (req, res) => {
     }
 };
 
-const deleteCar = async (req, res) => {
-    try {
-        const car = await Car.findByPk(req.params.id);
-        if (car) {
-            await car.destroy();
-            res.json({ message: 'Car removed successfully' });
-        } else {
-            res.status(404).json({ message: 'Car not found' });
-        }
-    } catch (err) {
-        res.status(500).json({ message: 'Server error: ' + err.message });
-    }
-};
-
 const updateCarStatus = async (req, res) => {
     try {
         const car = await Car.findByPk(req.params.id);
@@ -72,4 +58,4 @@ const updateCar = async (req, res) => {
     }
 };
 
-module.exports = { getAllCars, deleteCar, updateCarStatus, updateCar };
+module.exports = { getAllCars, updateCarStatus, updateCar };

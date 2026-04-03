@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
+import { Button } from '../components/ui/Button';
+import { Card, CardContent } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -25,72 +28,69 @@ const AdminDashboard = () => {
         }
     };
 
-    const deleteCarHandler = async (id) => {
-        const token = localStorage.getItem('adminToken');
-        try {
-            await api.delete(`/api/cars/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            fetchCars(token);
-            toast.success('Vehicle deleted successfully.');
-        } catch (err) {
-            console.error('Failed to delete car:', err);
-            toast.error('Error deleting vehicle.');
-        }
-    };
 
     return (
-        <div style={{ minHeight: 'calc(100vh - 66px)', backgroundColor: '#f8fafc', padding: '2rem 5%', margin: '-2rem -6%', fontFamily: 'Inter, sans-serif', color: '#334155' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
-                <div>
-                    <h1 style={{ margin: 0, color: '#0f172a', fontSize: '1.8rem', fontWeight: 700 }}>Admin Dashboard</h1>
-                    <p style={{ margin: '0.2rem 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Manage your vehicle inventory.</p>
+        <div className="min-h-full bg-slate-50 py-10 px-6">
+            <div className="max-w-7xl mx-auto space-y-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <h1 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Admin Dashboard</h1>
+                        <p className="text-slate-500 mt-2 text-base">Manage your vehicle inventory and system operations.</p>
+                    </div>
+                    <div className="flex gap-4">
+                        <Button variant="outline" onClick={() => navigate('/admin/inventory')} className="text-sm font-semibold h-11 border-slate-300">
+                            Manage Inventory
+                        </Button>
+                        <Button onClick={() => navigate('/admin/add-car')} className="text-sm font-semibold h-11" variant="slate">
+                            + Add New Vehicle
+                        </Button>
+                    </div>
                 </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button onClick={() => navigate('/admin/inventory')} style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem', borderRadius: '8px', fontWeight: 600, border: 'none', background: '#4A6572', color: '#fff', cursor: 'pointer' }}>
-                        Manage Inventory
-                    </button>
-                    <button onClick={() => navigate('/admin/add-car')} style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem', borderRadius: '8px', fontWeight: 600, border: 'none', background: '#4A6572', color: '#fff', cursor: 'pointer' }}>
-                        + Add New Vehicle
-                    </button>
-                </div>
-            </div>
 
-            <div style={{ background: '#ffffff', borderRadius: '12px', padding: '2rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0' }}>
-                <h2 style={{ margin: '0 0 1.5rem 0', color: '#0f172a', fontSize: '1.2rem', fontWeight: 700 }}>All Vehicles</h2>
-                {cars.length === 0 ? (
-                    <p style={{ color: '#64748b' }}>No vehicles in inventory.</p>
-                ) : (
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
-                                <th style={{ textAlign: 'left', padding: '0.75rem', color: '#64748b', fontWeight: 600 }}>Vehicle</th>
-                                <th style={{ textAlign: 'left', padding: '0.75rem', color: '#64748b', fontWeight: 600 }}>Year</th>
-                                <th style={{ textAlign: 'left', padding: '0.75rem', color: '#64748b', fontWeight: 600 }}>Price</th>
-                                <th style={{ textAlign: 'left', padding: '0.75rem', color: '#64748b', fontWeight: 600 }}>Status</th>
-                                <th style={{ textAlign: 'left', padding: '0.75rem', color: '#64748b', fontWeight: 600 }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {cars.map(car => (
-                                <tr key={car._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                    <td style={{ padding: '0.75rem', fontWeight: 600, color: '#0f172a' }}>{car.brand} {car.name}</td>
-                                    <td style={{ padding: '0.75rem', color: '#475569' }}>{car.model_year}</td>
-                                    <td style={{ padding: '0.75rem', color: '#475569' }}>${car.price_per_day?.toLocaleString()}</td>
-                                    <td style={{ padding: '0.75rem' }}>
-                                        <span style={{ padding: '0.2rem 0.6rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600, background: car.availability_status === 'Available' ? '#f0fdf4' : '#fef2f2', color: car.availability_status === 'Available' ? '#16a34a' : '#dc2626' }}>
-                                            {car.availability_status}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '0.75rem', display: 'flex', gap: '0.5rem' }}>
-                                        <button onClick={() => navigate(`/admin/edit-car/${car._id}`)} style={{ padding: '0.3rem 0.7rem', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>Edit</button>
-                                        <button onClick={() => deleteCarHandler(car._id)} style={{ padding: '0.3rem 0.7rem', borderRadius: '6px', border: '1px solid #fca5a5', background: '#fff', color: '#dc2626', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>Delete</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
+                <Card className="border-slate-200 shadow-sm overflow-hidden bg-white">
+                    <CardContent className="p-0">
+                        <div className="bg-white px-6 py-5 border-b border-slate-100 flex justify-between items-center">
+                            <h2 className="text-lg font-bold text-slate-900 m-0">All Vehicles</h2>
+                        </div>
+                        
+                        {cars.length === 0 ? (
+                            <div className="p-10 text-center">
+                                <p className="text-slate-500">No vehicles in inventory.</p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="text-xs text-slate-500 bg-slate-50/50 uppercase border-b border-slate-200">
+                                        <tr>
+                                            <th className="px-6 py-4 font-semibold">Vehicle</th>
+                                            <th className="px-6 py-4 font-semibold">Year</th>
+                                            <th className="px-6 py-4 font-semibold">Price</th>
+                                            <th className="px-6 py-4 font-semibold">Status</th>
+                                            <th className="px-6 py-4 text-right font-semibold">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {cars.map(car => (
+                                            <tr key={car._id} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-6 py-4 font-bold text-slate-900">{car.brand} {car.name}</td>
+                                                <td className="px-6 py-4 text-slate-600 font-medium">{car.model_year}</td>
+                                                <td className="px-6 py-4 text-slate-600 font-medium">${car.price_per_day?.toLocaleString()}</td>
+                                                <td className="px-6 py-4">
+                                                    <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'}>
+                                                        {car.availability_status}
+                                                    </Badge>
+                                                </td>
+                                                <td className="px-6 py-4 flex justify-end gap-3">
+                                                    <Button variant="outline" size="sm" onClick={() => navigate(`/admin/edit-car/${car._id}`)} className="h-8 px-3 text-xs">Edit</Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
