@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Card, CardContent } from '../components/ui/Card';
 
 const ManageInventoryPage = () => {
     const navigate = useNavigate();
@@ -33,20 +36,6 @@ const ManageInventoryPage = () => {
         }
     };
 
-    const deleteCarHandler = async (id) => {
-        const token = localStorage.getItem('adminToken');
-        try {
-            await api.delete(`/api/cars/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            fetchCars(token);
-            toast.success('Vehicle deleted successfully.');
-        } catch (err) {
-            console.error('Failed to delete car:', err);
-            toast.error('Error deleting vehicle.');
-        }
-    };
-
     const updateStatusHandler = async (id, status) => {
         try {
             const token = localStorage.getItem('adminToken');
@@ -62,104 +51,109 @@ const ManageInventoryPage = () => {
     };
 
     return (
-        <div style={{ minHeight: 'calc(100vh - 66px)', backgroundColor: '#f8fafc', padding: '2rem 5%', margin: '-2rem -6%', fontFamily: 'Inter, sans-serif', color: '#334155' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <div>
-                    <h1 style={{ margin: 0, color: '#0f172a', fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.5px' }}>Manage Inventory</h1>
-                    <p style={{ margin: '0.2rem 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>Overview and management of all registered vehicles.</p>
+        <div className="min-h-full bg-slate-50 py-10 px-6 font-sans text-slate-800">
+            <div className="max-w-7xl mx-auto space-y-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <h1 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Manage Inventory</h1>
+                        <p className="text-slate-500 mt-2 text-base">Overview and management of all registered vehicles.</p>
+                    </div>
+                    <div className="flex gap-4">
+                        <Button variant="outline" onClick={() => navigate('/admin/dashboard')} className="text-sm font-semibold h-11 border-slate-300">
+                            Back to Dashboard
+                        </Button>
+                        <Button onClick={() => navigate('/admin/add-car')} className="text-sm font-semibold h-11" variant="slate">
+                            <span>+</span> Add New Vehicle
+                        </Button>
+                    </div>
                 </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button onClick={() => navigate('/admin/dashboard')} className="btn" style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, background: '#ffffff', border: '1px solid #cbd5e1', color: '#475569' }}>
-                        Back to Dashboard
-                    </button>
-                    <button onClick={() => navigate('/admin/add-car')} className="btn btn-slate" style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#4A6572', color: '#ffffff', border: 'none', fontWeight: 600 }}>
-                        <span>+</span> Add New Vehicle
-                    </button>
-                </div>
-            </div>
 
-            <div style={{ background: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
-                <div style={{ paddingBottom: '120px' }}>
-                    <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead style={{ background: '#f8fafc' }}>
-                            <tr>
-                                <th style={{ width: '8%', padding: '1rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #e2e8f0' }}>ID</th>
-                                <th style={{ width: '25%', padding: '1rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #e2e8f0' }}>Car Name</th>
-                                <th style={{ width: '15%', padding: '1rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #e2e8f0' }}>Brand</th>
-                                <th style={{ width: '15%', padding: '1rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #e2e8f0' }}>Price</th>
-                                <th style={{ width: '17%', padding: '1rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #e2e8f0' }}>Status</th>
-                                <th style={{ width: '10%', padding: '1rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #e2e8f0', textAlign: 'right' }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
-                                <tr>
-                                    <td colSpan="6" style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>Loading vehicles...</td>
-                                </tr>
-                            ) : cars.length === 0 ? (
-                                <tr>
-                                    <td colSpan="6" style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>
-                                        <p style={{ margin: 0, fontWeight: 500 }}>No vehicles found in inventory.</p>
-                                    </td>
-                                </tr>
-                            ) : (
-                                cars.map((car, index) => {
-                                    const isLast = index === cars.length - 1;
-                                    return (
-                                        <tr key={car._id} style={{ borderBottom: isLast ? 'none' : '1px solid #f1f5f9', background: '#ffffff' }} onMouseOver={(e) => e.currentTarget.style.background = '#f8fafc'} onMouseOut={(e) => e.currentTarget.style.background = '#ffffff'}>
-                                            <td style={{ padding: '0.8rem 1rem', fontSize: '0.85rem', color: '#94a3b8', fontFamily: 'monospace' }}>...{car._id.substring(car._id.length - 6)}</td>
-                                            <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', fontWeight: 600, color: '#1e293b' }}>{car.name}</td>
-                                            <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', color: '#475569' }}>{car.brand}</td>
-                                            <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', color: '#475569', fontWeight: 500 }}>${car.price_per_day}</td>
-                                            <td style={{ padding: '0.8rem 1rem' }}>
-                                                <span style={{
-                                                    padding: '0.3rem 0.8rem',
-                                                    borderRadius: '9999px',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: 600,
-                                                    background: car.availability_status === 'Available' ? '#ecfdf5' : (car.availability_status === 'Pending' ? '#fffbeb' : '#fef2f2'),
-                                                    color: car.availability_status === 'Available' ? '#059669' : (car.availability_status === 'Pending' ? '#d97706' : '#dc2626'),
-                                                    border: `1px solid ${car.availability_status === 'Available' ? '#d1fae5' : (car.availability_status === 'Pending' ? '#fef3c7' : '#fee2e2')}`
-                                                }}>
-                                                    {car.availability_status === 'Available' ? '● Available' : (car.availability_status === 'Pending' ? '○ Pending' : '■ Unavailable')}
-                                                </span>
-                                            </td>
-                                            <td style={{ padding: '0.8rem 1rem', position: 'relative', textAlign: 'right' }}>
-                                                <div style={{ position: 'relative', display: 'inline-block', textAlign: 'left' }}>
-                                                    <button
-                                                        onClick={() => setActiveDropdown(activeDropdown === car._id ? null : car._id)}
-                                                        style={{ cursor: 'pointer', padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '6px', fontWeight: 600 }}
-                                                    >
-                                                        Options ▼
-                                                    </button>
-                                                    {activeDropdown === car._id && (
-                                                        <>
-                                                            <div onClick={() => setActiveDropdown(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9 }}></div>
-                                                            <div style={{ position: 'absolute', right: 0, top: '100%', zIndex: 10, marginTop: '0.5rem', minWidth: '160px', display: 'flex', flexDirection: 'column', padding: '0.4rem', background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
-                                                                {car.availability_status === 'Pending' && (
-                                                                    <>
-                                                                        <button onClick={() => { updateStatusHandler(car._id, 'Unavailable'); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.6rem 1rem', fontSize: '0.85rem', textAlign: 'left', background: 'transparent', color: '#10b981', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 500 }}>✓ Approve</button>
-                                                                        <button onClick={() => { updateStatusHandler(car._id, 'Available'); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.6rem 1rem', fontSize: '0.85rem', textAlign: 'left', background: 'transparent', color: '#64748b', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 500 }}>✕ Reject</button>
-                                                                    </>
-                                                                )}
-                                                                {car.availability_status === 'Unavailable' && (
-                                                                    <button onClick={() => { updateStatusHandler(car._id, 'Available'); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.6rem 1rem', fontSize: '0.85rem', textAlign: 'left', background: 'transparent', color: '#475569', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 500 }}>↩ Return</button>
-                                                                )}
-                                                                <button onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-car/${car._id}`); }} style={{ width: '100%', padding: '0.6rem 1rem', fontSize: '0.85rem', textAlign: 'left', background: 'transparent', color: '#3b82f6', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 500 }}>✎ Edit Vehicle</button>
-                                                                <hr style={{ margin: '0.2rem 0', border: 'none', borderTop: '1px solid #e2e8f0' }} />
-                                                                <button onClick={() => { deleteCarHandler(car._id); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.6rem 1rem', fontSize: '0.85rem', textAlign: 'left', background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', borderRadius: '4px', fontWeight: 500 }}>🗑 Delete Vehicle</button>
-                                                            </div>
-                                                        </>
-                                                    )}
-                                                </div>
+                <Card className="border-slate-200 shadow-sm overflow-visible bg-white">
+                    <CardContent className="p-0 overflow-visible">
+                        <div className="overflow-x-auto min-h-[400px]">
+                            <table className="w-full text-left text-sm whitespace-nowrap">
+                                <thead className="bg-slate-50 text-slate-500 uppercase text-xs tracking-wider border-b border-slate-200">
+                                    <tr>
+                                        <th className="px-6 py-4 font-semibold">ID</th>
+                                        <th className="px-6 py-4 font-semibold">Car Name</th>
+                                        <th className="px-6 py-4 font-semibold">Brand</th>
+                                        <th className="px-6 py-4 font-semibold">Price</th>
+                                        <th className="px-6 py-4 font-semibold">Status</th>
+                                        <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {loading ? (
+                                        <tr>
+                                            <td colSpan="6" className="py-12 text-center text-slate-400">Loading vehicles...</td>
+                                        </tr>
+                                    ) : cars.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="6" className="py-12 text-center text-slate-500 font-medium tracking-wide">
+                                                No vehicles found in inventory.
                                             </td>
                                         </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                    ) : (
+                                        cars.map((car) => {
+                                            let badgeVariant = 'default';
+                                            if (car.availability_status === 'Available') badgeVariant = 'available';
+                                            else if (car.availability_status === 'Pending') badgeVariant = 'pending';
+                                            else badgeVariant = 'unavailable';
+
+                                            return (
+                                                <tr key={car._id} className="hover:bg-slate-50/50 transition-colors">
+                                                    <td className="px-6 py-4 text-slate-400 font-mono text-xs">...{car._id.substring(car._id.length - 6)}</td>
+                                                    <td className="px-6 py-4 font-bold text-slate-900">{car.name}</td>
+                                                    <td className="px-6 py-4 text-slate-600 font-medium">{car.brand}</td>
+                                                    <td className="px-6 py-4 text-slate-600 font-medium">${car.price_per_day}</td>
+                                                    <td className="px-6 py-4">
+                                                        <Badge variant={badgeVariant}>
+                                                            <span className="mr-1.5 opacity-70">{car.availability_status === 'Available' ? '●' : (car.availability_status === 'Pending' ? '○' : '■')}</span>
+                                                            {car.availability_status}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right relative">
+                                                        <div className="relative inline-block text-left">
+                                                            <Button 
+                                                                variant="outline" 
+                                                                size="sm"
+                                                                onClick={() => setActiveDropdown(activeDropdown === car._id ? null : car._id)}
+                                                                className="h-8 text-xs font-semibold px-3"
+                                                            >
+                                                                Options ▼
+                                                            </Button>
+                                                            {activeDropdown === car._id && (
+                                                                <>
+                                                                    <div onClick={() => setActiveDropdown(null)} className="fixed inset-0 z-40 bg-transparent"></div>
+                                                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-50 p-1 divide-y divide-slate-100 font-medium text-sm">
+                                                                        <div className="py-1">
+                                                                            {car.availability_status === 'Pending' && (
+                                                                                <>
+                                                                                    <button onClick={() => { updateStatusHandler(car._id, 'Unavailable'); setActiveDropdown(null); }} className="w-full text-left px-3 py-2 text-emerald-600 hover:bg-slate-50 transition-colors rounded-md">✓ Approve</button>
+                                                                                    <button onClick={() => { updateStatusHandler(car._id, 'Available'); setActiveDropdown(null); }} className="w-full text-left px-3 py-2 text-slate-600 hover:bg-slate-50 transition-colors rounded-md">✕ Reject</button>
+                                                                                </>
+                                                                            )}
+                                                                            {car.availability_status === 'Unavailable' && (
+                                                                                <button onClick={() => { updateStatusHandler(car._id, 'Available'); setActiveDropdown(null); }} className="w-full text-left px-3 py-2 text-slate-600 hover:bg-slate-50 transition-colors rounded-md">↩ Return to Available</button>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="py-1">
+                                                                            <button onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-car/${car._id}`); }} className="w-full text-left px-3 py-2 text-blue-600 hover:bg-slate-50 transition-colors rounded-md">✎ Edit Vehicle</button>
+                                                                        </div>
+                                                                                    </div>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

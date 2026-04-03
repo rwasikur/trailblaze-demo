@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => {
       },
       proxy: {
         '/api': {
-          target: env.VITE_API_TARGET || 'http://backend:8000',
+          target: env.VITE_API_TARGET || 'http://backend:3000',
           changeOrigin: true,
           secure: false,
           configure: (proxy, _options) => {
@@ -41,8 +41,8 @@ export default defineConfig(({ mode }) => {
             });
           },
         },
-        '/media': {
-          target: env.VITE_API_TARGET || 'http://backend:8000',
+        '/uploads': {
+          target: env.VITE_API_TARGET || 'http://backend:3000',
           changeOrigin: true,
           secure: false,
         }

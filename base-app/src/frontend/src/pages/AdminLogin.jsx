@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+
 const AdminLogin = () => {
     const [isLogin, setIsLogin] = useState(true);
-    const [errorMsg, setErrorMsg] = useState('');
     const [formData, setFormData] = useState({
         full_name: '', email: '', password: '', confirm_password: '', phone: ''
     });
@@ -39,68 +42,55 @@ const AdminLogin = () => {
     };
 
     return (
-        <div style={{
-            minHeight: 'calc(100vh - 84px)',
-            position: 'relative',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '2rem',
-            margin: '-2rem -6%',
-            overflow: 'auto',
-            backgroundColor: '#ffffff'
-        }}>
-
-            <style>{`
-                .admin-light-panel { color: #000; }
-                .admin-light-panel label { color: #2D3748 !important; font-weight: 600; }
-                .admin-light-panel input { color: #000 !important; background: rgba(0,0,0,0.05) !important; border-color: #ccc !important; }
-                .admin-link { color: var(--accent) !important; transition: all 0.3s ease; }
-                .admin-link:hover { opacity: 0.8; }
-            `}</style>
-
-            <div className="admin-light-panel" style={{ width: '100%', maxWidth: '400px', padding: '2.5rem', background: 'rgba(220, 220, 220, 0.45)', backdropFilter: 'blur(12px)', borderRadius: '16px', zIndex: 1, boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.15)' }}>
-                <h2 className="page-title" style={{ fontSize: '1.4rem', margin: '0 0 1.5rem 0', padding: 0, color: 'var(--accent)', textShadow: 'none' }}>{isLogin ? 'Admin Portal' : 'Admin Register'}</h2>
-                <form onSubmit={handleSubmit}>
-                    {!isLogin && (
-                        <div className="form-group">
-                            <label>Full Name</label>
-                            <input
+        <div className="min-h-full flex items-center justify-center -m-8 py-16 px-6 bg-slate-50 relative overflow-hidden">
+            <div className="absolute inset-0 bg-[url('/car3.avif')] bg-cover bg-center opacity-10"></div>
+            
+            <Card className="w-full max-w-md bg-white/70 backdrop-blur-xl border-slate-200 shadow-2xl relative z-10 p-2 md:p-4">
+                <CardHeader className="text-center pb-2">
+                    <CardTitle className="text-2xl font-extrabold text-accent font-display tracking-tight">
+                        {isLogin ? 'Admin Portal' : 'Admin Register'}
+                    </CardTitle>
+                    <p className="text-slate-500 text-sm mt-2">{isLogin ? 'Sign in to manage your fleet.' : 'Create an account to manage your fleet.'}</p>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {!isLogin && (
+                            <Input
+                                label="Full Name"
                                 type="text"
                                 value={formData.full_name}
                                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                                 required={!isLogin}
                             />
-                        </div>
-                    )}
-                    <div className="form-group">
-                        <label>Email Address</label>
-                        <input
+                        )}
+                        <Input
+                            label="Email Address"
                             type="email"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             required
                         />
-                    </div>
 
-                    <div className="form-group">
-                        <label>Password</label>
-                        <input
+                        <Input
+                            label="Password"
                             type="password"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             required
                         />
-                    </div>
 
-                    <button type="submit" className="btn btn-slate" style={{ width: '100%', marginTop: '1rem', color: '#fff' }}>
-                        {isLogin ? 'Login' : 'Sign Up'}
-                    </button>
-                    <div className="admin-link" style={{ textAlign: 'center', marginTop: '1rem', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setIsLogin(!isLogin)}>
-                        {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
-                    </div>
-                </form>
-            </div>
+                        <Button type="submit" className="w-full mt-6 shadow-md h-12 text-base font-bold" variant="slate">
+                            {isLogin ? 'Login' : 'Sign Up'}
+                        </Button>
+                        <div 
+                            className="text-center mt-6 text-sm text-accent hover:text-slate-700 font-semibold cursor-pointer transition-colors" 
+                            onClick={() => setIsLogin(!isLogin)}
+                        >
+                            {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
+                        </div>
+                    </form>
+                </CardContent>
+            </Card>
         </div>
     );
 };

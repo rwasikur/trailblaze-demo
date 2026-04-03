@@ -19,16 +19,16 @@ const Navbar = () => {
     }, [location.pathname]);
 
     return (
-        <nav className="navbar">
-            <Link to="/" className="nav-brand" style={{ display: 'flex', alignItems: 'center' }} aria-label="Trailblaze Auto Logo">
-                <img src="/carlogo.png" alt="Trailblaze Auto Logo" style={{ height: '55px', width: 'auto' }} />
+        <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-[rgba(13,13,13,0.8)] backdrop-blur-md border-b border-[rgba(74,101,114,0.2)]">
+            <Link to="/" className="flex items-center text-accent text-xl font-extrabold no-underline tracking-tight" aria-label="Trailblaze Auto Logo">
+                <img src="/carlogo.png" alt="Trailblaze Auto Logo" className="h-[55px] w-auto" />
             </Link>
-            <div className="nav-links">
-                {isAdmin && <Link to="/admin/dashboard">Admin Dashboard</Link>}
-                {isAdmin && <Link to="/admin/profile">Profile</Link>}
-                <Link to="/browse">Catalogue</Link>
-                {!isAdmin && <Link to="/admin">Admin Login</Link>}
-                {isAdmin && <Link to="/admin" onClick={() => {
+            <div className="flex items-center space-x-6">
+                {isAdmin && <Link to="/admin/dashboard" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Admin Dashboard</Link>}
+                {isAdmin && <Link to="/admin/profile" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Profile</Link>}
+                <Link to="/browse" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Catalogue</Link>
+                {!isAdmin && <Link to="/admin" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Admin Login</Link>}
+                {isAdmin && <Link to="/admin" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300" onClick={() => {
                     localStorage.removeItem('adminToken');
                     window.dispatchEvent(new Event('authChange'));
                 }}>Sign Out</Link>}

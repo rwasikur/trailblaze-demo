@@ -59,23 +59,7 @@ const authAdmin = async (req, res) => {
 
 const getAdminProfile = async (req, res) => {
     try {
-        // Extract token directly from header (bypassing broken middleware)
-        const authHeader = req.headers.authorization;
-        let adminId;
-        
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            const token = authHeader.split(' ')[1];
-            const decoded = jwt.decode(token);
-            adminId = decoded?.id;
-        }
-        
-        if (!adminId) {
-            return res.status(401).json({ message: 'Invalid token' });
-        }
-        
-        const admin = await Admin.findByPk(adminId, {
-            attributes: { exclude: ['password'] }
-        });
+        const admin = req.admin;
         if (admin) {
             res.json(admin);
         } else {
@@ -88,21 +72,7 @@ const getAdminProfile = async (req, res) => {
 
 const updateAdminProfile = async (req, res) => {
     try {
-        // Extract token directly from header (bypassing broken middleware)
-        const authHeader = req.headers.authorization;
-        let adminId;
-        
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            const token = authHeader.split(' ')[1];
-            const decoded = jwt.decode(token);
-            adminId = decoded?.id;
-        }
-        
-        if (!adminId) {
-            return res.status(401).json({ message: 'Invalid token' });
-        }
-        
-        const admin = await Admin.findByPk(adminId);
+        const admin = await Admin.findByPk(req.admin?._id);
         if (admin) {
             admin.full_name = req.body.full_name || admin.full_name;
             admin.email = req.body.email || admin.email;
