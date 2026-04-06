@@ -19,8 +19,8 @@ const HomePage = () => {
                             Premium fleet available now
                         </div>
 
-                        <h1 className="mt-8 text-balance text-5xl font-black leading-[1.02] text-white md:text-7xl">
-                            Elevate every drive with a catalogue built to feel as premium as the cars.
+                        <h1 id="hero-heading" className="mt-8 text-balance text-5xl font-black leading-[1.02] text-white md:text-7xl">
+                            Drive Your Dream. Find your perfect car from our premium fleet.
                         </h1>
 
                         <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300 md:text-xl">
@@ -30,6 +30,7 @@ const HomePage = () => {
 
                         <div className="mt-10">
                             <Button
+                                id="browse-cars-cta"
                                 onClick={() => navigate('/browse')}
                                 className="group h-auto rounded-2xl bg-white px-8 py-4 text-base font-bold text-slate-900 shadow-2xl shadow-slate-950/30"
                             >
@@ -41,17 +42,17 @@ const HomePage = () => {
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
                         <div className="rounded-[2rem] border border-white/10 bg-white/10 p-6 text-white backdrop-blur-xl">
-                            <div className="text-xs uppercase tracking-[0.24em] text-slate-300">Design upgrade</div>
-                            <div className="mt-3 text-3xl font-black">Cleaner browsing</div>
+                            <div className="text-xs uppercase tracking-[0.24em] text-slate-300">Premium selection</div>
+                            <div className="mt-3 text-3xl font-black">10+ Vehicles</div>
                             <p className="mt-3 text-sm leading-6 text-slate-300">
-                                Better spacing, stronger hierarchy, and more polished visuals across landing, catalogue, and details.
+                                Browse sedans, SUVs, sports cars, and electric vehicles — all inspected and ready to drive.
                             </p>
                         </div>
                         <div className="rounded-[2rem] border border-white/10 bg-slate-950/50 p-6 text-white backdrop-blur-xl">
-                            <div className="text-xs uppercase tracking-[0.24em] text-slate-300">Usability fix</div>
-                            <div className="mt-3 text-3xl font-black">Scroll restored</div>
+                            <div className="text-xs uppercase tracking-[0.24em] text-slate-300">Transparent pricing</div>
+                            <div className="mt-3 text-3xl font-black">No hidden fees</div>
                             <p className="mt-3 text-sm leading-6 text-slate-300">
-                                The page layout now scrolls normally again, including catalogue browsing and detailed vehicle reading.
+                                Every listing shows the full ex-showroom price with specs, fuel type, and availability upfront.
                             </p>
                         </div>
                     </div>
@@ -60,24 +61,24 @@ const HomePage = () => {
 
             <section className="mx-auto grid max-w-7xl gap-6 px-6 py-14 md:grid-cols-3">
                 <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
-                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">Curated visual system</div>
-                    <h2 className="mt-3 text-2xl font-black text-slate-900">A landing page with depth</h2>
+                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">Verified listings</div>
+                    <h2 className="mt-3 text-2xl font-black text-slate-900">Every car, certified</h2>
                     <p className="mt-3 text-sm leading-6 text-slate-600">
-                        The homepage now feels like a proper front door instead of a static hero locked to one screen.
+                        All vehicles are verified by our dealership team with complete service history and inspection reports.
                     </p>
                 </article>
                 <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
-                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">Catalogue focus</div>
-                    <h2 className="mt-3 text-2xl font-black text-slate-900">Editorial browsing flow</h2>
+                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">All vehicle types</div>
+                    <h2 className="mt-3 text-2xl font-black text-slate-900">SUVs, Sedans & EVs</h2>
                     <p className="mt-3 text-sm leading-6 text-slate-600">
-                        Featured inventory, cleaner card composition, and clearer metadata make the collection easier to scan.
+                        From compact city cars to powerful SUVs and cutting-edge electric vehicles — find exactly what you need.
                     </p>
                 </article>
                 <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
-                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">Detail view</div>
-                    <h2 className="mt-3 text-2xl font-black text-slate-900">More readable car stories</h2>
+                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">Full specifications</div>
+                    <h2 className="mt-3 text-2xl font-black text-slate-900">Every detail, upfront</h2>
                     <p className="mt-3 text-sm leading-6 text-slate-600">
-                        Vehicle pages are structured to show imagery, pricing, specs, and descriptions without clipping content.
+                        Mileage, fuel type, transmission, seating, colours, and pricing — all visible before you inquire.
                     </p>
                 </article>
             </section>

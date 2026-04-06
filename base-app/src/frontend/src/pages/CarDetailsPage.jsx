@@ -11,6 +11,7 @@ const CarDetailsPage = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [activeTab, setActiveTab] = useState('Overview');
     const [fullScreenImage, setFullScreenImage] = useState(null);
+    const [imageLoaded, setImageLoaded] = useState(false);
 
     useEffect(() => {
         const fetchCar = async () => {
@@ -34,8 +35,14 @@ const CarDetailsPage = () => {
         allImages.push(...car.secondary_images);
     }
 
-    const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
-    const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+    const nextImage = () => {
+        setImageLoaded(false);
+        setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+    };
+    const prevImage = () => {
+        setImageLoaded(false);
+        setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+    };
 
     const tabs = [
         { id: 'Overview', label: `${car.brand} ${car.name}` },
@@ -50,7 +57,7 @@ const CarDetailsPage = () => {
         <div className="min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_35%,#f8fafc_100%)] px-4 py-8 md:px-6 md:py-10">
             <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
                 <div className="flex justify-between items-center">
-                    <Button variant="outline" onClick={() => navigate(-1)} className="text-sm">
+                    <Button id="back-to-catalogue" variant="outline" onClick={() => navigate(-1)} className="text-sm">
                         &larr; Back to Catalogue
                     </Button>
                 </div>
@@ -75,10 +82,12 @@ const CarDetailsPage = () => {
                 <div className="bg-white rounded-[2rem] border border-slate-200 shadow-[0_20px_50px_rgba(15,23,42,0.08)] overflow-hidden flex flex-col md:flex-row">
                     {activeTab !== 'Images' && (
                         <div className="w-full md:w-[45%] bg-[linear-gradient(180deg,#e2e8f0_0%,#cbd5e1_100%)] flex flex-col items-center justify-center p-8 relative min-h-[360px]">
-                            <img 
-                                src={allImages[currentImageIndex]} 
-                                alt={`${car.brand} ${car.name}`} 
-                                className="max-w-full max-h-full object-contain rounded-lg transition-opacity duration-300" 
+                            <img
+                                id={imageLoaded ? "car-detail-image" : undefined}
+                                src={allImages[currentImageIndex]}
+                                alt={`${car.brand} ${car.name}`}
+                                onLoad={() => setImageLoaded(true)}
+                                className={`max-w-full max-h-full object-contain rounded-lg transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0 hidden'}`}
                             />
                             {allImages.length > 1 && (
                                 <>
@@ -106,12 +115,12 @@ const CarDetailsPage = () => {
                         {activeTab === 'Overview' && (
                             <div className="flex flex-col">
                                 <div>
-                                    <div className="text-slate-500 font-medium mb-1 text-sm">{car.brand}</div>
-                                    <h1 className="text-3xl md:text-4xl m-0 mb-4 font-display font-bold text-slate-900 leading-tight">{car.name}</h1>
+                                    <div id="car-detail-brand" className="text-slate-500 font-medium mb-1 text-sm">{car.brand}</div>
+                                    <h1 id="car-detail-name" className="text-3xl md:text-4xl m-0 mb-4 font-display font-bold text-slate-900 leading-tight">{car.name}</h1>
                                 </div>
                                 <div className="flex justify-between items-center mb-6">
                                     <div>
-                                        <div className="text-2xl text-accent font-bold">${car.price_per_day?.toLocaleString()}</div>
+                                        <div id="car-detail-price" className="text-2xl text-accent font-bold">${car.price_per_day?.toLocaleString()}</div>
                                         <div className="text-slate-500 text-xs mt-0.5 tracking-wide uppercase">Ex-showroom</div>
                                     </div>
                                 </div>
@@ -145,7 +154,7 @@ const CarDetailsPage = () => {
                                         <div className="mb-2 flex justify-center text-slate-400">
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
                                         </div>
-                                        <div className="text-base font-semibold text-slate-900 mb-0.5">{car.fuel_type || 'N/A'}</div>
+                                        <div id="car-detail-fuel" className="text-base font-semibold text-slate-900 mb-0.5">{car.fuel_type || 'N/A'}</div>
                                         <div className="text-xs text-slate-500">Fuel type</div>
                                     </div>
                                 </div>

@@ -26,8 +26,8 @@ const Navbar = () => {
             <div className="flex items-center space-x-6">
                 {isAdmin && <Link to="/admin/dashboard" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Admin Dashboard</Link>}
                 {isAdmin && <Link to="/admin/profile" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Profile</Link>}
-                <Link to="/browse" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Catalogue</Link>
-                {!isAdmin && <Link to="/admin" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Admin Login</Link>}
+                <Link id="browse-link" to="/browse" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Catalogue</Link>
+                {!isAdmin && <Link id="admin-link" to="/admin" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Admin Login</Link>}
                 {isAdmin && <Link to="/admin" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300" onClick={() => {
                     localStorage.removeItem('adminToken');
                     window.dispatchEvent(new Event('authChange'));

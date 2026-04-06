@@ -134,7 +134,7 @@ const public_cars = [
         registration_city: "Denver",
         insurance_validity: "Sep 2025",
         description: "The Land Rover Defender 110 is built for legendary adventures. With Terrain Response 2, ClearSight Ground View, and Wade Sensing, it is the most capable Defender ever - yet also the most liveable with 7 seats.",
-        image_url: "https://images.unsplash.com/photo-1588459474892-9e3ccb7d2b5f?auto=format&fit=crop&q=80&w=1200",
+        image_url: "https://images.unsplash.com/photo-1736746419802-b608fa1ea070?q=80&w=2232&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         secondary_images: [],
         seller_name: "TrailblazeAuto 4x4",
         availability_status: "Available"

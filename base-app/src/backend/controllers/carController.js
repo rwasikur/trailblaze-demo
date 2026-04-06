@@ -20,7 +20,7 @@ const getCarById = async (req, res) => {
             res.status(404).json({ message: 'Car not found' });
         }
     } catch (err) {
-        res.status(500).json({ message: 'Server error: ' + err.message });
+        res.status(404).json({ message: 'Car not found' });
     }
 };
 
