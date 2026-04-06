@@ -74,7 +74,7 @@ const BrowseCarsPage = () => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                            <div id="car-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                                 {(remainingCars.length > 0 ? remainingCars : cars).map((car) => (
                                     <CarCard key={car._id} car={car} />
                                 ))}

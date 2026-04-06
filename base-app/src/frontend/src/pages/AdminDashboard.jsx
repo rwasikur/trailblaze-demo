@@ -34,14 +34,14 @@ const AdminDashboard = () => {
             <div className="max-w-7xl mx-auto space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Admin Dashboard</h1>
+                        <h1 id="dashboard-heading" className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Admin Dashboard</h1>
                         <p className="text-slate-500 mt-2 text-base">Manage your vehicle inventory and system operations.</p>
                     </div>
                     <div className="flex gap-4">
                         <Button variant="outline" onClick={() => navigate('/admin/inventory')} className="text-sm font-semibold h-11 border-slate-300">
                             Manage Inventory
                         </Button>
-                        <Button onClick={() => navigate('/admin/add-car')} className="text-sm font-semibold h-11" variant="slate">
+                        <Button id="add-car-button" onClick={() => navigate('/admin/add-car')} className="text-sm font-semibold h-11" variant="slate">
                             + Add New Vehicle
                         </Button>
                     </div>
@@ -69,9 +69,9 @@ const AdminDashboard = () => {
                                             <th className="px-6 py-4 text-right font-semibold">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100">
+                                    <tbody id="dashboard-car-list" className="divide-y divide-slate-100">
                                         {cars.map(car => (
-                                            <tr key={car._id} className="hover:bg-slate-50/50 transition-colors">
+                                            <tr id={`car-row-${car._id}`} key={car._id} className="hover:bg-slate-50/50 transition-colors">
                                                 <td className="px-6 py-4 font-bold text-slate-900">{car.brand} {car.name}</td>
                                                 <td className="px-6 py-4 text-slate-600 font-medium">{car.model_year}</td>
                                                 <td className="px-6 py-4 text-slate-600 font-medium">${car.price_per_day?.toLocaleString()}</td>
@@ -81,7 +81,7 @@ const AdminDashboard = () => {
                                                     </Badge>
                                                 </td>
                                                 <td className="px-6 py-4 flex justify-end gap-3">
-                                                    <Button variant="outline" size="sm" onClick={() => navigate(`/admin/edit-car/${car._id}`)} className="h-8 px-3 text-xs">Edit</Button>
+                                                    <Button id={`car-row-${car._id}-edit`} variant="outline" size="sm" onClick={() => navigate(`/admin/edit-car/${car._id}`)} className="h-8 px-3 text-xs">Edit</Button>
                                                 </td>
                                             </tr>
                                         ))}

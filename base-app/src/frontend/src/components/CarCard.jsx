@@ -18,7 +18,7 @@ const CarCard = ({ car, featured = false }) => {
 
     return (
         <Link to={`/car/${car._id}`} className="group block h-full rounded-[1.75rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-            <article className={`relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_60px_rgba(15,23,42,0.14)] ${featured ? 'lg:flex-row' : ''}`}>
+            <article id={`car-card-${car._id}`} className={`relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_60px_rgba(15,23,42,0.14)] ${featured ? 'lg:flex-row' : ''}`}>
                 <div className={`relative overflow-hidden bg-slate-100 ${featured ? 'lg:w-[52%] aspect-[4/3] lg:aspect-auto' : 'aspect-[16/10]'}`}>
                     <img
                         src={imageUrl}
@@ -28,7 +28,7 @@ const CarCard = ({ car, featured = false }) => {
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/10 to-transparent"></div>
 
                     <div className="absolute top-4 left-4">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] backdrop-blur-sm ${isAvailable ? 'bg-emerald-500/90 text-white' : 'bg-slate-800/80 text-slate-200'}`}>
+                        <span id={`car-card-${car._id}-status`} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] backdrop-blur-sm ${isAvailable ? 'bg-emerald-500/90 text-white' : 'bg-slate-800/80 text-slate-200'}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-white' : 'bg-slate-400'}`}></span>
                             {isAvailable ? 'Available' : car.availability_status}
                         </span>
@@ -42,8 +42,8 @@ const CarCard = ({ car, featured = false }) => {
 
                     <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4 text-white">
                         <div>
-                            <div className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-200">{car.brand}</div>
-                            <div className="mt-2 text-2xl font-black leading-tight">{car.name}</div>
+                            <div id={`car-card-${car._id}-brand`} className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-200">{car.brand}</div>
+                            <div id={`car-card-${car._id}-name`} className="mt-2 text-2xl font-black leading-tight">{car.name}</div>
                         </div>
                         {car.model_year && (
                             <div className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm font-semibold backdrop-blur">
@@ -83,9 +83,9 @@ const CarCard = ({ car, featured = false }) => {
                         <div className="flex items-center justify-between gap-4">
                             <div>
                                 <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Ex-showroom</div>
-                                <div className="mt-2 text-2xl font-black text-slate-900">{priceLabel}</div>
+                                <div id={`car-card-${car._id}-price`} className="mt-2 text-2xl font-black text-slate-900">{priceLabel}</div>
                             </div>
-                            <div className="flex items-center gap-1.5 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 group-hover:bg-accent">
+                            <div id={`car-card-${car._id}-view-details`} className="flex items-center gap-1.5 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 group-hover:bg-accent">
                                 View Details
                                 <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
                             </div>

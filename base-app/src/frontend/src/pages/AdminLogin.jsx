@@ -56,6 +56,7 @@ const AdminLogin = () => {
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {!isLogin && (
                             <Input
+                                id="admin-name-input"
                                 label="Full Name"
                                 type="text"
                                 value={formData.full_name}
@@ -64,6 +65,7 @@ const AdminLogin = () => {
                             />
                         )}
                         <Input
+                            id="admin-email-input"
                             label="Email Address"
                             type="email"
                             value={formData.email}
@@ -72,6 +74,7 @@ const AdminLogin = () => {
                         />
 
                         <Input
+                            id="admin-password-input"
                             label="Password"
                             type="password"
                             value={formData.password}
@@ -79,11 +82,12 @@ const AdminLogin = () => {
                             required
                         />
 
-                        <Button type="submit" className="w-full mt-6 shadow-md h-12 text-base font-bold" variant="slate">
+                        <Button id={isLogin ? 'admin-login-button' : 'admin-signup-button'} type="submit" className="w-full mt-6 shadow-md h-12 text-base font-bold" variant="slate">
                             {isLogin ? 'Login' : 'Sign Up'}
                         </Button>
-                        <div 
-                            className="text-center mt-6 text-sm text-accent hover:text-slate-700 font-semibold cursor-pointer transition-colors" 
+                        <div
+                            id="admin-signup-toggle"
+                            className="text-center mt-6 text-sm text-accent hover:text-slate-700 font-semibold cursor-pointer transition-colors"
                             onClick={() => setIsLogin(!isLogin)}
                         >
                             {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
