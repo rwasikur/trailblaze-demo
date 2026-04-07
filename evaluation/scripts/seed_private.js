@@ -91,6 +91,66 @@ const private_cars = [
         availability_status: "Available",
         requested_by: "",
         clickCount: 0
+    },
+    {
+        name: "DBS Superleggera Private",
+        brand: "Aston Martin",
+        model_year: 2023,
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        seating_capacity: 4,
+        price_per_day: 40000,
+        description: "Aston Martin DBS restricted to private fleet — gorgeous flagship GT with a twin-turbo V12.",
+        image_url: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&q=80&w=1200",
+        secondary_images: [],
+        availability_status: "Available",
+        requested_by: "",
+        clickCount: 0
+    },
+    {
+        name: "F8 Tributo Private",
+        brand: "Ferrari",
+        model_year: 2024,
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        seating_capacity: 2,
+        price_per_day: 45000,
+        description: "Ferrari F8 Tributo for private members only — an homage to the most powerful V8 in Ferrari history.",
+        image_url: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&q=80&w=1200",
+        secondary_images: [],
+        availability_status: "Available",
+        requested_by: "",
+        clickCount: 0
+    },
+    {
+        name: "Chiron Private",
+        brand: "Bugatti",
+        model_year: 2022,
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        seating_capacity: 2,
+        price_per_day: 150000,
+        description: "Bugatti Chiron reserved for our most exclusive private members. Features an 8.0L quad-turbocharged W16 engine.",
+        image_url: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        secondary_images: [],
+        availability_status: "Available",
+        requested_by: "",
+        clickCount: 0
+    },
+    {
+        name: "P1 Private",
+        brand: "McLaren",
+        model_year: 2015,
+        transmission: "Automatic",
+        fuel_type: "Hybrid",
+        seating_capacity: 2,
+        price_per_day: 120000,
+        description: "McLaren P1 for private fleet. A legendary hybrid hypercar combining F1 technology with striking aerodynamics.",
+        image_url: "https://images.unsplash.com/photo-1592199299806-e7349699f6a9?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        secondary_images: [],
+        availability_status: "Available",
+        requested_by: "",
+        clickCount: 0
     }
 ];
 

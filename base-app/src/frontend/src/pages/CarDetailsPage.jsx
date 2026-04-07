@@ -27,8 +27,30 @@ const CarDetailsPage = () => {
         fetchCar();
     }, [id]);
 
-    if (loading) return <div className="flex justify-center mt-12"><p className="text-slate-500 font-medium animate-pulse">Loading details...</p></div>;
-    if (!car) return <div className="flex justify-center mt-12"><p className="text-slate-500 font-medium">Car not found.</p></div>;
+    if (loading) return (
+        <div className="min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_35%,#f8fafc_100%)] px-4 py-8 md:px-6 md:py-10">
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+                <div className="flex justify-between items-center">
+                    <Button id="back-to-catalogue" variant="outline" onClick={() => navigate(-1)} className="text-sm">
+                        &larr; Back to Catalogue
+                    </Button>
+                </div>
+                <div className="flex justify-center mt-12"><p className="text-slate-500 font-medium animate-pulse">Loading details...</p></div>
+            </div>
+        </div>
+    );
+    if (!car) return (
+        <div className="min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_35%,#f8fafc_100%)] px-4 py-8 md:px-6 md:py-10">
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+                <div className="flex justify-between items-center">
+                    <Button id="back-to-catalogue" variant="outline" onClick={() => navigate(-1)} className="text-sm">
+                        &larr; Back to Catalogue
+                    </Button>
+                </div>
+                <div className="flex justify-center mt-12"><p className="text-slate-500 font-medium">Car not found.</p></div>
+            </div>
+        </div>
+    );
 
     const allImages = [car.image_url || '/car3.avif'];
     if (car.secondary_images && Array.isArray(car.secondary_images)) {
