@@ -32,7 +32,6 @@ server {
     }
 
     location /health {
-        access_log off;
-        return 200 'OK';
+        proxy_pass http://backend:3000/health;
     }
 }
