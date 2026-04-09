@@ -221,7 +221,7 @@ test.describe('Base Application Core Tests — Browse Cars', () => {
         const statusEl = page.locator('[id^="car-card-"][id$="-status"]').first();
         await expect(statusEl).toBeVisible();
         const statusText = await statusEl.textContent();
-        expect(statusText?.trim(), 'Status must be "Available" or "Booked"').toMatch(/^(available|booked)$/i);
+        expect(statusText?.trim(), 'Status must be a valid availability value').toMatch(/^(available|unavailable|pending)$/i);
     });
 
     test('BC-07: Each car card has a View Details button with an action label', async ({ page, baseURL }) => {
