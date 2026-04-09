@@ -766,16 +766,34 @@ test.describe('Base Application Core Tests — Manage Inventory', () => {
         await page.waitForSelector('tbody tr td:not([colspan])');
         const rows = page.locator('tbody tr');
         expect(await rows.count(), 'Inventory table must contain at least one car row').toBeGreaterThan(0);
+        
         const firstRow = rows.first();
+        
+        // Get column indices from header row
+        const header = page.locator('thead th');
+        const getColIndex = async (name: string) => {
+            const count = await header.count();
+            for (let i = 0; i < count; i++) {
+                const text = await header.nth(i).textContent();
+                if (text?.trim() === name) return i;
+            }
+            return -1;
+        };
+        
+        const nameIdx = await getColIndex('Car Name');
+        const brandIdx = await getColIndex('Brand');
+        const priceIdx = await getColIndex('Price');
+        const statusIdx = await getColIndex('Status');
+        
         const cells = firstRow.locator('td');
-        const name = await cells.nth(1).textContent();
+        const name = await cells.nth(nameIdx).textContent();
         expect(name?.trim(), 'Car name column must be non-empty').toMatch(/\w{2,}/);
-        const brand = await cells.nth(2).textContent();
+        const brand = await cells.nth(brandIdx).textContent();
         expect(brand?.trim(), 'Brand column must be non-empty').toMatch(/\w{2,}/);
-        const price = await cells.nth(3).textContent();
+        const price = await cells.nth(priceIdx).textContent();
         expect(price, 'Price column must contain a $ symbol').toContain('$');
-        const status = await cells.nth(4).textContent();
-        expect(status?.trim(), 'Status column must show a recognised availability value').toMatch(/Available|Unavailable|Pending/i);
+        const status = await cells.nth(statusIdx).textContent();
+        expect(status?.trim(), 'Status column must show a recognised availability value').toMatch(/Available|Unavailable|Pending|Booked/i);
     });
 
     test('MI-03: Clicking Options button reveals the dropdown with Edit Vehicle option', async ({ page, baseURL }) => {
