@@ -18,7 +18,11 @@ async function getFirstCar(baseURL: string): Promise<{ _id: string; brand: strin
     if (!Array.isArray(cars) || cars.length === 0) {
         throw new Error('[Precondition] No cars in catalogue. Run seed script before tests.');
     }
-    return cars[0];
+    const stableCar = cars.find((car: any) => car.brand !== 'TestBrand');
+    if (!stableCar) {
+        throw new Error('[Precondition] No stable seeded cars found. Run seed script before tests.');
+    }
+    return stableCar;
 }
 
 // Uses the seeded admin account — login is read-only, no conflict possible in parallel.
