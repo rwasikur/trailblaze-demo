@@ -265,11 +265,14 @@ test.describe('Base Application Core Tests — Browse Cars', () => {
 
     test('BC-10: Clicking View Details navigates to the correct car URL', async ({ page, baseURL }) => {
         const url = requireBaseURL(baseURL);
-        const firstCar = await getFirstCar(url);
         await page.goto(`${url}/browse`);
-        await expect(page.locator('[id^="car-card-"][id$="-view-details"]').first()).toBeVisible();
-        await page.locator('[id^="car-card-"][id$="-view-details"]').first().click();
-        await expect(page).toHaveURL(new RegExp(`/car/${firstCar._id}`));
+        const firstViewDetails = page.locator('[id^="car-card-"][id$="-view-details"]').first();
+        await expect(firstViewDetails).toBeVisible();
+        const cardId = await firstViewDetails.getAttribute('id');
+        // id format: car-card-{uuid}-view-details
+        const carId = cardId?.replace('car-card-', '').replace('-view-details', '');
+        await firstViewDetails.click();
+        await expect(page).toHaveURL(new RegExp(`/car/${carId}`));
     });
 
 });
