@@ -512,8 +512,8 @@ test.describe('Base Application Core Tests — Admin Auth', () => {
         ]);
         expect(loginResponse.status(), 'Invalid credentials must return 401').toBe(401);
         await expect(
-            page.getByText(/authentication failed|invalid|incorrect/i).first(),
-            'Error message must be visible after failed login'
+            page.getByText(/Invalid email or password/i).first(),
+            'Error message "Invalid email or password" must be visible after failed login'
         ).toBeVisible();
         await expect(page, 'User must remain on /admin after failed login').toHaveURL(`${url}/admin`);
     });
@@ -531,6 +531,10 @@ test.describe('Base Application Core Tests — Admin Auth', () => {
         await page.locator('#admin-login-button').click();
         await expect(page, 'User must stay on /admin with malformed email').toHaveURL(`${url}/admin`);
         expect(apiCallMade, 'Malformed email must not trigger a backend API request').toBe(false);
+        const emailValidationMsg = await page.locator('#admin-email-input').evaluate(
+            (el: HTMLInputElement) => el.validationMessage
+        );
+        expect(emailValidationMsg, 'Browser must report a validation error for malformed email').not.toBe('');
     });
 
 });
@@ -567,6 +571,329 @@ test.describe('Base Application Core Tests — Admin Dashboard', () => {
         const addBtn = page.locator('#add-car-button');
         await expect(addBtn, 'Add car button must be visible').toBeVisible();
         await expect(addBtn).toContainText(/add|new|vehicle|car/i);
+    });
+
+});
+
+// ─── Add Car Flow ─────────────────────────────────────────────────────────────
+
+test.describe('Base Application Core Tests — Add Car Flow', () => {
+
+    test('AC-01: Add car page renders with heading, step indicator and form fields', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/add-car`);
+        await expect(page.locator('h1'), 'Add New Vehicle heading must be visible').toContainText(/Add New Vehicle/i);
+        await expect(page.getByText('Basic Info').first(), 'Step indicator must show Basic Info step').toBeVisible();
+        await expect(page.locator('label:has-text("Car Name") + input'), 'Car Name field must be visible').toBeVisible();
+        await expect(page.locator('label:has-text("Brand") + input'), 'Brand field must be visible').toBeVisible();
+        await expect(page.locator('label:has-text("Model Year") + input'), 'Model Year field must be visible').toBeVisible();
+        await expect(page.locator('label:has-text("Price ($)") + input'), 'Price field must be visible').toBeVisible();
+    });
+
+    test('AC-02: Next Step button advances the wizard from step 1 to step 2', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/add-car`);
+        await page.locator('label:has-text("Car Name") + input').fill('Test Car');
+        await page.locator('label:has-text("Brand") + input').fill('TestBrand');
+        await page.locator('label:has-text("Model Year") + input').fill('2024');
+        await page.locator('label:has-text("Price ($)") + input').fill('100');
+        await page.getByRole('button', { name: 'Next Step' }).click();
+        await expect(page.locator('h3:has-text("Specifications")'), 'Step 2 Specifications heading must appear').toBeVisible();
+    });
+
+    test('AC-03: Full Add Car wizard completes and redirects to dashboard with 201 response', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/add-car`);
+
+        // Step 1: Basic Info
+        await page.locator('label:has-text("Car Name") + input').fill('Wizard Flow Car');
+        await page.locator('label:has-text("Brand") + input').fill('FlowBrand');
+        await page.locator('label:has-text("Model Year") + input').fill('2024');
+        await page.locator('label:has-text("Price ($)") + input').fill('150');
+        await page.getByRole('button', { name: 'Next Step' }).click();
+
+        // Step 2: Specifications
+        await expect(page.locator('h3:has-text("Specifications")')).toBeVisible();
+        await page.locator('label:has-text("Transmission") + select').selectOption('Automatic');
+        await page.locator('label:has-text("Fuel Type") + input').fill('Petrol');
+        await page.locator('label:has-text("Seating Capacity") + input').fill('5');
+        await page.getByRole('button', { name: 'Next Step' }).click();
+
+        // Step 3: Registration & Details
+        await expect(page.locator('h3:has-text("Registration & Details")')).toBeVisible();
+        await page.locator('label:has-text("Number of Owners") + input').fill('1');
+        await page.getByRole('button', { name: 'Next Step' }).click();
+
+        // Step 4: Media — submit
+        await expect(page.locator('h3:has-text("Vehicle Media")')).toBeVisible();
+        const [addResponse] = await Promise.all([
+            page.waitForResponse((r: any) => r.url().includes('/api/cars') && r.request().method() === 'POST'),
+            page.getByRole('button', { name: 'Save Vehicle to Fleet' }).click(),
+        ]);
+        expect(addResponse.status(), 'POST /api/cars must return 201 Created').toBe(201);
+        await expect(page).toHaveURL(/dashboard/);
+    });
+
+    test('AC-04: POST /api/cars with valid token creates a car and returns 201', async ({ baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        const ctx = await playwrightRequest.newContext();
+        const loginRes = await ctx.post(`${url}/api/admin/login`, {
+            data: { email: SEED_ADMIN.email, password: SEED_ADMIN.password }
+        });
+        expect(loginRes.status(), 'Admin login must succeed for setup').toBe(200);
+        const { token } = await loginRes.json();
+        const res = await ctx.post(`${url}/api/cars`, {
+            data: {
+                name: 'API Created Car', brand: 'APIBrand', model_year: '2024',
+                price_per_day: 200, fuel_type: 'Petrol', transmission: 'Automatic', seating_capacity: 5
+            },
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        expect(res.status(), 'POST /api/cars with valid token must return 201').toBe(201);
+        const body = await res.json();
+        const carId = body._id ?? body.car?._id;
+        expect(carId, 'Created car must have an _id field').toBeTruthy();
+        await ctx.dispose();
+    });
+
+    test('AC-05: Back to Dashboard button on Add Car page navigates to dashboard', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/add-car`);
+        await expect(page.locator('h1')).toContainText(/Add New Vehicle/i);
+        await page.getByRole('button', { name: 'Back to Dashboard' }).click();
+        await expect(page).toHaveURL(/dashboard/);
+    });
+
+});
+
+// ─── Edit Car Flow ─────────────────────────────────────────────────────────────
+
+test.describe('Base Application Core Tests — Edit Car Flow', () => {
+
+    test('EC-01: Edit car page renders with "Edit Vehicle" heading', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        const firstCar = await getFirstCar(url);
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/edit-car/${firstCar._id}`);
+        await expect(page.locator('h1'), 'Edit Vehicle heading must be visible').toContainText(/Edit Vehicle/i);
+    });
+
+    test('EC-02: Edit car page pre-populates form with existing car name and brand', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        const firstCar = await getFirstCar(url);
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/edit-car/${firstCar._id}`);
+        await expect(page.locator('label:has-text("Car Name") + input')).not.toHaveValue('');
+        const nameValue = await page.locator('label:has-text("Car Name") + input').inputValue();
+        expect(nameValue, 'Car name input must be pre-populated with the existing car name').toBe(firstCar.name);
+        const brandValue = await page.locator('label:has-text("Brand") + input').inputValue();
+        expect(brandValue, 'Brand input must be pre-populated with the existing car brand').toBe(firstCar.brand);
+    });
+
+    test('EC-03: Full Edit Car flow saves changes with 200 response and redirects to inventory', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        const firstCar = await getFirstCar(url);
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/edit-car/${firstCar._id}`);
+        await expect(page.locator('label:has-text("Car Name") + input')).not.toHaveValue('');
+        // Ensure the number_of_owners integer field has a value to avoid a DB type error on empty string
+        await page.locator('label:has-text("Number of Owners") + input').fill('1');
+        // Submit the form to validate the round-trip
+        const [editResponse] = await Promise.all([
+            page.waitForResponse((r: any) => r.url().includes(`/api/cars/${firstCar._id}`) && r.request().method() === 'PUT'),
+            page.getByRole('button', { name: 'Save Updates to Fleet' }).click(),
+        ]);
+        expect(editResponse.status(), 'PUT /api/cars/:id must return 200 OK').toBe(200);
+        await expect(page).toHaveURL(/inventory/);
+    });
+
+    test('EC-04: PUT /api/cars/:id with valid token updates the car and returns 200', async ({ baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        const firstCar = await getFirstCar(url);
+        const ctx = await playwrightRequest.newContext();
+        const loginRes = await ctx.post(`${url}/api/admin/login`, {
+            data: { email: SEED_ADMIN.email, password: SEED_ADMIN.password }
+        });
+        expect(loginRes.status(), 'Admin login must succeed for setup').toBe(200);
+        const { token } = await loginRes.json();
+        const res = await ctx.put(`${url}/api/cars/${firstCar._id}`, {
+            data: { name: firstCar.name },
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        expect(res.status(), 'PUT /api/cars/:id with valid token must return 200').toBe(200);
+        await ctx.dispose();
+    });
+
+    test('EC-05: Edit car "Back to Inventory" button navigates to the inventory page', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        const firstCar = await getFirstCar(url);
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/edit-car/${firstCar._id}`);
+        await expect(page.locator('h1')).toContainText(/Edit Vehicle/i);
+        await page.getByRole('button', { name: 'Back to Inventory' }).click();
+        await expect(page).toHaveURL(/inventory/);
+    });
+
+});
+
+// ─── Manage Inventory ─────────────────────────────────────────────────────────
+
+test.describe('Base Application Core Tests — Manage Inventory', () => {
+
+    test('MI-01: Manage Inventory page renders with heading and vehicle table', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/inventory`);
+        await expect(page.locator('h1'), 'Manage Inventory heading must be visible').toContainText(/Manage Inventory/i);
+        await expect(page.locator('table'), 'Inventory table must be visible').toBeVisible();
+    });
+
+    test('MI-02: Inventory table rows show car name, brand, price and status', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/inventory`);
+        await page.waitForSelector('tbody tr td:not([colspan])');
+        const rows = page.locator('tbody tr');
+        expect(await rows.count(), 'Inventory table must contain at least one car row').toBeGreaterThan(0);
+        const firstRow = rows.first();
+        const cells = firstRow.locator('td');
+        const name = await cells.nth(1).textContent();
+        expect(name?.trim(), 'Car name column must be non-empty').toMatch(/\w{2,}/);
+        const brand = await cells.nth(2).textContent();
+        expect(brand?.trim(), 'Brand column must be non-empty').toMatch(/\w{2,}/);
+        const price = await cells.nth(3).textContent();
+        expect(price, 'Price column must contain a $ symbol').toContain('$');
+        const status = await cells.nth(4).textContent();
+        expect(status?.trim(), 'Status column must show a recognised availability value').toMatch(/Available|Unavailable|Pending/i);
+    });
+
+    test('MI-03: Clicking Options button reveals the dropdown with Edit Vehicle option', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/inventory`);
+        await page.waitForSelector('tbody tr td:not([colspan])');
+        const optionsBtn = page.getByRole('button', { name: 'Options ▼' }).first();
+        await expect(optionsBtn, 'Options ▼ button must be visible').toBeVisible();
+        await optionsBtn.click();
+        await expect(
+            page.getByRole('button', { name: /Edit Vehicle/i }),
+            'Edit Vehicle option must appear after clicking Options'
+        ).toBeVisible();
+    });
+
+    test('MI-04: Status update toggle changes car status and shows success message', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        // Create a dedicated test car with Unavailable status so we can test "Return to Available"
+        // without mutating shared seed data during parallel test runs
+        const ctx = await playwrightRequest.newContext();
+        const loginRes = await ctx.post(`${url}/api/admin/login`, { data: SEED_ADMIN });
+        const { token } = await loginRes.json();
+        const createRes = await ctx.post(`${url}/api/cars`, {
+            data: {
+                name: 'MI-04 Status Toggle Car', brand: 'TestBrand', model_year: 2024,
+                price_per_day: 99, fuel_type: 'Electric', transmission: 'Automatic',
+                seating_capacity: 4, availability_status: 'Unavailable', number_of_owners: 1
+            },
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const testCar = await createRes.json();
+        const testCarId = testCar._id ?? testCar.car?._id;
+        await ctx.dispose();
+
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/inventory`);
+        await page.waitForSelector('tbody tr td:not([colspan])');
+
+        // Identify the row by the last 6 chars of the test car's _id (shown in the ID column)
+        const idSuffix = testCarId.substring(testCarId.length - 6);
+        const carRow = page.locator('tbody tr').filter({ hasText: idSuffix }).first();
+        await carRow.getByRole('button', { name: 'Options ▼' }).click();
+
+        // "Return to Available" only appears when status is Unavailable
+        await expect(
+            page.getByRole('button', { name: /Return to Available/i }),
+            '"Return to Available" option must appear for Unavailable car'
+        ).toBeVisible();
+        await page.getByRole('button', { name: /Return to Available/i }).click();
+
+        // Verify success toast message
+        await expect(
+            page.getByText('Status updated successfully'),
+            'Success toast "Status updated successfully" must appear after status change'
+        ).toBeVisible();
+    });
+
+    test('MI-05: Back to Dashboard button on Manage Inventory page navigates to dashboard', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        await loginAsAdmin(page, url, SEED_ADMIN);
+        await page.goto(`${url}/admin/inventory`);
+        await page.getByRole('button', { name: 'Back to Dashboard' }).click();
+        await expect(page).toHaveURL(/dashboard/);
+    });
+
+});
+
+// ─── Security Tests ───────────────────────────────────────────────────────────
+
+test.describe('Base Application Core Tests — Security', () => {
+
+    test('SEC-01: GET /api/cars/admin/all returns 401 without an auth token', async ({ baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        const ctx = await playwrightRequest.newContext();
+        const res = await ctx.get(`${url}/api/cars/admin/all`);
+        expect(res.status(), 'Unauthenticated GET /api/cars/admin/all must return 401').toBe(401);
+        await ctx.dispose();
+    });
+
+    test('SEC-02: POST /api/cars returns 401 without an auth token', async ({ baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        const ctx = await playwrightRequest.newContext();
+        const res = await ctx.post(`${url}/api/cars`, {
+            data: { name: 'Unauthorized Car', brand: 'NoBrand', price_per_day: 100 }
+        });
+        expect(res.status(), 'Unauthenticated POST /api/cars must return 401').toBe(401);
+        await ctx.dispose();
+    });
+
+    test('SEC-03: PUT /api/cars/:id returns 401 without an auth token', async ({ baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        const firstCar = await getFirstCar(url);
+        const ctx = await playwrightRequest.newContext();
+        const res = await ctx.put(`${url}/api/cars/${firstCar._id}`, {
+            data: { name: 'Unauthorized Update' }
+        });
+        expect(res.status(), 'Unauthenticated PUT /api/cars/:id must return 401').toBe(401);
+        await ctx.dispose();
+    });
+
+    test('SEC-04: PUT /api/cars/:id/status returns 401 without an auth token', async ({ baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        const firstCar = await getFirstCar(url);
+        const ctx = await playwrightRequest.newContext();
+        const res = await ctx.put(`${url}/api/cars/${firstCar._id}/status`, {
+            data: { status: 'Unavailable' }
+        });
+        expect(res.status(), 'Unauthenticated PUT /api/cars/:id/status must return 401').toBe(401);
+        await ctx.dispose();
+    });
+
+    test('SEC-05: GET /api/admin/profile returns 401 without an auth token', async ({ baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        const ctx = await playwrightRequest.newContext();
+        const res = await ctx.get(`${url}/api/admin/profile`);
+        expect(res.status(), 'Unauthenticated GET /api/admin/profile must return 401').toBe(401);
+        await ctx.dispose();
+    });
+
+    test('SEC-06: Admin dashboard page redirects unauthenticated browser to login', async ({ page, baseURL }) => {
+        const url = requireBaseURL(baseURL);
+        await page.goto(`${url}/admin/dashboard`);
+        // Should either redirect to /admin login or show a login prompt
+        await expect(page).not.toHaveURL(/dashboard/);
     });
 
 });
