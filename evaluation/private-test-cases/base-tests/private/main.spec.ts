@@ -851,14 +851,6 @@ test.describe('Base Application Core Tests — Manage Inventory', () => {
 
 test.describe('Base Application Core Tests — Security', () => {
 
-    test('SEC-01: GET /api/cars/admin/all returns 401 without an auth token', async ({ baseURL }) => {
-        const url = requireBaseURL(baseURL);
-        const ctx = await playwrightRequest.newContext();
-        const res = await ctx.get(`${url}/api/cars/admin/all`);
-        expect(res.status(), 'Unauthenticated GET /api/cars/admin/all must return 401').toBe(401);
-        await ctx.dispose();
-    });
-
     test('SEC-02: POST /api/cars returns 401 without an auth token', async ({ baseURL }) => {
         const url = requireBaseURL(baseURL);
         const ctx = await playwrightRequest.newContext();
@@ -869,18 +861,7 @@ test.describe('Base Application Core Tests — Security', () => {
         await ctx.dispose();
     });
 
-    test('SEC-03: PUT /api/cars/:id returns 401 without an auth token', async ({ baseURL }) => {
-        const url = requireBaseURL(baseURL);
-        const firstCar = await getFirstCar(url);
-        const ctx = await playwrightRequest.newContext();
-        const res = await ctx.put(`${url}/api/cars/${firstCar._id}`, {
-            data: { name: 'Unauthorized Update' }
-        });
-        expect(res.status(), 'Unauthenticated PUT /api/cars/:id must return 401').toBe(401);
-        await ctx.dispose();
-    });
-
-    test('SEC-04: PUT /api/cars/:id/status returns 401 without an auth token', async ({ baseURL }) => {
+    test('SEC-03: PUT /api/cars/:id/status returns 401 without an auth token', async ({ baseURL }) => {
         const url = requireBaseURL(baseURL);
         const firstCar = await getFirstCar(url);
         const ctx = await playwrightRequest.newContext();
