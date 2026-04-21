@@ -1,5 +1,6 @@
 const { connectDB } = require('../config/db');
 const Car = require('../models/Car');
+const Admin = require('../models/Admin');
 
 const private_cars = [
     {
@@ -159,17 +160,36 @@ const seedPrivate = async () => {
         console.log("Running private database seeding (Postgres/Sequelize)...");
         await connectDB();
 
+        // Sync and clear Cars
         await Car.sync({ alter: true });
-
         await Car.destroy({ where: {}, truncate: true });
-        console.log("Existing cars table wiped.");
-
         await Car.bulkCreate(private_cars);
-        console.log("Private seed data loaded!");
+        console.log("Private vehicle seed data loaded!");
+
+        // Seed Additional Admins and Users (Append)
+        const private_users = [
+            { full_name: "Private Admin", email: "admin@test.com", password: "password123", role: "admin" },
+            // Additional Admins
+            { full_name: "Private Admin 1", email: "admin1@pri.com", password: "pri123", role: "admin" },
+            { full_name: "Private Admin 2", email: "admin2@pri.com", password: "pri123", role: "admin" },
+            { full_name: "Private Admin 3", email: "admin3@pri.com", password: "pri123", role: "admin" },
+            { full_name: "Private Admin 4", email: "admin4@pri.com", password: "pri123", role: "admin" },
+            { full_name: "Private Admin 5", email: "admin5@pri.com", password: "pri123", role: "admin" },
+        ];
+
+        console.log("Seeding private auxiliary accounts...");
+        for (const userData of private_users) {
+            await Admin.findOrCreate({
+                where: { email: userData.email },
+                defaults: userData,
+                individualHooks: true
+            });
+        }
+        console.log("Private auxiliary accounts seeded!");
 
         process.exit(0);
     } catch (err) {
-        console.error("Error seeding private cars:", err);
+        console.error("Error seeding private data:", err);
         process.exit(1);
     }
 };

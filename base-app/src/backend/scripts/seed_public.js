@@ -1,5 +1,6 @@
 const { connectDB } = require('../config/db');
 const Car = require('../models/Car');
+const Admin = require('../models/Admin');
 
 const public_cars = [
     {
@@ -283,11 +284,32 @@ const seedPublic = async () => {
                 created += 1;
             }
         }
+        console.log(`Public car sync complete. Created: ${created}, Updated: ${updated}`);
 
-        console.log(`Public seed sync complete. Created: ${created}, Updated: ${updated}`);
+        // Seed Additional Admins and Users (Append)
+        const public_users = [
+            { full_name: "System Admin", email: "admin@test.com", password: "password123", role: "admin" },
+            // Additional Admins
+            { full_name: "Public Admin 1", email: "admin1@pub.com", password: "pub123", role: "admin" },
+            { full_name: "Public Admin 2", email: "admin2@pub.com", password: "pub123", role: "admin" },
+            { full_name: "Public Admin 3", email: "admin3@pub.com", password: "pub123", role: "admin" },
+            { full_name: "Public Admin 4", email: "admin4@pub.com", password: "pub123", role: "admin" },
+            { full_name: "Public Admin 5", email: "admin5@pub.com", password: "pub123", role: "admin" },
+        ];
+
+        console.log("Seeding public auxiliary accounts...");
+        for (const userData of public_users) {
+            await Admin.findOrCreate({
+                where: { email: userData.email },
+                defaults: userData,
+                individualHooks: true
+            });
+        }
+        console.log("Public auxiliary accounts seeded!");
+
         process.exit(0);
     } catch (err) {
-        console.error("Error seeding public cars:", err);
+        console.error("Error seeding public data:", err);
         process.exit(1);
     }
 };
