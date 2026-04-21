@@ -1,129 +1,140 @@
-﻿# TrailBlazer Auto
+# Trailblaze Auto
 
-TrailBlazer Auto is a full-stack car discovery and dealership management application. It includes a public catalogue for browsing premium vehicles and an admin area for managing inventory, media, and profile information.
+A premium automotive inventory management platform that bridges the gap between elite dealerships and car enthusiasts. Featuring an image-led car catalog and a robust administrative suite for fleet expansion and status management.
 
-## Architecture
+## 🏗️ Architecture
+```
+┌─────────────────┐    ┌───────────────────┐    ┌─────────────────┐
+│ React Frontend  │◄──►│  Node.js Backend  │◄──►│  PostgreSQL DB  │
+│  (Port 5173)    │    │   (Port 3000)     │    │   (Port 5432)   │
+└─────────────────┘    └───────────────────┘    └─────────────────┘
+```
 
-TrailBlazer Auto uses the following services:
+## 📋 API Endpoints
 
-- `frontend`: React + Vite development server on port `5173` for local development
-- `backend`: Express + Sequelize API on port `3000`
-- `postgres`: PostgreSQL database on port `5432`
-- `nginx`: reverse proxy and public entrypoint on port `80`
+### Public Routes
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/cars` | List currently available car inventory. |
+| `GET` | `/api/cars/:id` | Retrieve detailed specifications for a specific car. |
 
-Local development uses the Vite dev server behind nginx. Production-style ECS deployment uses a built frontend served by nginx.
+### Administrative Routes
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/admin/login` | Authenticate administrator and receive JWT token. |
+| `POST` | `/api/admin/signup` | Register a new administrator account. |
+| `GET` | `/api/admin/profile` | Retrieve the logged-in administrator's profile. |
+| `PUT` | `/api/admin/profile` | Update administrator account details and bio. |
+| `GET` | `/api/cars/admin/all` | List all vehicles in fleet with full metadata (Admin only). |
+| `POST` | `/api/cars` | Register a new vehicle to the dealership (Admin only). |
+| `PUT` | `/api/cars/:id` | Modify an existing vehicle's attributes (Admin only). |
+| `PUT` | `/api/cars/:id/status` | Update vehicle availability (Available/Booked) (Admin only). |
 
-## Tech Stack
-
-### Frontend
-
-- React
-- Vite
-- React Router
-- Tailwind CSS utilities
-- Framer Motion
+## 🛠️ Tech Stack
 
 ### Backend
+*   **Runtime**: Node.js 18+
+*   **Framework**: Express 5.2.1
+*   **ORM**: Sequelize 6.35.2
+*   **Database**: PostgreSQL 15
+*   **Authentication**: JSON Web Token (jsonwebtoken 9.0.3)
+*   **Password Security**: Bcrypt 6.0.0
 
-- Node.js
-- Express
-- Sequelize
-- PostgreSQL
-- JWT authentication
+### Frontend
+*   **Build Tool**: Vite 4.4.5
+*   **Framework**: React 19.0.0
+*   **Routing**: React Router 7.13.1
+*   **Styling**: TailwindCSS 3.4.19
+*   **Animations**: Framer Motion 12.38.0
+*   **Component Libraries**: Lucide React, React Icons
 
 ### Infrastructure
+*   **Containerization**: Docker & Docker Compose
+*   **Gateway**: Nginx (Unified access on Port 80)
+*   **Process Management**: PM2 (optional) / Docker Engine
 
-- Docker
-- Docker Compose
-- nginx
-- Amazon ECS / Fargate artifacts
+## 🗄️ Database Schema
 
-## Main Features
+### Table: `Admin` (managed via Sequelize)
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `_id` | UUID | Primary Key (Auto-generated) |
+| `full_name` | String | Full name of the administrator |
+| `email` | String | Unique email address for login |
+| `password` | String | BCrypt hashed password |
+| `role` | String | Support for multi-role management (default: `admin`) |
+| `phone` | String | Contact phone number |
+| `bio` | Text | Short professional biography |
+| `avatar_url` | String | Profile image reference |
 
-- Polished public landing page
-- Car catalogue with rich cards and filtering/search support
-- Car details page with pricing, specifications, gallery, and other metadata
-- Admin registration and login
-- Admin dashboard and inventory management
-- Public and private seed data for evaluation
+### Table: `Car` (managed via Sequelize)
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `_id` | UUID | Primary Key (Auto-generated) |
+| `name` | String | Model name (e.g., "Model S Plaid") |
+| `brand` | String | Manufacturer (e.g., "Tesla") |
+| `price_per_day` | Integer | Daily rental/listing price |
+| `transmission` | String | Shift type (Automatic/Manual) |
+| `fuel_type` | String | Energy source (Electric/Petrol/etc.) |
+| `availability_status`| String | Current fleet status (Available/Pending/Unavailable) |
+| `image_url` | String | Primary high-resolution vehicle image |
 
-## Local Development
+## 🚀 Quick Start
 
 ### Prerequisites
+*   Docker & Docker Compose
+*   Node.js 18+ (for local development)
 
-- Docker Desktop
-- Node.js (only needed if you want to run tests from the host)
-
-### Start the application
-
-From the `base-app` directory:
-
+### 1. Clone and Initialize
 ```bash
-docker compose up -d --build
+git clone <repository-url>
+cd trailblaze-auto/base-app
 ```
 
-### Access points
-
-- App through nginx: [http://localhost](http://localhost)
-- Frontend dev server: [http://localhost:5173](http://localhost:5173)
-- Backend health endpoint: [http://localhost:3000/health](http://localhost:3000/health)
-
-## Private Evaluation Setup
-
-The repository includes a private compose override and private seed script for evaluation.
-
-From `base-app`, you can combine the public and private compose files:
-
+### 2. Launch Environment
 ```bash
-docker compose -f docker-compose.yml -f ../evaluation/docker-compose.private.yml up --build
+# Start the entire stack in detached mode
+docker-compose up -d --build
 ```
 
-The private setup changes seeded data and backend environment values for evaluation.
+### 3. Access the Platform
+*   **Gateway (Port 80)**: [http://localhost](http://localhost)
+*   **Admin Dashboard**: [http://localhost/admin](http://localhost/admin)
+*   **API Health**: [http://localhost:3000/health](http://localhost:3000/health)
 
-## Tests
+## 📊 Sample Data Overview
+The platform supports environment-specific data injection to satisfy various testing and demo requirements.
 
-Playwright tests are defined at the repository root.
+### Dataset A (Default/Public)
+**Purpose**: General demonstration and public-facing car catalog.
+*   **Init Script**: `scripts/seed_public.js`
+*   **Volumes**: `pg_data` (shared persistent volume)
+*   **Execution**: `docker-compose up`
 
-Install root dependencies once:
+### Dataset B (Private/Testing)
+**Purpose**: Isolated environment for automated verification and private builds.
+*   **Init Script**: `scripts/seed_private.js`
+*   **Volumes**: `trailblazeauto_postgres_data_private`
+*   **Execution**: `docker-compose -f docker-compose.yml -f ../evaluation/docker-compose.private.yml up --build`
 
+## 🧪 Testing
+
+### Running Public Verification
 ```bash
-npm install
+# Ensure Dataset A is running
+cd ../tasks
+npx playwright test test-cases/base-tests/trailblaze.spec.ts --reporter=list
 ```
 
-Run all Playwright tests:
-
+### Running Private Verification
 ```bash
-npx playwright test
+# Ensure Dataset B is running
+cd ../evaluation
+npx playwright test private-test-cases/base-tests/trailblaze.spec.ts --reporter=list
 ```
 
-Base public tests live under:
-
-- `tasks/test-cases/base-tests/`
-
-Private evaluation tests live under:
-
-- `evaluation/private-test-cases/`
-
-## ECS Deployment
-
-Production deployment artifacts are stored at the repository root and in `base-app/deployment/`.
-
-Important files:
-
-- `ecs-task-prod.json`
-- `build-and-push-ecs.sh`
-- `ECS_DEPLOYMENT.md`
-- `base-app/src/frontend/Dockerfile.ecs`
-- `base-app/deployment/nginx/nginx.ecs.conf`
-
-For the production deployment flow and troubleshooting steps, see:
-
-- [ECS_DEPLOYMENT.md](../ECS_DEPLOYMENT.md)
-
-## Notes
-
-- Local development and ECS production are intentionally different:
-  - local uses the Vite dev server
-  - ECS uses a built frontend served by nginx
-- Backend production port is `3000`
-- nginx is the public entrypoint in both local and production-style setups
+### Resetting Environments
+```bash
+# Tear down and clear volumes
+docker-compose down -v
+```

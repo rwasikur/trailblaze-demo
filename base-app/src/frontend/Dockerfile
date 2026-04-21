@@ -1,18 +1,13 @@
-FROM node:24-alpine AS builder
+FROM node:24-alpine
+
 WORKDIR /app
 
-# Install Nginx
-RUN apk add --no-cache nginx curl
-
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN apk add --no-cache curl
+RUN npm install
+
 COPY . .
 
-# Copy Nginx config
-COPY nginx.conf /etc/nginx/http.d/default.conf
+EXPOSE 5173
 
-# Expose both ports (5173 for Vite, 80 for Nginx)
-EXPOSE 80 5173
-
-# Start both Nginx and Vite
-CMD ["sh", "-c", "nginx && npm run dev -- --host"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
