@@ -1,6 +1,7 @@
 const { connectDB } = require('../config/db');
 const Car = require('../models/Car');
 const Admin = require('../models/Admin');
+const SaleHistory = require('../models/SaleHistory');
 
 const private_cars = [
     {
@@ -160,11 +161,41 @@ const seedPrivate = async () => {
         console.log("Running private database seeding (Postgres/Sequelize)...");
         await connectDB();
 
-        // Sync and clear Cars
+        // Sync and clear tables
         await Car.sync({ alter: true });
-        await Car.destroy({ where: {}, truncate: true });
+        await SaleHistory.sync({ alter: true });
+
+        await SaleHistory.destroy({ where: {}, cascade: true });
+        await Car.destroy({ where: {}, truncate: true, cascade: true });
+
         await Car.bulkCreate(private_cars);
         console.log("Private vehicle seed data loaded!");
+
+        // Seed Sale History for private cars with distinct data
+        console.log("Seeding private historical transaction data...");
+        const allCars = await Car.findAll();
+        for (const car of allCars) {
+            const historicalRecords = [
+                {
+                    car_id: car._id,
+                    sale_date: new Date(new Date().setFullYear(new Date().getFullYear() - 3)),
+                    price: Math.floor(car.price_per_day * 0.75),
+                    seller_name: "Exclusive Collection Beverly Hills",
+                    buyer_name: "Private Collector Alpha",
+                    sale_status: "Sold"
+                },
+                {
+                    car_id: car._id,
+                    sale_date: new Date(new Date().setFullYear(new Date().getFullYear() - 1.5)),
+                    price: Math.floor(car.price_per_day * 0.85),
+                    seller_name: "Private Collector Alpha",
+                    buyer_name: "TrailblazeAuto Private Reserve",
+                    sale_status: "Sold"
+                }
+            ];
+            await SaleHistory.bulkCreate(historicalRecords);
+        }
+        console.log("Private historical transaction data seeded!");
 
         // Seed Additional Admins and Users (Append)
         const private_users = [

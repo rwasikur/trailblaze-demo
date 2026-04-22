@@ -1,6 +1,7 @@
 const { connectDB } = require('../config/db');
 const Car = require('../models/Car');
 const Admin = require('../models/Admin');
+const SaleHistory = require('../models/SaleHistory');
 
 const public_cars = [
     {
@@ -285,6 +286,37 @@ const seedPublic = async () => {
             }
         }
         console.log(`Public car sync complete. Created: ${created}, Updated: ${updated}`);
+
+        // Seed Sale History for some cars
+        console.log("Seeding historical transaction data...");
+        const allCars = await Car.findAll();
+        for (const car of allCars) {
+            // Check if history already exists to avoid duplicates
+            const existingHistory = await SaleHistory.findOne({ where: { car_id: car._id } });
+            if (!existingHistory) {
+                // Add 2-3 historical records for each car
+                const historicalRecords = [
+                    {
+                        car_id: car._id,
+                        sale_date: new Date(new Date().setFullYear(new Date().getFullYear() - 2)),
+                        price: Math.floor(car.price_per_day * 0.8),
+                        seller_name: "Previous Owner Ltd",
+                        buyer_name: "Automotive Trust",
+                        sale_status: "Sold"
+                    },
+                    {
+                        car_id: car._id,
+                        sale_date: new Date(new Date().setFullYear(new Date().getFullYear() - 1)),
+                        price: Math.floor(car.price_per_day * 0.9),
+                        seller_name: "Automotive Trust",
+                        buyer_name: "TrailblazeAuto Dealership",
+                        sale_status: "Sold"
+                    }
+                ];
+                await SaleHistory.bulkCreate(historicalRecords);
+            }
+        }
+        console.log("Historical transaction data seeded!");
 
         // Seed Additional Admins and Users (Append)
         const public_users = [
