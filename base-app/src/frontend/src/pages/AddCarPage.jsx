@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
@@ -6,17 +6,89 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
 
+import { BRANDS_MODELS, EXTERIOR_COLORS, INTERIOR_COLORS } from '../constants/carData';
+
 const AddCarPage = () => {
     const navigate = useNavigate();
+    const mainFileRef = useRef(null);
+    const multiFileRef = useRef(null);
+
     const [formData, setFormData] = useState({
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
         price_per_day: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '',
-        number_of_owners: '', registration_city: '', insurance_validity: '', description: '',
-        availability_status: 'Available', image_url: ''
+        number_of_owners: 0, registration_city: '', insurance_validity: '', description: '',
+        availability_status: 'Available', image_url: '', secondary_images: [], condition: 'New'
     });
+
+    const [uploadMethod] = useState('local'); // Locked to 'local' upload
+    const [mainLoading, setMainLoading] = useState(false);
+    const [multiLoading, setMultiLoading] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
 
     const steps = ['Basic Info', 'Specifications', 'Registration & Details', 'Media'];
+
+    const brands = Object.keys(BRANDS_MODELS).sort();
+    const models = formData.brand ? BRANDS_MODELS[formData.brand] : [];
+
+    const handleMainFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setMainLoading(true);
+        const data = new FormData();
+        data.append('car_image', file);
+
+        try {
+            const token = localStorage.getItem('adminToken');
+            const res = await api.post('/api/cars/upload', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setFormData(prev => ({ ...prev, image_url: res.data.url }));
+            toast.success('Main image uploaded');
+        } catch (err) {
+            toast.error('Upload failed: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setMainLoading(false);
+        }
+    };
+
+    const handleMultiFileChange = async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        setMultiLoading(true);
+        const data = new FormData();
+        files.forEach(file => data.append('secondary_images', file));
+
+        try {
+            const token = localStorage.getItem('adminToken');
+            const res = await api.post('/api/cars/upload-multiple', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setFormData(prev => ({
+                ...prev,
+                secondary_images: [...prev.secondary_images, ...res.data.urls]
+            }));
+            toast.success(`${res.data.urls.length} images added to gallery`);
+        } catch (err) {
+            toast.error('Gallery upload failed: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setMultiLoading(false);
+        }
+    };
+
+    const removeSecondaryImage = (idx) => {
+        setFormData(prev => ({
+            ...prev,
+            secondary_images: prev.secondary_images.filter((_, i) => i !== idx)
+        }));
+    };
 
     const nextStep = (e) => {
         if (e) e.preventDefault();
@@ -88,10 +160,52 @@ const AddCarPage = () => {
                                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                                         <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Basic Information</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <Input label="Car Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-                                            <Input label="Brand" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required />
+                                            <div className="space-y-2 md:col-span-2">
+                                                <label className="block text-sm font-bold text-slate-700">Vehicle Condition</label>
+                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all" value={formData.condition} onChange={(e) => setFormData({ ...formData, condition: e.target.value, number_of_owners: e.target.value === 'New' ? 0 : formData.number_of_owners })} required>
+                                                    <option value="New">Brand New (Showroom)</option>
+                                                    <option value="Used">Pre-Owned (Secondary Market)</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-bold text-slate-700">Brand</label>
+                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value, name: '' })} required>
+                                                    <option value="">Select Brand</option>
+                                                    {brands.map(b => <option key={b} value={b}>{b}</option>)}
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            {formData.brand === 'Other' ? (
+                                                <Input label="Custom Brand Name" value={formData.custom_brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required />
+                                            ) : null}
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-bold text-slate-700">Car Name</label>
+                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} disabled={!formData.brand || formData.brand === 'Other'} required>
+                                                    <option value="">Select Model</option>
+                                                    {models.map(m => <option key={m} value={m}>{m}</option>)}
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            {formData.name === 'Other' || formData.brand === 'Other' ? (
+                                                <Input label="Specific Model Name" value={formData.name === 'Other' ? '' : formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                                            ) : null}
                                             <Input label="Model Year" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
                                             <Input label="Price ($)" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
+
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-bold text-slate-700">Exterior Color</label>
+                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })} required>
+                                                    <option value="">Select Color</option>
+                                                    {EXTERIOR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-bold text-slate-700">Interior Color</label>
+                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })} required>
+                                                    <option value="">Select Interior</option>
+                                                    {INTERIOR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -112,7 +226,7 @@ const AddCarPage = () => {
                                             <Input label="Seating Capacity" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
                                             <Input label="Range (e.g. 350km)" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
                                             <Input label="Body Type (e.g. SUV)" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
-                                            <Input label="Mileage (e.g. 15,000 km)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
+                                            <Input label="Mileage (e.g. 40 km)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
                                         </div>
                                     </div>
                                 )}
@@ -121,30 +235,9 @@ const AddCarPage = () => {
                                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                                         <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Registration & Details</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Exterior Color</label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })}>
-                                                    <option value="">Select</option>
-                                                    <option value="Black">Black</option>
-                                                    <option value="White">White</option>
-                                                    <option value="Silver">Silver</option>
-                                                    <option value="Grey">Grey</option>
-                                                    <option value="Blue">Blue</option>
-                                                    <option value="Red">Red</option>
-                                                </select>
+                                            <div className="md:col-span-1">
+                                                <Input label="Number of Owners" type="number" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value })} disabled={formData.condition === 'New'} className={formData.condition === 'New' ? 'opacity-50' : ''} />
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Interior Color</label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })}>
-                                                    <option value="">Select</option>
-                                                    <option value="Black">Black</option>
-                                                    <option value="White">White</option>
-                                                    <option value="Beige">Beige</option>
-                                                    <option value="Brown">Brown</option>
-                                                    <option value="Grey">Grey</option>
-                                                </select>
-                                            </div>
-                                            <Input label="Number of Owners" type="number" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value })} />
                                             <Input label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
                                             <Input label="Insurance Validity" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} />
                                             <div className="space-y-2">
@@ -156,32 +249,66 @@ const AddCarPage = () => {
                                             </div>
                                             <div className="md:col-span-3 space-y-2">
                                                 <label className="block text-sm font-bold text-slate-700">Description</label>
-                                                <textarea 
-                                                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all resize-y min-h-[120px]" 
-                                                    value={formData.description} 
-                                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
-                                                    rows="3"
-                                                />
+                                                <textarea className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all resize-y min-h-[120px]" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="3" />
                                             </div>
                                         </div>
                                     </div>
                                 )}
 
+
                                 {currentStep === 4 && (
-                                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                                        <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Vehicle Media</h3>
-                                        <div className="space-y-6">
-                                            <Input 
-                                                label="Image URL" 
-                                                placeholder="https://example.com/car-image.jpg"
-                                                value={formData.image_url}
-                                                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                                            />
-                                            {formData.image_url && (
-                                                <div className="mt-4 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 max-w-sm">
-                                                    <img src={formData.image_url} alt="Preview" className="w-full h-48 object-cover" onError={(e) => e.target.style.display = 'none'} />
+                                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+                                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                                            <h3 className="text-xl font-bold text-slate-900">Vehicle Media</h3>
+                                        </div>
+
+                                        <div className="space-y-8">
+                                            {/* Main Image Section */}
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs">01</span>
+                                                    <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Main Profile Image</h4>
                                                 </div>
-                                            )}
+
+                                                <div className="flex gap-4 items-center">
+                                                    <input type="file" ref={mainFileRef} onChange={handleMainFileChange} className="hidden" accept="image/*" />
+                                                    <Button type="button" variant="outline" onClick={() => mainFileRef.current.click()} disabled={mainLoading} className="h-12 border-dashed border-2 hover:border-blue-600 hover:text-blue-600 transition-all px-8 border-slate-200 uppercase text-[10px] font-black tracking-widest">
+                                                        {mainLoading ? 'Uploading...' : 'Choose Main File'}
+                                                    </Button>
+                                                    {formData.image_url && <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">✓</span> Ready</span>}
+                                                </div>
+
+                                                {formData.image_url && (
+                                                    <div className="relative group max-w-md">
+                                                        <img src={formData.image_url.startsWith('/') ? `${api.defaults.baseURL}${formData.image_url}` : formData.image_url} alt="Main Preview" className="w-full h-56 object-cover rounded-2xl border border-slate-200 shadow-sm" />
+                                                        <button type="button" onClick={() => setFormData({ ...formData, image_url: '' })} className="absolute top-3 right-3 h-8 w-8 bg-black/50 backdrop-blur-md rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600">×</button>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Secondary Gallery Section */}
+                                            <div className="space-y-4 pt-4 border-t border-slate-50">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs">02</span>
+                                                    <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Vehicle Gallery (Multi-Upload)</h4>
+                                                </div>
+
+                                                <div className="flex gap-4 items-center">
+                                                    <input type="file" ref={multiFileRef} onChange={handleMultiFileChange} className="hidden" multiple accept="image/*" />
+                                                    <Button type="button" variant="outline" onClick={() => multiFileRef.current.click()} disabled={multiLoading} className="h-12 border-dashed border-2 hover:border-slate-900 transition-all px-8 border-slate-200">
+                                                        {multiLoading ? 'Processing Images...' : 'Add Gallery Photos'}
+                                                    </Button>
+                                                </div>
+
+                                                <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
+                                                    {formData.secondary_images.map((img, i) => (
+                                                        <div key={i} className="relative group aspect-square">
+                                                            <img src={img.startsWith('/') ? `${api.defaults.baseURL}${img}` : img} alt={`Gallery ${i}`} className="w-full h-full object-cover rounded-xl border border-slate-200" />
+                                                            <button type="button" onClick={() => removeSecondaryImage(i)} className="absolute top-1.5 right-1.5 h-6 w-6 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-sm font-black">×</button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 )}

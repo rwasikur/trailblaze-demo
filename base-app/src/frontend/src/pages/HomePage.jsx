@@ -1,3 +1,4 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 
@@ -5,83 +6,66 @@ const HomePage = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-full bg-[linear-gradient(180deg,#020617_0%,#0f172a_40%,#e2e8f0_40%,#f8fafc_100%)]">
-            <section className="relative overflow-hidden">
-                <div className="absolute inset-0 z-0">
-                    <img src="/car3.avif" alt="Background" className="h-full w-full object-cover" />
-                    <div className="absolute inset-0 bg-slate-950/75"></div>
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(96,165,250,0.20),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(74,101,114,0.45),_transparent_36%)]"></div>
-                </div>
+        <div className="h-[calc(100vh-5rem)] w-full relative overflow-hidden bg-slate-950 flex flex-col font-outfit">
+            {/* Immersive Background */}
+            <div className="absolute inset-0 z-0">
+                <img
+                    src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070&auto=format&fit=crop"
+                    alt="Pinnacle Fleet"
+                    className="h-full w-full object-cover opacity-60 scale-105 animate-[pulse_15s_infinite_ease-in-out]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.1),transparent_50%)]"></div>
+            </div>
 
-                <div className="relative z-10 mx-auto grid min-h-[calc(100vh-76px)] max-w-7xl gap-10 px-6 py-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:py-20">
-                    <div className="max-w-3xl">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-slate-200 backdrop-blur-md">
-                            Premium fleet available now
-                        </div>
+            {/* Main Content Area */}
+            <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
+                <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000 ease-out">
 
-                        <h1 id="hero-heading" className="mt-8 text-balance text-5xl font-black leading-[1.02] text-white md:text-7xl">
-                            Drive Your Dream. Find your perfect car from our premium fleet.
-                        </h1>
+                    <h1 id="hero-heading" className="text-balance text-5xl font-black leading-[0.95] text-white md:text-7xl lg:text-[5.5rem] tracking-tighter">
+                        Elegance for <br /> <span className="text-blue-500 italic font-serif font-medium lowercase">everyone.</span>
+                    </h1>
 
-                        <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300 md:text-xl">
-                            Explore a more cinematic landing experience, clearer catalogue browsing, and richer vehicle
-                            detail pages designed to make discovery feel intentional from the first scroll.
-                        </p>
+                    <p className="mt-8 mx-auto max-w-xl text-base leading-relaxed text-slate-400 font-medium tracking-wide">
+                        Traverse our curated collection of pristine machines and certified automotive masterpieces. Designed for those who demand excellence in every single mile.
+                    </p>
 
-                        <div className="mt-10">
-                            <Button
-                                id="browse-cars-cta"
-                                onClick={() => navigate('/browse')}
-                                className="group h-auto rounded-2xl bg-white px-8 py-4 text-base font-bold text-slate-900 shadow-2xl shadow-slate-950/30"
-                            >
-                                Explore Our Fleet
-                                <span className="ml-2 transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
-                            </Button>
-                        </div>
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                        <div className="rounded-[2rem] border border-white/10 bg-white/10 p-6 text-white backdrop-blur-xl">
-                            <div className="text-xs uppercase tracking-[0.24em] text-slate-300">Premium selection</div>
-                            <div className="mt-3 text-3xl font-black">10+ Vehicles</div>
-                            <p className="mt-3 text-sm leading-6 text-slate-300">
-                                Browse sedans, SUVs, sports cars, and electric vehicles — all inspected and ready to drive.
-                            </p>
-                        </div>
-                        <div className="rounded-[2rem] border border-white/10 bg-slate-950/50 p-6 text-white backdrop-blur-xl">
-                            <div className="text-xs uppercase tracking-[0.24em] text-slate-300">Transparent pricing</div>
-                            <div className="mt-3 text-3xl font-black">No hidden fees</div>
-                            <p className="mt-3 text-sm leading-6 text-slate-300">
-                                Every listing shows the full ex-showroom price with specs, fuel type, and availability upfront.
-                            </p>
-                        </div>
+                    <div className="mt-12 flex flex-col items-center justify-center">
+                        <Button
+                            id="browse-cars-cta"
+                            onClick={() => navigate('/browse')}
+                            className="group h-16 rounded-2xl bg-blue-600 px-16 text-sm font-black uppercase tracking-widest text-white shadow-2xl shadow-blue-900/40 hover:bg-blue-500 transition-all hover:scale-105 active:scale-95"
+                        >
+                            Explore The Fleet
+                            <svg className="ml-3 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                        </Button>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <section className="mx-auto grid max-w-7xl gap-6 px-6 py-14 md:grid-cols-3">
-                <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
-                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">Verified listings</div>
-                    <h2 className="mt-3 text-2xl font-black text-slate-900">Every car, certified</h2>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">
-                        All vehicles are verified by our dealership team with complete service history and inspection reports.
-                    </p>
-                </article>
-                <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
-                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">All vehicle types</div>
-                    <h2 className="mt-3 text-2xl font-black text-slate-900">SUVs, Sedans & EVs</h2>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">
-                        From compact city cars to powerful SUVs and cutting-edge electric vehicles — find exactly what you need.
-                    </p>
-                </article>
-                <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
-                    <div className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">Full specifications</div>
-                    <h2 className="mt-3 text-2xl font-black text-slate-900">Every detail, upfront</h2>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">
-                        Mileage, fuel type, transmission, seating, colours, and pricing — all visible before you inquire.
-                    </p>
-                </article>
-            </section>
+            {/* Compact Features Bar - Zero Scroll */}
+            <div className="relative z-20 w-full bg-slate-950/40 backdrop-blur-xl border-t border-white/5 pb-8 pt-8">
+                <div className="mx-auto max-w-7xl px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                        {[
+                            { t: 'Brand New Machines', d: 'Zero-mile masterpieces direct from heritage collections.', b: 'HERITAGE' },
+                            { t: 'Certified Pre-Owned', d: 'Rigorous 220-point diagnostic for factory-grade integrity.', b: 'CERTIFIED' },
+                            { t: 'Global Logistics', d: 'Seamless acquisition architecture for a borderless experience.', b: 'CONCIERGE' }
+                        ].map((item, i) => (
+                            <div key={i} className="flex flex-col gap-2 text-left">
+                                <div className="text-[9px] font-black uppercase tracking-[0.4em] text-blue-500 flex items-center gap-2">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+                                    {item.b}
+                                </div>
+                                <h2 className="text-sm font-bold text-white uppercase tracking-wider">{item.t}</h2>
+                                <p className="text-[11px] leading-relaxed text-slate-500 font-medium">
+                                    {item.d}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

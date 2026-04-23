@@ -14,7 +14,7 @@ const Admin = sequelize.define('Admin', {
     role: { type: DataTypes.STRING, defaultValue: 'admin' },
     phone: { type: DataTypes.STRING },
     bio: { type: DataTypes.TEXT },
-    avatar_url: { type: DataTypes.STRING }
+    avatar_url: { type: DataTypes.TEXT }
 }, {
     timestamps: true,
     hooks: {

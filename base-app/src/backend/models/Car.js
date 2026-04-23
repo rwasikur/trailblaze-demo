@@ -30,6 +30,10 @@ const Car = sequelize.define('Car', {
     },
     seller_name: { type: DataTypes.STRING, defaultValue: 'TrailblazeAuto Dealership' },
     seller_email: { type: DataTypes.STRING, defaultValue: 'contact@trailblazeauto.com' },
+    condition: {
+        type: DataTypes.ENUM('New', 'Used'),
+        defaultValue: 'New'
+    },
     availability_status: { type: DataTypes.STRING, defaultValue: 'Available' },
 }, {
     timestamps: true,
