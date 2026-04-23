@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
@@ -12,10 +12,14 @@ const EditCarPage = () => {
     const [formData, setFormData] = useState({
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
         price_per_day: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '',
-        number_of_owners: '', registration_city: '', insurance_validity: '', description: '',
-        availability_status: 'Available', image_url: ''
+        number_of_owners: 0, registration_city: '', insurance_validity: '', description: '',
+        availability_status: 'Available', image_url: '', condition: 'Used'
     });
     const [loading, setLoading] = useState(true);
+    const [mainLoading, setMainLoading] = useState(false);
+    const [multiLoading, setMultiLoading] = useState(false);
+    const mainFileRef = useRef(null);
+    const multiFileRef = useRef(null);
 
     useEffect(() => {
         const fetchCar = async () => {
@@ -34,12 +38,14 @@ const EditCarPage = () => {
                     mileage: data.mileage || '',
                     exterior_color: data.exterior_color || '',
                     interior_color: data.interior_color || '',
-                    number_of_owners: data.number_of_owners || '',
                     registration_city: data.registration_city || '',
                     insurance_validity: data.insurance_validity || '',
                     description: data.description || '',
+                    secondary_images: data.secondary_images || [],
                     availability_status: data.availability_status || 'Available',
-                    image_url: data.image_url || ''
+                    image_url: data.image_url || '',
+                    condition: data.condition || 'Used',
+                    number_of_owners: data.number_of_owners !== undefined && data.number_of_owners !== null ? data.number_of_owners : 0
                 });
             } catch (error) {
                 console.error('Error fetching car details', error);
@@ -51,6 +57,62 @@ const EditCarPage = () => {
         fetchCar();
     }, [id]);
 
+    const handleMainFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setMainLoading(true);
+        const data = new FormData();
+        data.append('car_image', file);
+        try {
+            const token = localStorage.getItem('adminToken');
+            const res = await api.post('/api/cars/upload', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setFormData(prev => ({ ...prev, image_url: res.data.url }));
+            toast.success('Main image uploaded');
+        } catch (err) {
+            toast.error('Upload failed: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setMainLoading(false);
+        }
+    };
+
+    const handleMultiFileChange = async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        setMultiLoading(true);
+        const data = new FormData();
+        files.forEach(file => data.append('secondary_images', file));
+        try {
+            const token = localStorage.getItem('adminToken');
+            const res = await api.post('/api/cars/upload-multiple', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setFormData(prev => ({
+                ...prev,
+                secondary_images: [...(prev.secondary_images || []), ...res.data.urls]
+            }));
+            toast.success(`${res.data.urls.length} images added to gallery`);
+        } catch (err) {
+            toast.error('Gallery upload failed: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setMultiLoading(false);
+        }
+    };
+
+    const removeSecondaryImage = (idx) => {
+        setFormData(prev => ({
+            ...prev,
+            secondary_images: prev.secondary_images.filter((_, i) => i !== idx)
+        }));
+    };
+
     const handleEditCar = async (e) => {
         e.preventDefault();
         try {
@@ -58,7 +120,7 @@ const EditCarPage = () => {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             await api.put(`/api/cars/${id}`, formData, config);
             toast.success('Vehicle updated successfully!');
-            navigate('/admin/inventory');
+            navigate('/admin/catalogue');
         } catch (err) {
             toast.error('Error: ' + (err.response?.data?.message || err.message));
         }
@@ -78,8 +140,8 @@ const EditCarPage = () => {
                         <h1 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Edit Vehicle</h1>
                         <p className="text-slate-500 mt-2 text-base">Update vehicle metadata and availability status below.</p>
                     </div>
-                    <Button variant="outline" onClick={() => navigate('/admin/inventory')} className="text-sm font-semibold h-11 border-slate-300">
-                        Back to Inventory
+                    <Button variant="outline" onClick={() => navigate('/admin/catalogue')} className="text-sm font-semibold h-11 border-slate-300">
+                        Back to Catalogue
                     </Button>
                 </div>
 
@@ -93,6 +155,25 @@ const EditCarPage = () => {
                                     <Input label="Model Year" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
                                     <Input label="Price ($)" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
                                     <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-slate-700">Vehicle Condition</label>
+                                        <select
+                                            className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all"
+                                            value={formData.condition}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setFormData({
+                                                    ...formData,
+                                                    condition: val,
+                                                    number_of_owners: val === 'New' ? 0 : formData.number_of_owners
+                                                });
+                                            }}
+                                            required
+                                        >
+                                            <option value="New">Brand New</option>
+                                            <option value="Used">Pre-Owned</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Transmission</label>
                                         <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required>
                                             <option value="">Select</option>
@@ -104,8 +185,8 @@ const EditCarPage = () => {
                                     <Input label="Seating Capacity" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
                                     <Input label="Range (e.g. 350km)" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
                                     <Input label="Body Type (e.g. SUV)" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
-                                    <Input label="Mileage (e.g. 15,000 km)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
-                                    
+                                    <Input label="Mileage (e.g. 40km)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
+
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Exterior Color</label>
                                         <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })}>
@@ -129,38 +210,87 @@ const EditCarPage = () => {
                                             <option value="Grey">Grey</option>
                                         </select>
                                     </div>
-                                    
-                                    <Input label="Number of Owners" type="number" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value })} />
+
+                                    <Input
+                                        label="Number of Owners"
+                                        type="number"
+                                        value={formData.number_of_owners === "" ? 0 : formData.number_of_owners}
+                                        onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value === "" ? 0 : e.target.value })}
+                                        disabled={formData.condition === 'New'}
+                                        className={formData.condition === 'New' ? 'opacity-50 grayscale bg-slate-100 cursor-not-allowed' : ''}
+                                    />
                                     <Input label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
                                     <Input label="Insurance Validity" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} />
-                                    
+
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Availability</label>
                                         <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-emerald-50 text-emerald-900 focus:bg-white focus:ring-2 focus:ring-emerald-900/10 focus:border-emerald-900 outline-none transition-all font-semibold" value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}>
                                             <option value="Available">Available</option>
-                                            <option value="Pending">Pending</option>
                                             <option value="Unavailable">Unavailable</option>
                                         </select>
                                     </div>
 
                                     <div className="md:col-span-2 lg:col-span-3 space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Description</label>
-                                        <textarea 
-                                            className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all resize-y" 
-                                            value={formData.description} 
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
+                                        <textarea
+                                            className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all resize-y"
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                             rows="3"
                                         />
                                     </div>
-                                    <div className="md:col-span-2 lg:col-span-3">
-                                        <Input label="Image URL" placeholder="https://example.com/car-image.jpg" value={formData.image_url} onChange={(e) => setFormData({ ...formData, image_url: e.target.value })} />
+                                    <div className="md:col-span-2 lg:col-span-3 pt-6 border-t border-slate-100 space-y-8">
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs">01</span>
+                                                <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Main Profile Image</h4>
+                                            </div>
+
+                                            <div className="flex gap-4 items-center">
+                                                <input type="file" ref={mainFileRef} onChange={handleMainFileChange} className="hidden" accept="image/*" />
+                                                <Button type="button" variant="outline" onClick={() => mainFileRef.current.click()} disabled={mainLoading} className="h-12 border-dashed border-2 hover:border-blue-600 hover:text-blue-600 transition-all px-8 border-slate-200 uppercase text-[10px] font-black tracking-widest">
+                                                    {mainLoading ? 'Uploading...' : 'Update Main File'}
+                                                </Button>
+                                                {formData.image_url && <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2"><span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">✓</span> Current Image Valid</span>}
+                                            </div>
+
+                                            {formData.image_url && (
+                                                <div className="relative group max-w-md mt-4">
+                                                    <img src={formData.image_url.startsWith('/') ? `${api.defaults.baseURL}${formData.image_url}` : formData.image_url} alt="Main Preview" className="w-full h-56 object-cover rounded-2xl border border-slate-200 shadow-sm" />
+                                                    <button type="button" onClick={() => setFormData({ ...formData, image_url: '' })} className="absolute top-3 right-3 h-8 w-8 bg-black/50 backdrop-blur-md rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 font-bold">×</button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-4 pt-4 border-t border-slate-50">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs">02</span>
+                                                <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Vehicle Gallery</h4>
+                                            </div>
+
+                                            <div className="flex gap-4 items-center">
+                                                <input type="file" ref={multiFileRef} onChange={handleMultiFileChange} className="hidden" multiple accept="image/*" />
+                                                <Button type="button" variant="outline" onClick={() => multiFileRef.current.click()} disabled={multiLoading} className="h-12 border-dashed border-2 hover:border-slate-900 transition-all px-8 border-slate-200 uppercase text-[10px] font-black tracking-widest">
+                                                    {multiLoading ? 'Processing...' : 'Add Gallery Photos'}
+                                                </Button>
+                                            </div>
+
+                                            <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
+                                                {(formData.secondary_images || []).map((img, i) => (
+                                                    <div key={i} className="relative group aspect-square">
+                                                        <img src={img.startsWith('/') ? `${api.defaults.baseURL}${img}` : img} alt={`Gallery ${i}`} className="w-full h-full object-cover rounded-xl border border-slate-200 shadow-sm" />
+                                                        <button type="button" onClick={() => removeSecondaryImage(i)} className="absolute top-1.5 right-1.5 h-6 w-6 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-sm font-black shadow-md">×</button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 shrink-0">
                                 <Button type="submit" variant="slate" className="w-full h-12 font-bold shadow-sm text-base">
-                                    Save Updates to Fleet
+                                    Save Changes
                                 </Button>
                             </div>
                         </form>

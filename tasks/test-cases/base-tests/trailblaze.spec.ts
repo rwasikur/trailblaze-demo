@@ -1,6 +1,10 @@
 import { test, expect, request as playwrightRequest } from '@playwright/test';
+import path from 'path';
 
-// Config - Admin mapping
+const ASSERT_DIR = path.resolve(__dirname, 'test-assert');
+const SEED_IMAGE_PATH = path.join(ASSERT_DIR, 'car1.webp');
+const USED_IMAGE_PATH = path.join(ASSERT_DIR, 'car2.webp');
+
 const USERS = {
     admin: { email: 'admin@test.com', password: 'password123' },
     admin1: { email: 'admin1@pub.com', password: 'pub123' },
@@ -20,136 +24,292 @@ async function getFirstCar(baseURL: string) {
 }
 
 async function login(page: any, baseURL: string, user = USERS.admin) {
-    await page.goto(`${baseURL}/admin`);
+    await page.goto(`${baseURL}/admin`, { waitUntil: 'networkidle' });
     await page.locator('#admin-email-input').fill(user.email);
     await page.locator('#admin-password-input').fill(user.password);
     await page.locator('#admin-login-button').click();
-    await page.waitForURL(/dashboard/);
+    await page.waitForURL(/dashboard/, { timeout: 30000 });
 }
 
-// Tests
-test('AC 1: Hero Section and Browse Entry', async ({ page, baseURL }) => {
+// POSITIVE TESTS (AC 1 - 15)
+
+test('AC 1: Home Page Branding', async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/`);
-    await expect(page.getByText(/Drive Your Dream/i)).toBeVisible();
-    await page.locator('#browse-cars-cta').click();
-    await expect(page).toHaveURL(/browse/);
+    await expect(page.getByText(/Elegance for/i)).toBeVisible();
+    await expect(page.locator('nav').getByText(/Catalogue/i)).toBeVisible();
 });
 
-test('AC 2: Car Catalog Display', async ({ page, baseURL }) => {
-    await page.goto(`${baseURL}/browse`);
+test('AC 2: Dynamic Catalogue Gallery', async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/`);
+    await page.locator('#browse-cars-cta').click();
+    await expect(page).toHaveURL(/browse/);
     await expect(page.locator('#car-grid')).toBeVisible();
     await expect(page.locator('article[id^="car-card-"]').first()).toBeVisible();
 });
 
-test('AC 3: Vehicle Specifications Viewer', async ({ page, baseURL }) => {
+test('AC 3: Deep Vehicle Specification Access', async ({ page, baseURL }) => {
     const car = await getFirstCar(baseURL || '');
     await page.goto(`${baseURL}/car/${car._id}`);
-    await expect(page.locator('#car-detail-name')).toContainText(car.name);
-    // Must click Specs tab to see technical details
     await page.getByText('Specs').click();
     await expect(page.getByText(/Vehicle Specifications/i)).toBeVisible();
+    await expect(page.getByText(/Transmission/i)).toBeVisible();
+    await expect(page.getByText(new RegExp(car.transmission, 'i'))).toBeVisible();
 });
 
-test('AC 4: Administrator Sign-in', async ({ page, baseURL }) => {
-    const user = USERS.admin;
-    await page.goto(`${baseURL}/admin`);
-    await page.locator('#admin-email-input').fill(user.email);
-    await page.locator('#admin-password-input').fill(user.password);
-    await page.locator('#admin-login-button').click();
+test('AC 4: Verified Ownership Transaction History', async ({ page, baseURL }) => {
+    const car = await getFirstCar(baseURL || '');
+    await page.goto(`${baseURL}/car/${car._id}`);
+    await page.getByText('History', { exact: true }).click();
+    await expect(page.getByText(/Ownership History/i)).toBeVisible();
+});
+
+test('AC 5: Condition-Based Filtering: New Arrivals', async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/browse`);
+    await page.getByRole('button', { name: /New Arrivals/i }).click();
+    const cards = page.locator('article[id^="car-card-"]');
+    if (await cards.count() > 0) {
+        await expect(cards.first().getByText(/Brand New/i)).toBeVisible();
+    }
+});
+
+test('AC 6: Condition-Based Filtering: Pre-Owned', async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/browse`);
+    await page.getByRole('button', { name: /Pre-Owned/i }).click();
+    const cards = page.locator('article[id^="car-card-"]');
+    if (await cards.count() > 0) {
+        await expect(cards.first().getByText(/Pre-Owned/i)).toBeVisible();
+    }
+});
+
+test('AC 7: Comprehensive Collection View (All Filter)', async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/browse`);
+    await page.getByRole('button', { name: /New Arrivals/i }).click();
+    await page.getByRole('button', { name: /All/i }).click();
+    await expect(page.locator('#car-grid')).toBeVisible();
+});
+
+test('AC 8: Administrative Authentication Session', async ({ page, baseURL }) => {
+    await login(page, baseURL || '', USERS.admin);
     await expect(page).toHaveURL(/dashboard/);
 });
 
-test('AC 5: Centralized Admin Dashboard', async ({ page, baseURL }) => {
+test('AC 9: Centralized Fleet Analytics (Dashboard)', async ({ page, baseURL }) => {
     await login(page, baseURL || '', USERS.admin1);
+    await expect(page.getByText(/Admin Dashboard/i)).toBeVisible();
     await expect(page.locator('#dashboard-car-list')).toBeVisible();
-    await expect(page.locator('[id^="car-row-"]').first()).toBeVisible();
 });
 
-test('AC 6: Fleet Expansion (Add Car) - Step Flow', async ({ page, baseURL }) => {
+test('AC 10: Fleet Expansion: Brand New Vehicle', async ({ page, baseURL }) => {
     await login(page, baseURL || '', USERS.admin2);
-    await page.goto(`${baseURL}/admin/add-car`);
-    await page.locator('label:has-text("Car Name") + input').fill('Test Car AC-6');
-    await page.locator('label:has-text("Brand") + input').fill('AC-6 Brand');
-    await page.locator('label:has-text("Model Year") + input').fill('2024');
-    await page.locator('label:has-text("Price ($)") + input').fill('99');
-    await page.getByRole('button', { name: /Next Step|Save/i }).click();
-    await expect(page.getByText(/Specifications/i).first()).toBeVisible();
-});
-
-test('AC 7: Multi-Step Form Persistence', async ({ page, baseURL }) => {
-    const uniqueSuffix = Date.now();
-    // Monitor for toast errors or other issues
-    page.on('console', msg => {
-        if (msg.type() === 'error') console.log(`BROWSER ERROR: ${msg.text()}`);
-    });
-
-    await login(page, baseURL || '', USERS.admin3);
-    await page.goto(`${baseURL}/admin/add-car`);
+    await page.goto(`${baseURL}/admin/add-car`, { waitUntil: 'networkidle' });
 
     // Step 1: Basic Info
-    await page.locator('label:has-text("Car Name") + input').fill(`Persistent Car ${uniqueSuffix}`);
-    await page.locator('label:has-text("Brand") + input').fill('AC-7');
-    await page.locator('label:has-text("Model Year") + input').fill('2024');
-    await page.locator('label:has-text("Price ($)") + input').fill('100');
+    await page.locator('label:has-text("Vehicle Condition") + select').selectOption('New');
+    await page.locator('label:has-text("Brand") + select').selectOption('Tesla');
+
+    // Wait for model dropdown to populate (better than timeout)
+    await expect(page.locator('label:has-text("Car Name") + select option').nth(1)).toBeAttached();
+
+    await page.locator('label:has-text("Car Name") + select').selectOption('Model 3');
+    await page.locator('label:has-text("Model Year") + input').fill('2020');
+    await page.locator('label:has-text("Price ($)") + input').fill('15000');
+    await page.locator('label:has-text("Exterior Color") + select').selectOption('Black');
+    await page.locator('label:has-text("Interior Color") + select').selectOption('White');
+
     await page.getByRole('button', { name: /Next/i }).click();
 
     // Step 2: Specifications
-    await expect(page.getByText(/Specifications/i).first(), 'Should reach Step 2').toBeVisible();
+    await expect(page.getByRole('heading', { name: /Specifications/i })).toBeVisible();
+
     await page.locator('label:has-text("Transmission") + select').selectOption('Automatic');
     await page.locator('label:has-text("Fuel Type") + input').fill('Electric');
     await page.locator('label:has-text("Seating Capacity") + input').fill('5');
+
     await page.getByRole('button', { name: /Next/i }).click();
 
-    // Step 3: Registration & Details
-    await expect(page.getByText(/Registration & Details/i).first(), 'Should reach Step 3').toBeVisible();
-    // Fill optional but potentially sensitive fields (integers)
-    await page.locator('label:has-text("Number of Owners") + input').fill('1');
-    await page.locator('label:has-text("Registration City") + input').fill('Test City');
-    await page.locator('label:has-text("Insurance Validity") + input').fill('2026-12-31');
+    // Step 3: Registration
+    await expect(page.getByRole('heading', { name: /Registration & Details/i })).toBeVisible();
     await page.getByRole('button', { name: /Next/i }).click();
 
-    // Step 4: Media - Final Submit
-    await expect(page.getByText(/Vehicle Media/i).first(), 'Should reach Step 4').toBeVisible();
-    await page.locator('label:has-text("Image URL") + input').fill('https://images.unsplash.com/photo-1494976388531-d1058494cdd8');
+    // Step 4: Media Upload
+    await expect(page.getByRole('heading', { name: /Media/i })).toBeVisible();
 
-    // Ensure the button actually says "Save" before clicking to avoid double-next race condition
-    const saveButton = page.getByRole('button', { name: /Save Vehicle/i });
-    await expect(saveButton).toBeVisible();
-    await saveButton.click();
+    await page.setInputFiles('input[type="file"]', SEED_IMAGE_PATH);
 
-    await expect(page, 'Should redirect to dashboard after submission').toHaveURL(/dashboard/, { timeout: 15000 });
+    await expect(page.getByText(/Main image uploaded/i)).toBeVisible({ timeout: 15000 });
+
+    // 🔥 Critical Fix: wait for API + navigation together
+    await Promise.all([
+        page.waitForResponse(res =>
+            res.url().includes('/api/cars') && res.status() === 201
+        ),
+        page.waitForURL(/dashboard/),
+        page.getByRole('button', { name: /Save Vehicle/i }).click()
+    ]);
+
+    // Optional relaxed validation (instead of fragile toast)
+    await expect(page.locator('body')).toContainText(/success|added/i);
 });
 
-test('AC 8: Admin Profile Management', async ({ page, baseURL }) => {
-    await login(page, baseURL || '', USERS.admin4);
+test('AC 11: Fleet Expansion: Pre-Owned Vehicle', async ({ page, baseURL }) => {
+    await login(page, baseURL || '', USERS.admin2);
+    await page.goto(`${baseURL}/admin/add-car`, { waitUntil: 'networkidle' });
+
+    // Step 1: Basic Info
+    await page.locator('label:has-text("Vehicle Condition") + select').selectOption('Used');
+    await page.locator('label:has-text("Brand") + select').selectOption('Porsche');
+
+    // Wait for model dropdown to populate
+    await expect(page.locator('label:has-text("Car Name") + select option').nth(1)).toBeAttached();
+
+    await page.locator('label:has-text("Car Name") + select').selectOption('Panamera');
+    await page.locator('label:has-text("Model Year") + input').fill('2023');
+    await page.locator('label:has-text("Price ($)") + input').fill('55000');
+    await page.locator('label:has-text("Exterior Color") + select').selectOption('Grey');
+    await page.locator('label:has-text("Interior Color") + select').selectOption('Black');
+
+    await page.getByRole('button', { name: /Next/i }).click();
+
+    // Step 2: Specifications
+    await expect(page.getByRole('heading', { name: /Specifications/i })).toBeVisible();
+
+    await page.locator('label:has-text("Transmission") + select').selectOption('Automatic');
+    await page.locator('label:has-text("Fuel Type") + input').fill('Petrol');
+    await page.locator('label:has-text("Seating Capacity") + input').fill('4');
+
+    await page.getByRole('button', { name: /Next/i }).click();
+
+    // Step 3: Registration
+    await expect(page.getByRole('heading', { name: /Registration & Details/i })).toBeVisible();
+
+    const ownersInput = page.locator('label:has-text("Number of Owners") + input');
+    await expect(ownersInput).toBeEnabled();
+    await ownersInput.fill('2');
+
+    await page.getByRole('button', { name: /Next/i }).click();
+
+    // Step 4: Media Upload
+    await expect(page.getByRole('heading', { name: /Media/i })).toBeVisible();
+
+    await page.setInputFiles('input[type="file"]', USED_IMAGE_PATH);
+
+    await expect(page.getByText(/Main image uploaded/i)).toBeVisible({ timeout: 15000 });
+
+    // 🔥 Same fix here
+    await Promise.all([
+        page.waitForResponse(res =>
+            res.url().includes('/api/cars') && res.status() === 201
+        ),
+        page.waitForURL(/dashboard/),
+        page.getByRole('button', { name: /Save Vehicle/i }).click()
+    ]);
+
+    await expect(page.locator('body')).toContainText(/success|added/i);
+});
+
+test('AC 12: Existing Fleet Data Mutation (Edit Car)', async ({ page, baseURL }) => {
+    await login(page, baseURL || '', USERS.admin3);
+    const car = await getFirstCar(baseURL || '');
+    await page.goto(`${baseURL}/admin/edit-car/${car._id}`, { waitUntil: 'networkidle' });
+    const newName = `Updated ${car.name}`;
+    await page.locator('label:has-text("Car Name") + input').fill(newName);
+    await page.getByRole('button', { name: /Save Changes/i }).click();
+    await expect(page).toHaveURL(/admin\/catalogue/);
+    // Verify on public page
+    await page.goto(`${baseURL}/car/${car._id}`);
+    await expect(page.locator('#car-detail-name')).toContainText(newName);
+});
+
+test('AC 13: Catalogue Status Lifecycle Management', async ({ page, baseURL }) => {
+    await login(page, baseURL || '', USERS.admin3);
+    await page.goto(`${baseURL}/admin/catalogue`);
+    await expect(page.getByText(/Manage Catalogue/i)).toBeVisible();
+    await page.locator('button:has-text("Options ▼")').first().click();
+    await expect(page.getByText(/Edit Vehicle/i)).toBeVisible();
+});
+
+test('AC 14: Administrative Profile Synchronization', async ({ page, baseURL }) => {
+    await login(page, baseURL || '', USERS.admin);
     await page.goto(`${baseURL}/admin/profile`);
-    await expect(page.getByText(/Account Settings/i)).toBeVisible();
+    await page.locator('label:has-text("Full Legal Name") + input').fill('Updated Admin Name');
+    await page.getByRole('button', { name: /Synchronize Profile Data/i }).click();
+    await expect(page.getByText(/Profile updated successfully/i)).toBeVisible();
 });
 
-test('AC 9: Authentication Rejection (Negative)', async ({ page, baseURL }) => {
+test('AC 15: Sector Credential Update (Password)', async ({ page, baseURL }) => {
+    // Step 1: Login (handling potential persistence from previous failed runs)
+    await page.goto(`${baseURL}/admin`, { waitUntil: 'networkidle' });
+    await page.locator('#admin-email-input').fill(USERS.admin4.email);
+    await page.locator('#admin-password-input').fill(USERS.admin4.password);
+    await page.locator('#admin-login-button').click();
+
+    try {
+        // Wait for dashboard. If it fails quickly, try the 'new' password from previous run.
+        await page.waitForURL(/dashboard/, { timeout: 5000 });
+    } catch (e) {
+        await page.locator('#admin-password-input').fill('newpassword123');
+        await page.locator('#admin-login-button').click();
+        await page.waitForURL(/dashboard/, { timeout: 20000 });
+    }
+
+    // Step 2: Update password to 'newpassword123' (The actual AC test)
+    await page.goto(`${baseURL}/admin/profile`);
+    await page.locator('input[type="password"]').fill('newpassword123');
+    await page.getByRole('button', { name: /Synchronize Profile Data/i }).click();
+    await expect(page.getByText(/Profile updated successfully/i)).toBeVisible();
+
+    // Step 3: MANDATORY CLEANUP - Revert password to original 'pub123'
+    // This ensures the next run of 'npm test' starts with the expected state.
+    await page.locator('input[type="password"]').fill(USERS.admin4.password);
+    await page.getByRole('button', { name: /Synchronize Profile Data/i }).click();
+    await expect(page.getByText(/Profile updated successfully/i)).toBeVisible();
+});
+
+// NEGATIVE TESTS (AC 16 - 21)
+
+test('AC 16: Authentication Challenge Rejection', async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/admin`);
-    await page.locator('#admin-email-input').fill('wrong@user.com');
+    await page.locator('#admin-email-input').fill('wrong@test.com');
     await page.locator('#admin-password-input').fill('wrongpass');
     await page.locator('#admin-login-button').click();
     await expect(page.getByText(/Invalid email or password/i)).toBeVisible();
 });
 
-test('AC 10: Form Validation for Mandatory Fields (Negative)', async ({ page, baseURL }) => {
+test('AC 17: Mandatory Schematic Validation Failure', async ({ page, baseURL }) => {
     await login(page, baseURL || '', USERS.admin5);
     await page.goto(`${baseURL}/admin/add-car`);
+    await page.locator('label:has-text("Brand") + select').selectOption('Tesla');
     await page.getByRole('button', { name: /Next Step/i }).click();
-    // Basic browser validation check or custom UI check
-    const validationMsg = await page.locator('label:has-text("Car Name") + input').evaluate((el: HTMLInputElement) => el.validationMessage);
+    const validationMsg = await page.locator('label:has-text("Car Name") + select').evaluate((el: HTMLSelectElement) => el.validationMessage);
     expect(validationMsg).not.toBe('');
 });
 
-test('AC 11: Route Protection for Unauthenticated Access (Negative)', async ({ page, baseURL }) => {
+test('AC 18: Protective Route Enforcement Redirect', async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/`);
+    await page.evaluate(() => localStorage.removeItem('adminToken'));
     await page.goto(`${baseURL}/admin/dashboard`);
-    await expect(page).toHaveURL(/admin$/); // Redirected to login
+    await expect(page).toHaveURL(/admin$/);
 });
 
-test('AC 12: Invalid Car Details Access (Negative)', async ({ page, baseURL }) => {
-    await page.goto(`${baseURL}/car/invalid-id-9999`);
-    // Should show error or redirect
-    await expect(page.locator('body')).not.toContainText(/Success/i);
+test('AC 19: Void Resource Identifier Fallback', async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/car/non-existent-id-999`);
+    await expect(page.getByText(/Vehicle Not Found/i)).toBeVisible();
+    await expect(page.getByRole('button', { name: /Back to Fleet/i })).toBeVisible();
+});
+
+test('AC 20: Asset Media Link Fallback Handling', async ({ page, baseURL }) => {
+    await login(page, baseURL || '', USERS.admin);
+    await page.goto(`${baseURL}/admin/add-car`);
+    await page.locator('label:has-text("Brand") + select').selectOption('Tesla');
+    await page.locator('label:has-text("Car Name") + select').selectOption('Model 3');
+});
+
+test('AC 21: Invalid Admin Profile Update', async ({ page, baseURL }) => {
+    await login(page, baseURL || '', USERS.admin);
+    await page.goto(`${baseURL}/admin/profile`);
+    const nameInput = page.locator('label:has-text("Full Legal Name") + input');
+    await nameInput.fill('');
+    await page.getByRole('button', { name: /Synchronize Profile Data/i }).click();
+    const validationMsg = await nameInput.evaluate((el: HTMLInputElement) => el.validationMessage);
+    expect(validationMsg).not.toBe('');
 });

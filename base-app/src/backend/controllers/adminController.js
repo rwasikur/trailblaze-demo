@@ -30,23 +30,31 @@ const updateCar = async (req, res) => {
         if (car) {
             car.name = req.body.name || car.name;
             car.brand = req.body.brand || car.brand;
-            car.model_year = req.body.model_year || car.model_year;
+            car.model_year = req.body.model_year ? parseInt(req.body.model_year) : car.model_year;
             car.transmission = req.body.transmission || car.transmission;
             car.fuel_type = req.body.fuel_type || car.fuel_type;
-            car.seating_capacity = req.body.seating_capacity || car.seating_capacity;
-            car.price_per_day = req.body.price_per_day || car.price_per_day;
+            car.seating_capacity = req.body.seating_capacity ? parseInt(req.body.seating_capacity) : car.seating_capacity;
+            car.price_per_day = req.body.price_per_day ? parseInt(req.body.price_per_day) : car.price_per_day;
             car.range = req.body.range !== undefined ? req.body.range : car.range;
             car.body_type = req.body.body_type || car.body_type;
             car.mileage = req.body.mileage !== undefined ? req.body.mileage : car.mileage;
             car.exterior_color = req.body.exterior_color || car.exterior_color;
             car.interior_color = req.body.interior_color || car.interior_color;
-            car.number_of_owners = req.body.number_of_owners !== undefined ? req.body.number_of_owners : car.number_of_owners;
+            
+            // Sanitize number_of_owners
+            if (req.body.condition === 'New' || (req.body.condition === undefined && car.condition === 'New')) {
+               car.number_of_owners = 0;
+            } else if (req.body.number_of_owners !== undefined) {
+               car.number_of_owners = req.body.number_of_owners === "" ? 0 : req.body.number_of_owners;
+            }
+            
             car.registration_city = req.body.registration_city || car.registration_city;
             car.insurance_validity = req.body.insurance_validity || car.insurance_validity;
             car.description = req.body.description || car.description;
             car.image_url = req.body.image_url || car.image_url;
             car.secondary_images = req.body.secondary_images !== undefined ? req.body.secondary_images : car.secondary_images;
             car.availability_status = req.body.availability_status || car.availability_status;
+            car.condition = req.body.condition || car.condition;
 
             const updatedCar = await car.save();
             res.json(updatedCar);

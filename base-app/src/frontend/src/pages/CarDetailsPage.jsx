@@ -4,6 +4,46 @@ import api from '../api';
 import { Button } from '../components/ui/Button';
 
 const CarDetailsPage = () => {
+    const getColorCode = (name) => {
+        if (!name) return '#000';
+        const colors = {
+            'Martini Racing': '#ffffff', // Primary white with livery
+            'Grey Alcantara': '#4a4a4a',
+            'Pearl White': '#fcfaf0',
+            'Carmine Red': '#a50021',
+            'Brooklyn Grey': '#8e918f',
+            'Midnight Blue': '#191970',
+            'Rosso Corsa': '#d40000',
+            'Obsidian Black': '#0b0b0b',
+            'Alfa Red': '#b00000',
+            'Fuji White': '#fcfcfc',
+            'Light Oyster': '#d1d1d1',
+            'Jet Black Metallic': '#050505',
+            'Luxor Beige': '#d2b48c',
+            'Suzuka Grey': '#dcdcdc',
+            'Torch Red': '#ff0000',
+            'Adrenaline Red': '#e60000',
+            'Grabber Blue': '#00aae4',
+            'Black Onyx': '#0f0f0f',
+            'Infrared': '#8b0000',
+            'Toasted Caramel': '#8b5a2b',
+            'Polar Silver': '#bcbcbc',
+            'Le Mans Blue': '#000080',
+            'Blue-Black Metallic': '#0a0a1a',
+            'Bayside Blue': '#0047ab',
+            'Grey Cloth': '#808080',
+            'Formula Red': '#cc0000',
+            'Renaissance Red': '#cc0000',
+            'Titanium Grey': '#565e5e',
+            'Mars Red': '#ad0e0e',
+            'Checkered Cloth': '#333333',
+            'Signature Black': '#000000',
+            'Boticelli Leather': '#3d2b1f'
+        };
+        const normalized = Object.keys(colors).find(k => k.toLowerCase() === name.toLowerCase());
+        return normalized ? colors[normalized] : name;
+    };
+
     const { id } = useParams();
     const navigate = useNavigate();
     const [car, setCar] = useState(null);
@@ -28,26 +68,16 @@ const CarDetailsPage = () => {
     }, [id]);
 
     if (loading) return (
-        <div className="min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_35%,#f8fafc_100%)] px-4 py-8 md:px-6 md:py-10">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-                <div className="flex justify-between items-center">
-                    <Button id="back-to-catalogue" variant="outline" onClick={() => navigate(-1)} className="text-sm">
-                        &larr; Back to Catalogue
-                    </Button>
-                </div>
-                <div className="flex justify-center mt-12"><p className="text-slate-500 font-medium animate-pulse">Loading details...</p></div>
-            </div>
+        <div className="min-h-full bg-slate-50 flex items-center justify-center">
+            <p className="text-slate-400 font-medium animate-pulse">Scanning vehicle signatures...</p>
         </div>
     );
+
     if (!car) return (
-        <div className="min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_35%,#f8fafc_100%)] px-4 py-8 md:px-6 md:py-10">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-                <div className="flex justify-between items-center">
-                    <Button id="back-to-catalogue" variant="outline" onClick={() => navigate(-1)} className="text-sm">
-                        &larr; Back to Catalogue
-                    </Button>
-                </div>
-                <div className="flex justify-center mt-12"><p className="text-slate-500 font-medium">Car not found.</p></div>
+        <div className="min-h-full bg-slate-50 flex items-center justify-center p-10">
+            <div className="text-center">
+                <h2 className="text-2xl font-bold text-slate-800">Vehicle Not Found</h2>
+                <Button onClick={() => navigate(-1)} className="mt-4">Back to Fleet</Button>
             </div>
         </div>
     );
@@ -57,246 +87,273 @@ const CarDetailsPage = () => {
         allImages.push(...car.secondary_images);
     }
 
-    const nextImage = () => {
-        setImageLoaded(false);
-        setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
-    };
-    const prevImage = () => {
-        setImageLoaded(false);
-        setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
-    };
+    const tabs = ['Overview', 'Price', 'Specs', 'History', 'Colours', 'Range', 'Images'];
 
-    const tabs = [
-        { id: 'Overview', label: `${car.brand} ${car.name}` },
-        { id: 'Price', label: 'Price' },
-        { id: 'Specs', label: 'Specs' },
-        { id: 'Colours', label: 'Colours' },
-        { id: 'Range', label: 'Range' },
-        { id: 'Images', label: 'Images' },
-    ];
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 'Price':
+                return (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Financial Breakdown</h3>
+                        <div className="bg-slate-50 rounded-3xl p-8 space-y-4">
+                            <div className="flex justify-between items-center py-3 border-b border-slate-200">
+                                <span className="text-slate-500 font-bold">Ex-Showroom Price</span>
+                                <span className="text-2xl font-black text-slate-900">${car.price_per_day?.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center py-3 border-b border-slate-200">
+                                <span className="text-slate-500 font-bold">Estimated Registration</span>
+                                <span className="text-slate-900 font-bold">Varies by City</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-4">
+                                <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Valuation</span>
+                                <span className="text-4xl font-black text-blue-600">${car.price_per_day?.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 'Specs':
+                return (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Vehicle Specifications</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            {[
+                                { l: 'Mileage', v: car.mileage || 'Low Mile' },
+                                { l: 'Transmission', v: car.transmission },
+                                { l: 'Previous Owners', v: car.number_of_owners || 0 },
+                                { l: 'City Hub', v: car.registration_city || 'HQ' },
+                                { l: 'Validity', v: car.insurance_validity || 'Valid' },
+                                { l: 'Seating', v: `${car.seating_capacity} Seats` },
+                            ].map((s, i) => (
+                                <div key={i} className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm">
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">{s.l}</div>
+                                    <div className="font-extrabold text-slate-900">{s.v}</div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="pt-4">
+                            <p className="text-slate-500 text-sm leading-relaxed">{car.description || 'No additional description provided.'}</p>
+                        </div>
+                    </div>
+                );
+            case 'History':
+                return (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Ownership History</h3>
+                        <div className="space-y-4">
+                            {car.saleHistory && car.saleHistory.length > 0 ? (
+                                [...car.saleHistory].sort((a,b) => new Date(b.sale_date) - new Date(a.sale_date)).map((sale, i) => (
+                                    <div key={i} className="bg-slate-50 border border-slate-100 p-6 rounded-2xl relative overflow-hidden group hover:bg-white hover:shadow-lg transition-all">
+                                        <div className="absolute top-0 right-0 p-3">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-400 bg-blue-50 px-2 py-1 rounded">Verified Entry</span>
+                                        </div>
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div>
+                                                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Acquisition Date</div>
+                                                <div className="font-extrabold text-slate-900">{new Date(sale.sale_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Transaction Price</div>
+                                                <div className="font-black text-blue-600">${sale.price?.toLocaleString()}</div>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4 border-t border-slate-200/50 pt-4">
+                                            <div>
+                                                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Previous Holder</div>
+                                                <div className="text-xs font-bold text-slate-700">{sale.seller_name}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">New Registrant</div>
+                                                <div className="text-xs font-bold text-slate-700">{sale.buyer_name}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-10 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No verified history available</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            case 'Colours':
+                return (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Aesthetic Profiles</h3>
+                        <div className="grid gap-6">
+                            <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                <div className="w-16 h-16 rounded-2xl shadow-inner border-4 border-white" style={{ backgroundColor: getColorCode(car.exterior_color) }}></div>
+                                <div>
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Exterior Finish</div>
+                                    <div className="text-xl font-black text-slate-900">{car.exterior_color || 'Signature Black'}</div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                <div className="w-16 h-16 rounded-2xl shadow-inner border-4 border-white" style={{ backgroundColor: getColorCode(car.interior_color) }}></div>
+                                <div>
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Interior Theme</div>
+                                    <div className="text-xl font-black text-slate-900">{car.interior_color || 'Boticelli Leather'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 'Range':
+                return (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6 h-full flex flex-col justify-center">
+                        <div className="text-center space-y-4">
+                            <div className="inline-block p-4 rounded-full bg-blue-100 text-blue-600 mb-4">
+                                <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                            </div>
+                            <h3 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400">Operational Radius</h3>
+                            <div className="text-6xl font-black text-slate-950 tracking-tighter">{car.range || '∞'}</div>
+                            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Estimated capability per cycle</p>
+                        </div>
+                    </div>
+                );
+            case 'Images':
+                return (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Media Gallery</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            {allImages.map((img, idx) => (
+                                <div key={idx} className="relative group aspect-video overflow-hidden rounded-2xl border border-slate-200 cursor-zoom-in" onClick={() => setFullScreenImage(img)}>
+                                    <img src={img} alt="Gallery" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            default: // Overview
+                return (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+                        <div>
+                            <div className="text-[11px] font-black uppercase tracking-[0.3em] text-blue-600 mb-1">{car.brand}</div>
+                            <h1 id="car-detail-name" className="text-4xl font-black text-slate-900 tracking-tight leading-none">{car.name}</h1>
+                            <div className="mt-3 flex items-center gap-3">
+                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full border ${car.condition === 'New' ? 'bg-blue-600 text-white border-blue-600' : 'bg-amber-100 text-amber-800 border-amber-200'}`}>
+                                    {car.condition === 'New' ? 'Brand New' : 'Certified Elite'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-900 rounded-[2rem] p-8 text-white shadow-2xl relative overflow-hidden group">
+                           <div className="flex justify-between items-end relative z-10">
+                                <div>
+                                    <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Acquisition</div>
+                                    <div className="text-4xl font-black tracking-tight">${car.price_per_day?.toLocaleString()}</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Official Seller</div>
+                                    <div className="text-base font-bold">{car.seller_name || 'Trailblaze HQ'}</div>
+                                </div>
+                           </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4 pt-2 text-center">
+                            <div className="space-y-0.5">
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">System</div>
+                                <div className="font-extrabold text-slate-900 text-sm">{car.fuel_type}</div>
+                            </div>
+                            <div className="space-y-0.5">
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Class</div>
+                                <div className="font-extrabold text-slate-900 text-sm">{car.body_type || 'GT'}</div>
+                            </div>
+                            <div className="space-y-0.5">
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Range</div>
+                                <div className="font-extrabold text-blue-600 text-sm">{car.range || 'Max'}</div>
+                            </div>
+                        </div>
+                    </div>
+                );
+        }
+    };
 
     return (
-        <div className="min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_35%,#f8fafc_100%)] px-4 py-8 md:px-6 md:py-10">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-                <div className="flex justify-between items-center">
-                    <Button id="back-to-catalogue" variant="outline" onClick={() => navigate(-1)} className="text-sm">
-                        &larr; Back to Catalogue
-                    </Button>
+        <div className="min-h-full bg-slate-50 font-sans">
+            <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
+                
+                {/* Minimal Header */}
+                <div className="flex items-center justify-between">
+                    <button 
+                        onClick={() => navigate(-1)} 
+                        className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 flex items-center gap-2 group transition-all"
+                    >
+                        <span className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center group-hover:bg-slate-950 group-hover:text-white transition-all shadow-sm">←</span>
+                        Back to Catalogue
+                    </button>
                 </div>
 
-                {/* Sub-Navigation Tabs */}
-                <div className="bg-white border border-slate-200 rounded-2xl px-6 flex items-center gap-8 overflow-x-auto whitespace-nowrap shadow-sm no-scrollbar">
-                    {tabs.map((tab, idx) => (
-                        <div
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`py-4 cursor-pointer transition-all duration-200 border-b-2 font-medium ${
-                                activeTab === tab.id 
-                                ? 'border-slate-900 text-slate-900 font-bold' 
-                                : 'border-transparent text-slate-500 hover:text-slate-700'
-                            } ${idx === 0 ? 'pr-8 border-r border-r-slate-200 text-[1.05rem]' : 'text-base'}`}
+                {/* Tab Navigation */}
+                <div className="bg-white/70 backdrop-blur-md rounded-2xl p-1.5 flex gap-2 w-fit border border-slate-200 shadow-sm mx-auto md:mx-0 overflow-x-auto no-scrollbar max-w-full">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-slate-950 text-white shadow-lg' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
                         >
-                            {tab.label}
-                        </div>
+                            {tab}
+                        </button>
                     ))}
                 </div>
 
-                <div className="bg-white rounded-[2rem] border border-slate-200 shadow-[0_20px_50px_rgba(15,23,42,0.08)] overflow-hidden flex flex-col md:flex-row">
-                    {activeTab !== 'Images' && (
-                        <div className="w-full md:w-[45%] bg-[linear-gradient(180deg,#e2e8f0_0%,#cbd5e1_100%)] flex flex-col items-center justify-center p-8 relative min-h-[360px]">
-                            <img
-                                id={imageLoaded ? "car-detail-image" : undefined}
-                                src={allImages[currentImageIndex]}
-                                alt={`${car.brand} ${car.name}`}
-                                onLoad={() => setImageLoaded(true)}
-                                className={`max-w-full max-h-full object-contain rounded-lg transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0 hidden'}`}
-                            />
-                            {allImages.length > 1 && (
-                                <>
-                                    <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white border-none rounded-full w-10 h-10 flex items-center justify-center cursor-pointer shadow-md z-10 transition-colors">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                                    </button>
-                                    <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white border-none rounded-full w-10 h-10 flex items-center justify-center cursor-pointer shadow-md z-10 transition-colors">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                    </button>
-                                    <div className="absolute bottom-4 flex gap-2 bg-slate-900/40 px-3 py-1.5 rounded-full">
-                                        {allImages.map((_, idx) => (
-                                            <div 
-                                                key={idx} 
-                                                onClick={() => setCurrentImageIndex(idx)} 
-                                                className={`w-2 h-2 rounded-full cursor-pointer transition-colors ${currentImageIndex === idx ? 'bg-white' : 'bg-white/40'}`} 
-                                            />
-                                        ))}
-                                    </div>
-                                </>
-                            )}
+                {/* Master Card */}
+                <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl overflow-hidden grid lg:grid-cols-[1fr_0.8fr] h-[600px] max-h-[75vh]">
+                    
+                    {/* Left: Dynamic Visuals Overlay */}
+                    <div className="relative bg-slate-100 h-full overflow-hidden">
+                        <img 
+                            src={allImages[currentImageIndex]} 
+                            alt={car.name} 
+                            onLoad={() => setImageLoaded(true)}
+                            className={`w-full h-full object-cover transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                        />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.1),transparent)] pointer-events-none"></div>
+                        
+                        {/* Thumbnail Bar */}
+                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2.5 p-2.5 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl">
+                            {allImages.slice(0, 5).map((img, i) => (
+                                <button 
+                                    key={i} 
+                                    onClick={() => { setImageLoaded(false); setCurrentImageIndex(i); }}
+                                    className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all ${currentImageIndex === i ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                >
+                                    <img src={img} className="w-full h-full object-cover" />
+                                </button>
+                            ))}
                         </div>
-                    )}
+                    </div>
 
-                    <div className={`${activeTab === 'Images' ? 'w-full' : 'w-full md:w-[55%]'} p-6 md:p-10 flex flex-col`}>
-                        {activeTab === 'Overview' && (
-                            <div className="flex flex-col">
-                                <div>
-                                    <div id="car-detail-brand" className="text-slate-500 font-medium mb-1 text-sm">{car.brand}</div>
-                                    <h1 id="car-detail-name" className="text-3xl md:text-4xl m-0 mb-4 font-display font-bold text-slate-900 leading-tight">{car.name}</h1>
-                                </div>
-                                <div className="flex justify-between items-center mb-6">
-                                    <div>
-                                        <div id="car-detail-price" className="text-2xl text-accent font-bold">${car.price_per_day?.toLocaleString()}</div>
-                                        <div className="text-slate-500 text-xs mt-0.5 tracking-wide uppercase">Ex-showroom</div>
-                                    </div>
-                                </div>
+                    {/* Right: Focused Content Area */}
+                    <div className="p-8 md:p-10 flex flex-col justify-between bg-white relative h-full overflow-hidden">
+                        <div className="relative z-10 flex-1 overflow-y-auto no-scrollbar pr-2">
+                            {renderTabContent()}
+                        </div>
 
-                                <div className="mb-6 p-4 border border-slate-200 rounded-2xl bg-slate-50 flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-700 text-lg">
-                                        {car.seller_name ? car.seller_name.charAt(0).toUpperCase() : 'T'}
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-slate-500 uppercase tracking-widest mb-0.5">Sold by</div>
-                                        <div className="font-semibold text-slate-900 text-base">{car.seller_name || 'TrailblazeAuto Dealership'}</div>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-4 mb-8 pb-6 border-b border-t border-slate-200 pt-6 sm:grid-cols-3">
-                                    <div className="text-center flex-1 sm:border-r border-slate-200">
-                                        <div className="mb-2 flex justify-center text-slate-400">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                        </div>
-                                        <div className="text-base font-semibold text-slate-900 mb-0.5">{car.range || 'N/A'}</div>
-                                        <div className="text-xs text-slate-500">Range</div>
-                                    </div>
-                                    <div className="text-center flex-1 sm:border-r border-slate-200">
-                                        <div className="mb-2 flex justify-center text-slate-400">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 16H9m10 0h3v-3.15a1 1 0 00-.84-.99L16 11l-2.7-3.64A1 1 0 0012.5 7H7.5a1 1 0 00-.8.4L4 11l-2 1.15V16h3m8 0a2 2 0 11-4 0m4 0a2 2 0 10-4 0m-10 0a2 2 0 11-4 0m4 0a2 2 0 10-4 0"></path></svg>
-                                        </div>
-                                        <div className="text-base font-semibold text-slate-900 mb-0.5">{car.body_type || 'N/A'}</div>
-                                        <div className="text-xs text-slate-500">Body type</div>
-                                    </div>
-                                    <div className="text-center flex-1">
-                                        <div className="mb-2 flex justify-center text-slate-400">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
-                                        </div>
-                                        <div id="car-detail-fuel" className="text-base font-semibold text-slate-900 mb-0.5">{car.fuel_type || 'N/A'}</div>
-                                        <div className="text-xs text-slate-500">Fuel type</div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab !== 'Overview' && (
-                            <div className="flex flex-col pr-2">
-                                {activeTab === 'Specs' && (
-                                    <>
-                                        <h3 className="shrink-0 mb-4 border-b border-slate-100 pb-2 text-slate-900 font-bold text-lg">Vehicle Specifications</h3>
-                                        <div className="flex-1">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                                                <div><span className="text-slate-500 text-xs block mb-1">Mileage</span><div className="text-sm font-semibold text-slate-900">{car.mileage || 'N/A'}</div></div>
-                                                <div><span className="text-slate-500 text-xs block mb-1">Transmission</span><div className="text-sm font-semibold text-slate-900">{car.transmission || 'N/A'}</div></div>
-                                                <div><span className="text-slate-500 text-xs block mb-1">Number of Owners</span><div className="text-sm font-semibold text-slate-900">{car.number_of_owners || 'N/A'}</div></div>
-                                                <div><span className="text-slate-500 text-xs block mb-1">Registration City</span><div className="text-sm font-semibold text-slate-900">{car.registration_city || 'N/A'}</div></div>
-                                                <div><span className="text-slate-500 text-xs block mb-1">Insurance Validity</span><div className="text-sm font-semibold text-slate-900">{car.insurance_validity || 'N/A'}</div></div>
-                                                <div><span className="text-slate-500 text-xs block mb-1">Seating Capacity</span><div className="text-sm font-semibold text-slate-900">{car.seating_capacity ? `${car.seating_capacity} Seats` : 'N/A'}</div></div>
-                                            </div>
-                                            <h4 className="text-base font-bold m-0 mb-2 text-slate-900">Description</h4>
-                                            <div className="leading-relaxed text-slate-600 text-sm mb-0 pb-4"
-                                                dangerouslySetInnerHTML={{ __html: car.description || 'Currently details not available.' }}
-                                            />
-                                        </div>
-                                    </>
-                                )}
-
-                                {activeTab === 'Price' && (
-                                    <div className="flex-1">
-                                        <h3 className="mb-4 text-slate-900 font-bold text-lg">Price Breakdown</h3>
-                                        {car.price_per_day ? (
-                                            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-3">
-                                                <div className="flex justify-between">
-                                                    <span className="text-slate-600 text-sm">Ex-Showroom Price</span>
-                                                    <span className="font-semibold text-slate-900">${car.price_per_day.toLocaleString()}</span>
-                                                </div>
-                                                <div className="flex justify-between border-b border-slate-200 pb-3">
-                                                    <span className="text-slate-600 text-sm">Estimated Registration & Insurance</span>
-                                                    <span className="font-semibold text-slate-400 text-sm">Varies by City</span>
-                                                </div>
-                                                <div className="flex justify-between pt-1">
-                                                    <span className="font-bold text-slate-900 text-base">Estimated Vehicle Price</span>
-                                                    <span className="font-bold text-emerald-600 text-lg">${car.price_per_day.toLocaleString()}</span>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <p className="text-slate-500 text-sm">Currently details not available.</p>
-                                        )}
-                                    </div>
-                                )}
-
-                                {activeTab === 'Colours' && (
-                                    <div className="flex-1">
-                                        <h3 className="mb-4 text-slate-900 font-bold text-lg">Available Colours</h3>
-                                        {car.exterior_color || car.interior_color ? (
-                                            <>
-                                                <div className="flex flex-col gap-6 sm:flex-row sm:gap-8 sm:items-center bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                                                    <div><span className="text-slate-500 text-xs block mb-1">Exterior Color</span><div className="text-base font-semibold text-slate-900">{car.exterior_color || 'N/A'}</div></div>
-                                                    <div className="sm:border-l border-slate-200 sm:pl-8"><span className="text-slate-500 text-xs block mb-1">Interior Color</span><div className="text-base font-semibold text-slate-900">{car.interior_color || 'N/A'}</div></div>
-                                                </div>
-                                                <p className="mt-4 text-slate-500 text-sm">Ask us about customizing your order if you are looking for a specific interior or exterior finish.</p>
-                                            </>
-                                        ) : (
-                                            <p className="text-slate-500 text-sm">Currently details not available.</p>
-                                        )}
-                                    </div>
-                                )}
-
-                                {activeTab === 'Range' && (
-                                    <div className="flex-1">
-                                        <h3 className="mb-4 text-slate-900 font-bold text-lg">Range & Performance</h3>
-                                        {car.range ? (
-                                            <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100 text-center">
-                                                <div className="text-5xl font-extrabold text-accent mb-3">{car.range}</div>
-                                                <div className="text-slate-600 text-base font-semibold">Estimated Range / Fuel Efficiency</div>
-                                                <p className="mt-4 text-xs text-slate-400">*Actual range may vary based on driving conditions and environment.</p>
-                                            </div>
-                                        ) : (
-                                            <p className="text-slate-500 text-sm">Currently details not available.</p>
-                                        )}
-                                    </div>
-                                )}
-
-                                {activeTab === 'Images' && (
-                                    <div className="flex-1">
-                                        {allImages.length > 0 ? (
-                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                {allImages.map((img, idx) => (
-                                                    <div key={idx} onClick={() => setFullScreenImage(img)} className="rounded-2xl overflow-hidden border border-slate-200 relative cursor-zoom-in aspect-square group">
-                                                        <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-slate-500 text-sm">Currently details not available.</p>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        <div className="flex gap-4 pt-6">
-                            {localStorage.getItem('adminToken') && (
-                                <Button
-                                    className="flex-1 mt-auto"
+                        {/* Admin Action Bar */}
+                        {localStorage.getItem('adminToken') && (
+                            <div className="mt-6 pt-4 border-t border-slate-100 flex justify-end shrink-0">
+                                <Button 
+                                    variant="slate" 
+                                    className="h-12 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] hover:scale-105 active:scale-95 shadow-xl shadow-slate-900/10"
                                     onClick={() => navigate(`/admin/edit-car/${car._id}`)}
                                 >
                                     Edit Details
                                 </Button>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
+            {/* Lightbox */}
             {fullScreenImage && (
-                <div onClick={() => setFullScreenImage(null)} className="fixed inset-0 bg-slate-900/95 flex items-center justify-center z-[1100] p-4">
-                    <button onClick={() => setFullScreenImage(null)} className="absolute top-6 right-6 bg-white/10 hover:bg-white/20 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl transition-colors">&times;</button>
-                    <img src={fullScreenImage} alt="Maximized View" className="max-w-[90%] max-h-[90vh] object-contain rounded-xl shadow-2xl" onClick={(e) => e.stopPropagation()} />
+                <div onClick={() => setFullScreenImage(null)} className="fixed inset-0 bg-slate-950/98 flex items-center justify-center z-[1100] p-6 backdrop-blur-sm animate-in fade-in duration-300">
+                    <button onClick={() => setFullScreenImage(null)} className="absolute top-8 right-8 text-white text-4xl font-extralight hover:scale-125 transition-all">&times;</button>
+                    <img src={fullScreenImage} alt="Maximized" className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl" />
                 </div>
             )}
         </div>

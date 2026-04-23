@@ -35,11 +35,11 @@ const AdminDashboard = () => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <h1 id="dashboard-heading" className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Admin Dashboard</h1>
-                        <p className="text-slate-500 mt-2 text-base">Manage your vehicle inventory and system operations.</p>
+                        <p className="text-slate-500 mt-2 text-base">Manage your vehicle Catalogue and system operations.</p>
                     </div>
                     <div className="flex gap-4">
-                        <Button variant="outline" onClick={() => navigate('/admin/inventory')} className="text-sm font-semibold h-11 border-slate-300">
-                            Manage Inventory
+                        <Button variant="outline" onClick={() => navigate('/admin/catalogue')} className="text-sm font-semibold h-11 border-slate-300">
+                            Manage Catalogue
                         </Button>
                         <Button id="add-car-button" onClick={() => navigate('/admin/add-car')} className="text-sm font-semibold h-11" variant="slate">
                             + Add New Vehicle
@@ -52,10 +52,10 @@ const AdminDashboard = () => {
                         <div className="bg-white px-6 py-5 border-b border-slate-100 flex justify-between items-center">
                             <h2 className="text-lg font-bold text-slate-900 m-0">All Vehicles</h2>
                         </div>
-                        
+
                         {cars.length === 0 ? (
                             <div className="p-10 text-center">
-                                <p className="text-slate-500">No vehicles in inventory.</p>
+                                <p className="text-slate-500">No vehicles in Catalogue.</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">

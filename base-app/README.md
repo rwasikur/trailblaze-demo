@@ -1,6 +1,6 @@
 # Trailblaze Auto
 
-A premium automotive inventory management platform that bridges the gap between elite dealerships and car enthusiasts. Featuring an image-led car catalog and a robust administrative suite for fleet expansion and status management.
+A premium automotive Catalogue management platform that bridges the gap between elite dealerships and car enthusiasts. Featuring an image-led car catalog and a robust administrative suite for fleet expansion and status management.
 
 ## 🏗️ Architecture
 ```
@@ -15,7 +15,7 @@ A premium automotive inventory management platform that bridges the gap between 
 ### Public Routes
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/cars` | List currently available car inventory. |
+| `GET` | `/api/cars` | List currently available car Catalogue. |
 | `GET` | `/api/cars/:id` | Retrieve detailed specifications for a specific car. |
 
 ### Administrative Routes
@@ -24,11 +24,14 @@ A premium automotive inventory management platform that bridges the gap between 
 | `POST` | `/api/admin/login` | Authenticate administrator and receive JWT token. |
 | `POST` | `/api/admin/signup` | Register a new administrator account. |
 | `GET` | `/api/admin/profile` | Retrieve the logged-in administrator's profile. |
-| `PUT` | `/api/admin/profile` | Update administrator account details and bio. |
+| `PUT` | `/api/admin/profile` | Update administrator account details and password. |
+| `POST` | `/api/admin/profile/upload` | Upload and set a custom profile avatar. |
 | `GET` | `/api/cars/admin/all` | List all vehicles in fleet with full metadata (Admin only). |
 | `POST` | `/api/cars` | Register a new vehicle to the dealership (Admin only). |
 | `PUT` | `/api/cars/:id` | Modify an existing vehicle's attributes (Admin only). |
 | `PUT` | `/api/cars/:id/status` | Update vehicle availability (Available/Booked) (Admin only). |
+| `POST` | `/api/cars/upload` | Upload primary vehicle image (Admin only). |
+| `POST` | `/api/cars/upload-multiple` | Upload secondary images (Admin only). |
 
 ## 🛠️ Tech Stack
 
@@ -44,7 +47,7 @@ A premium automotive inventory management platform that bridges the gap between 
 *   **Build Tool**: Vite 4.4.5
 *   **Framework**: React 19.0.0
 *   **Routing**: React Router 7.13.1
-*   **Styling**: TailwindCSS 3.4.19
+*   **Styling**: Vanilla CSS (Premium Custom Styles)
 *   **Animations**: Framer Motion 12.38.0
 *   **Component Libraries**: Lucide React, React Icons
 
@@ -65,7 +68,7 @@ A premium automotive inventory management platform that bridges the gap between 
 | `role` | String | Support for multi-role management (default: `admin`) |
 | `phone` | String | Contact phone number |
 | `bio` | Text | Short professional biography |
-| `avatar_url` | String | Profile image reference |
+| `avatar_url` | Text | Profile image reference |
 
 ### Table: `Car` (managed via Sequelize)
 | Column | Type | Description |
@@ -73,11 +76,26 @@ A premium automotive inventory management platform that bridges the gap between 
 | `_id` | UUID | Primary Key (Auto-generated) |
 | `name` | String | Model name (e.g., "Model S Plaid") |
 | `brand` | String | Manufacturer (e.g., "Tesla") |
-| `price_per_day` | Integer | Daily rental/listing price |
+| `model_year` | Integer | Manufacturing year |
 | `transmission` | String | Shift type (Automatic/Manual) |
 | `fuel_type` | String | Energy source (Electric/Petrol/etc.) |
-| `availability_status`| String | Current fleet status (Available/Pending/Unavailable) |
+| `seating_capacity` | Integer | Number of seats |
+| `price_per_day` | Integer | Daily rental/listing price |
+| `availability_status`| String | Current fleet status (Available/Unavailable) |
+| `condition` | Enum | Vehicle state (New/Used) |
+| `number_of_owners` | Integer | Count of previous owners (for Used vehicles) |
+| `registration_city` | String | City of vehicle registration |
+| `insurance_validity`| String | Expiration date of current insurance |
+| `mileage` | String | Current distance traveled (e.g., "15,000 km") |
+| `range` | String | Operational range per charge/tank |
+| `body_type` | String | Body architecture (SUV/Sedan/Hatchback) |
+| `exterior_color` | String | Outer paint color |
+| `interior_color` | String | Cabin upholstery color |
+| `description` | Text | Detailed vehicle pitch and features |
 | `image_url` | String | Primary high-resolution vehicle image |
+| `secondary_images` | Array | List of gallery image URLs |
+| `seller_name` | String | Registered dealership/seller entity |
+| `seller_email` | String | Contact email for the seller |
 
 ## 🚀 Quick Start
 

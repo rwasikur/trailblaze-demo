@@ -8,6 +8,13 @@ const fuelIcon = (fuel) => {
     return 'PT';
 };
 
+const fuelTheme = (fuel) => {
+    if (fuel === 'Electric') return 'bg-cyan-500/90 text-white shadow-cyan-500/20';
+    if (fuel === 'Diesel') return 'bg-emerald-500/90 text-white shadow-emerald-500/20';
+    if (fuel === 'Hybrid') return 'bg-indigo-500/90 text-white shadow-indigo-500/20';
+    return 'bg-amber-500/90 text-white shadow-amber-500/20'; // Petrol / Default
+};
+
 const CarCard = ({ car, featured = false }) => {
     const imageUrl = car.image_url || 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=800';
     const isAvailable = !car.availability_status || car.availability_status === 'Available';
@@ -17,77 +24,88 @@ const CarCard = ({ car, featured = false }) => {
         : 'A premium Trailblazer listing with complete detail panels and image-led browsing.';
 
     return (
-        <Link to={`/car/${car._id}`} className="group block h-full rounded-[1.75rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-            <article id={`car-card-${car._id}`} className={`relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_60px_rgba(15,23,42,0.14)] ${featured ? 'lg:flex-row' : ''}`}>
+        <Link to={`/car/${car._id}`} className="group block h-full rounded-[1.75rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent relative transition-all duration-500">
+            {/* Hover Glow Effect */}
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-blue-400 rounded-[1.8rem] opacity-0 group-hover:opacity-10 blur-xl transition-opacity duration-500 pointer-events-none"></div>
+
+            <article id={`car-card-${car._id}`} className={`relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(37,99,235,0.1)] ${featured ? 'lg:flex-row' : ''}`}>
                 <div className={`relative overflow-hidden bg-slate-100 ${featured ? 'lg:w-[52%] aspect-[4/3] lg:aspect-auto' : 'aspect-[16/10]'}`}>
                     <img
                         src={imageUrl}
                         alt={`${car.brand} ${car.name}`}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/10 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
 
-                    <div className="absolute top-4 left-4">
-                        <span id={`car-card-${car._id}-status`} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] backdrop-blur-sm ${isAvailable ? 'bg-emerald-500/90 text-white' : 'bg-slate-800/80 text-slate-200'}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-white' : 'bg-slate-400'}`}></span>
-                            {isAvailable ? 'Available' : car.availability_status}
+                    <div className="absolute top-4 left-4 flex flex-col gap-2">
+                        <span id={`car-card-${car._id}-status`} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-md shadow-lg border border-white/10 ${isAvailable ? 'bg-emerald-500/80 text-white' : 'bg-slate-900/80 text-slate-200'}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-white animate-pulse' : 'bg-slate-400'}`}></span>
+                            {isAvailable ? 'In Stock' : car.availability_status}
+                        </span>
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] backdrop-blur-md shadow-lg border border-white/10 ${car.condition === 'New' ? 'bg-blue-600/80 text-white' : 'bg-amber-600/80 text-white'}`}>
+                            {car.condition === 'New' ? 'Brand New' : 'Pre-Owned'}
                         </span>
                     </div>
 
-                    <div className="absolute top-4 right-4">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-700 shadow-sm">
+                    <div className="absolute top-4 right-4 animate-in fade-in zoom-in duration-500">
+                        <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl backdrop-blur-md border border-white/20 ${fuelTheme(car.fuel_type)}`}>
+                            <span className="w-1 h-1 rounded-full bg-white animate-pulse"></span>
                             {fuelIcon(car.fuel_type)} {car.fuel_type}
                         </span>
                     </div>
 
                     <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4 text-white">
                         <div>
-                            <div id={`car-card-${car._id}-brand`} className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-200">{car.brand}</div>
-                            <div id={`car-card-${car._id}-name`} className="mt-2 text-2xl font-black leading-tight">{car.name}</div>
+                            <div id={`car-card-${car._id}-brand`} className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-300 mb-1">{car.brand}</div>
+                            <div id={`car-card-${car._id}-name`} className="text-2xl font-black leading-tight tracking-tight drop-shadow-md">{car.name}</div>
                         </div>
                         {car.model_year && (
-                            <div className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm font-semibold backdrop-blur">
+                            <div className="rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold backdrop-blur-md shadow-lg">
                                 {car.model_year}
                             </div>
                         )}
                     </div>
                 </div>
 
-                <div className={`flex flex-1 flex-col p-5 md:p-6 ${featured ? 'lg:justify-between lg:p-8' : ''}`}>
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                        <span className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">{car.body_type || 'Curated listing'}</span>
-                        <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">{car.registration_city || 'Trailblazer'}</span>
+                <div className={`flex flex-1 flex-col p-5 md:p-6 ${featured ? 'lg:justify-between lg:p-10' : 'justify-between'}`}>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600 bg-blue-50/80 px-3 py-1.5 rounded-lg border border-blue-100/50">
+                                {car.body_type || 'Curated'}
+                            </span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 bg-slate-50 px-3 py-1.5 rounded-lg">
+                                {car.registration_city || 'HQ'}
+                            </span>
+                        </div>
+
+                        <p className="text-sm leading-relaxed text-slate-600 line-clamp-2 md:line-clamp-3">
+                            {summary}
+                        </p>
                     </div>
 
-                    <p className="mt-5 text-sm leading-6 text-slate-600">
-                        {summary}
-                        {car.description && car.description.replace(/<[^>]*>/g, '').length > (featured ? 220 : 120) ? '...' : ''}
-                    </p>
+                    <div className="mt-6 flex flex-col gap-6">
+                        <div className="grid grid-cols-3 gap-2 pb-6 border-b border-slate-100">
+                            <div className="text-center">
+                                <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">Drive</div>
+                                <div className="text-xs font-bold text-slate-900">{car.transmission?.slice(0, 4) || 'N/A'}</div>
+                            </div>
+                            <div className="text-center border-x border-slate-100">
+                                <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">Seats</div>
+                                <div className="text-xs font-bold text-slate-900">{car.seating_capacity || 'N/A'}</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">Miles</div>
+                                <div className="text-xs font-bold text-slate-900">{car.condition === 'New' ? '0km' : (car.mileage?.split(' ')[0] || 'N/A')}</div>
+                            </div>
+                        </div>
 
-                    <div className="mt-6 grid grid-cols-3 gap-3">
-                        <div className="rounded-2xl bg-slate-50 p-3">
-                            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Transmission</div>
-                            <div className="mt-2 text-sm font-semibold text-slate-900">{car.transmission || 'N/A'}</div>
-                        </div>
-                        <div className="rounded-2xl bg-slate-50 p-3">
-                            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Seats</div>
-                            <div className="mt-2 text-sm font-semibold text-slate-900">{car.seating_capacity ? `${car.seating_capacity}` : 'N/A'}</div>
-                        </div>
-                        <div className="rounded-2xl bg-slate-50 p-3">
-                            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Range</div>
-                            <div className="mt-2 text-sm font-semibold text-slate-900">{car.range || 'N/A'}</div>
-                        </div>
-                    </div>
-
-                    <div className="mt-auto border-t border-slate-100 pt-5">
                         <div className="flex items-center justify-between gap-4">
                             <div>
-                                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Ex-showroom</div>
-                                <div id={`car-card-${car._id}-price`} className="mt-2 text-2xl font-black text-slate-900">{priceLabel}</div>
+                                <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-0.5">Premium Listing</div>
+                                <div id={`car-card-${car._id}-price`} className="text-2xl font-black text-slate-900 tracking-tight">{priceLabel}</div>
                             </div>
-                            <div id={`car-card-${car._id}-view-details`} className="flex items-center gap-1.5 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition-colors duration-200 group-hover:bg-accent">
-                                View Details
-                                <svg className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
+                            <div id={`car-card-${car._id}-view-details`} className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-xl transition-all duration-300 hover:bg-blue-600 hover:scale-110 active:scale-95 group-hover:shadow-blue-200">
+                                <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7-7 7" /></svg>
                             </div>
                         </div>
                     </div>
