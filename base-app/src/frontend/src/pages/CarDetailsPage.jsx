@@ -87,7 +87,10 @@ const CarDetailsPage = () => {
         allImages.push(...car.secondary_images);
     }
 
-    const tabs = ['Overview', 'Price', 'Specs', 'History', 'Colours', 'Range', 'Images'];
+    const tabs = ['Overview', 'Price', 'Specs', 'History', 'Colours', 'Range', 'Images'].filter(tab => {
+        if (tab === 'History' && (car.condition === 'New' || !car.number_of_owners || car.number_of_owners === 0)) return false;
+        return true;
+    });
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -141,19 +144,20 @@ const CarDetailsPage = () => {
                         <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Ownership History</h3>
                         <div className="space-y-4">
                             {car.saleHistory && car.saleHistory.length > 0 ? (
-                                [...car.saleHistory].sort((a,b) => new Date(b.sale_date) - new Date(a.sale_date)).map((sale, i) => (
-                                    <div key={i} className="bg-slate-50 border border-slate-100 p-6 rounded-2xl relative overflow-hidden group hover:bg-white hover:shadow-lg transition-all">
-                                        <div className="absolute top-0 right-0 p-3">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-400 bg-blue-50 px-2 py-1 rounded">Verified Entry</span>
-                                        </div>
-                                        <div className="flex justify-between items-start mb-4">
+                                [...car.saleHistory].sort((a, b) => new Date(b.sale_date) - new Date(a.sale_date)).map((sale, i) => (
+                                    <div key={i} className="bg-slate-50 border border-slate-100 p-6 rounded-2xl relative group hover:bg-white hover:shadow-lg transition-all">
+                                        <div className="flex justify-between items-start mb-6">
                                             <div>
-                                                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Acquisition Date</div>
+                                                <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Acquisition Date</div>
                                                 <div className="font-extrabold text-slate-900">{new Date(sale.sale_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</div>
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Transaction Price</div>
-                                                <div className="font-black text-blue-600">${sale.price?.toLocaleString()}</div>
+                                                <div className="flex flex-col items-end gap-1.5">
+                                                    <div>
+                                                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Transaction Value</div>
+                                                        <div className="font-black text-blue-600 text-lg">${sale.price?.toLocaleString()}</div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4 border-t border-slate-200/50 pt-4">
@@ -241,7 +245,7 @@ const CarDetailsPage = () => {
                         </div>
 
                         <div className="bg-slate-900 rounded-[2rem] p-8 text-white shadow-2xl relative overflow-hidden group">
-                           <div className="flex justify-between items-end relative z-10">
+                            <div className="flex justify-between items-end relative z-10">
                                 <div>
                                     <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Acquisition</div>
                                     <div className="text-4xl font-black tracking-tight">${car.price_per_day?.toLocaleString()}</div>
@@ -250,7 +254,7 @@ const CarDetailsPage = () => {
                                     <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Official Seller</div>
                                     <div className="text-base font-bold">{car.seller_name || 'Trailblaze HQ'}</div>
                                 </div>
-                           </div>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-3 gap-4 pt-2 text-center">
@@ -275,11 +279,11 @@ const CarDetailsPage = () => {
     return (
         <div className="min-h-full bg-slate-50 font-sans">
             <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
-                
+
                 {/* Minimal Header */}
                 <div className="flex items-center justify-between">
-                    <button 
-                        onClick={() => navigate(-1)} 
+                    <button
+                        onClick={() => navigate(-1)}
                         className="text-xs font-black uppercase tracking-[0.25em] text-slate-400 hover:text-slate-900 flex items-center gap-2 group transition-all"
                     >
                         <span className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center group-hover:bg-slate-950 group-hover:text-white transition-all shadow-sm">←</span>
@@ -302,22 +306,22 @@ const CarDetailsPage = () => {
 
                 {/* Master Card */}
                 <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl overflow-hidden grid lg:grid-cols-[1fr_0.8fr] h-[600px] max-h-[75vh]">
-                    
+
                     {/* Left: Dynamic Visuals Overlay */}
                     <div className="relative bg-slate-100 h-full overflow-hidden">
-                        <img 
-                            src={allImages[currentImageIndex]} 
-                            alt={car.name} 
+                        <img
+                            src={allImages[currentImageIndex]}
+                            alt={car.name}
                             onLoad={() => setImageLoaded(true)}
                             className={`w-full h-full object-cover transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                         />
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.1),transparent)] pointer-events-none"></div>
-                        
+
                         {/* Thumbnail Bar */}
                         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2.5 p-2.5 bg-white/30 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl">
                             {allImages.slice(0, 5).map((img, i) => (
-                                <button 
-                                    key={i} 
+                                <button
+                                    key={i}
                                     onClick={() => { setImageLoaded(false); setCurrentImageIndex(i); }}
                                     className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all ${currentImageIndex === i ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
                                 >
@@ -336,8 +340,8 @@ const CarDetailsPage = () => {
                         {/* Admin Action Bar */}
                         {localStorage.getItem('adminToken') && (
                             <div className="mt-6 pt-4 border-t border-slate-100 flex justify-end shrink-0">
-                                <Button 
-                                    variant="slate" 
+                                <Button
+                                    variant="slate"
                                     className="h-12 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] hover:scale-105 active:scale-95 shadow-xl shadow-slate-900/10"
                                     onClick={() => navigate(`/admin/edit-car/${car._id}`)}
                                 >

@@ -17,7 +17,7 @@ const public_cars = [
         mileage: "12,400 mi",
         exterior_color: "Pearl White",
         interior_color: "Black",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "San Francisco",
         insurance_validity: "Dec 2025",
         description: "The Tesla Model S Plaid is the quickest production car ever made. With three electric motors and over 1,000 horsepower, it accelerates 0-60 mph in just 1.99 seconds.",
@@ -39,7 +39,7 @@ const public_cars = [
         mileage: "8,200 mi",
         exterior_color: "Carmine Red",
         interior_color: "Cognac Brown",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Los Angeles",
         insurance_validity: "Mar 2026",
         description: "The Porsche Cayenne GTS sits at the pinnacle of performance SUVs. Its twin-turbocharged 4.0L V8 produces 473 hp, sprinting 0-60 in 3.7 seconds.",
@@ -61,7 +61,7 @@ const public_cars = [
         mileage: "15,600 mi",
         exterior_color: "Brooklyn Grey",
         interior_color: "Black Merino Leather",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "New York",
         insurance_validity: "Jan 2026",
         description: "The BMW M3 Competition xDrive is the pinnacle of sports sedan performance. Its 3.0L twin-turbo inline-6 produces 503 hp.",
@@ -133,7 +133,7 @@ const public_cars = [
         mileage: "3,100 mi",
         exterior_color: "Obsidian Black",
         interior_color: "Red Nappa",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Miami",
         insurance_validity: "Nov 2026",
         description: "The Mercedes-AMG GT 63 S is a 4-door grand touring sports car built for those who want it all - a 630 hp handcrafted V8, a coupe silhouette, and four spacious seats.",
@@ -178,7 +178,7 @@ const public_cars = [
         mileage: "18,000 mi",
         exterior_color: "Fuji White",
         interior_color: "Light Oyster",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Denver",
         insurance_validity: "Sep 2025",
         description: "The Land Rover Defender 110 is built for legendary adventures. With Terrain Response 2, ClearSight Ground View, and Wade Sensing, it is the most capable Defender ever - yet also the most liveable with 7 seats.",
@@ -223,7 +223,7 @@ const public_cars = [
         mileage: "4,500 mi",
         exterior_color: "Suzuka Grey",
         interior_color: "Black",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Las Vegas",
         insurance_validity: "Oct 2025",
         description: "The Audi R8 V10 is a supercar that perfectly balances track-ready performance with everyday livability. It features a naturally aspirated 5.2L V10 engine that produces an unforgettable soundtrack.",
@@ -245,7 +245,7 @@ const public_cars = [
         mileage: "2,100 mi",
         exterior_color: "Torch Red",
         interior_color: "Adrenaline Red",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Houston",
         insurance_validity: "Feb 2026",
         description: "The Chevrolet Corvette Z06 brings a flat-plane crank V8 howling to an 8600-rpm redline, delivering 670 horsepower and exotic-car performance at a fraction of the price.",
@@ -267,7 +267,7 @@ const public_cars = [
         mileage: "8,500 mi",
         exterior_color: "Grabber Blue",
         interior_color: "Black Onyx",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Austin",
         insurance_validity: "Sep 2025",
         description: "The Ford Mustang Mach-E GT brings the iconic pony car into the electric era. With 480 horsepower and instantaneous torque, it launches from 0-60 in 3.5 seconds.",
@@ -289,7 +289,7 @@ const public_cars = [
         mileage: "1,200 mi",
         exterior_color: "Infrared",
         interior_color: "Toasted Caramel",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Los Angeles",
         insurance_validity: "Jan 2026",
         description: "The Lexus LC 500 is a masterpiece of design and engineering. It features a naturally aspirated 5.0L V8 and an impeccably crafted interior that rivals the finest grand tourers.",
@@ -456,6 +456,7 @@ const public_cars = [
         image_url: "https://images.unsplash.com/photo-1616422285623-13ff0162193c?q=80&w=1200&auto=format&fit=crop",
         secondary_images: [],
         seller_name: "TrailblazeAuto Classics",
+        condition: "Used",
         availability_status: "Available"
     },
     {
@@ -501,6 +502,7 @@ const public_cars = [
         image_url: "https://images.pexels.com/photos/210019/pexels-photo-210019.jpeg?auto=compress&cs=tinysrgb&w=1200",
         secondary_images: [],
         seller_name: "TrailblazeAuto Elite",
+        condition: "Used",
         availability_status: "Available"
     }
 ];
@@ -543,6 +545,9 @@ const seedPublic = async () => {
         console.log("Seeding historical transaction data...");
         const allCars = await Car.findAll();
         for (const car of allCars) {
+            // New arrivals (owners = 0) should not have a sale history
+            if (car.number_of_owners === 0) continue;
+
             const existingHistory = await SaleHistory.findOne({ where: { car_id: car._id } });
             if (!existingHistory) {
                 const currentYear = new Date().getFullYear();
@@ -565,22 +570,25 @@ const seedPublic = async () => {
                     sale_status: "Sold"
                 });
 
-                // 2. Intermediate Sales
+                // 2. Intermediate Sales (Depreciation logic)
                 if (car.number_of_owners > 1) {
+                    let previousPrice = records[0].price;
                     for (let i = 1; i < car.number_of_owners; i++) {
-                        const yearStep = Math.floor(age / car.number_of_owners);
-                        const progress = i / car.number_of_owners;
+                        const yearStep = Math.max(1, Math.floor(age / car.number_of_owners));
                         // Classics appreciate, moderns depreciate
-                        const priceFactor = isClassic ? (0.4 + (progress * 0.6)) : (1.1 - (progress * 0.4));
+                        // For moderns, each owner usually pays 15-20% less than the previous sale
+                        const depreciationFactor = isClassic ? 1.25 : 0.82; 
+                        const nextPrice = Math.floor(previousPrice * depreciationFactor);
 
                         records.push({
                             car_id: car._id,
                             sale_date: new Date(car.model_year + (yearStep * i), 5, 20),
-                            price: Math.floor(baseValue * priceFactor),
+                            price: nextPrice,
                             seller_name: i === 1 ? "Original Collector" : `Owner ${i}`,
                             buyer_name: i === car.number_of_owners - 1 ? "TrailblazeAuto Collections" : `Owner ${i + 1}`,
                             sale_status: "Sold"
                         });
+                        previousPrice = nextPrice;
                     }
                 }
 

@@ -13,6 +13,7 @@ import AddCarPage from './pages/AddCarPage';
 import EditCarPage from './pages/EditCarPage';
 import ManageCataloguePage from './pages/ManageCataloguePage';
 import AdminProfile from './pages/AdminProfile';
+import AdminSignup from './pages/AdminSignup';
 import { PageTransition } from './components/ui/PageTransition';
 import './index.css';
 
@@ -26,6 +27,7 @@ function AnimatedRoutes() {
         <Route path="/browse" element={<PageTransition><BrowseCarsPage /></PageTransition>} />
         <Route path="/car/:id" element={<PageTransition><CarDetailsPage /></PageTransition>} />
         <Route path="/admin" element={<PageTransition><AdminLogin /></PageTransition>} />
+        <Route path="/admin/signup" element={<PageTransition><AdminSignup /></PageTransition>} />
         <Route path="/admin/dashboard" element={<PageTransition><AdminDashboard /></PageTransition>} />
         <Route path="/admin/catalogue" element={<PageTransition><ManageCataloguePage /></PageTransition>} />
         <Route path="/admin/add-car" element={<PageTransition><AddCarPage /></PageTransition>} />
