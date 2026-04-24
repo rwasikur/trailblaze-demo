@@ -39,7 +39,8 @@ const private_cars = [
         ],
 
         availability_status: "Available",
-        seller_name: "Trailblaze Private Reserve"
+        seller_name: "Trailblaze Private Reserve",
+        discount_percentage: 10
     }
     ,
     {
@@ -67,7 +68,8 @@ const private_cars = [
         ],
         availability_status: "Available",
         condition: "Used",
-        seller_name: "Trailblaze Private Reserve"
+        seller_name: "Trailblaze Private Reserve",
+        discount_percentage: 0
     }
     ,
     {
@@ -93,7 +95,8 @@ const private_cars = [
             "https://stimg.cardekho.com/images/carexteriorimages/930x620/Tesla/Model-S/5252/1611840999494/side-mirror-(glass)-92.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
+        seller_name: "TrailblazeAuto Private Reserve",
+        discount_percentage: 12
     },
     {
         name: "Range Rover Autobiography Private",
@@ -144,7 +147,8 @@ const private_cars = [
             "https://stimg.cardekho.com/images/carinteriorimages/930x620/Bentley/Continental/7771/1676965589168/gear-shifter-87.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
+        seller_name: "TrailblazeAuto Private Reserve",
+        discount_percentage: 15
     },
     {
         name: "Urus Private",
@@ -170,7 +174,8 @@ const private_cars = [
             "https://stimg.cardekho.com/images/carexteriorimages/930x620/Lamborghini/Urus/10635/1724844423793/rear-right-side-48.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
+        seller_name: "TrailblazeAuto Private Reserve",
+        discount_percentage: 0
     },
     {
         name: "DBS Superleggera Private",
@@ -195,7 +200,8 @@ const private_cars = [
             "https://stimg.cardekho.com/images/carexteriorimages/930x620/Aston-Martin/Aston-Martin-DBS-Superleggera/6904/1556269949670/rear-left-view-121.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
+        seller_name: "TrailblazeAuto Private Reserve",
+        discount_percentage: 20
     },
     {
         name: "F8 Tributo Private",
@@ -247,7 +253,8 @@ const private_cars = [
             "https://stimg.cardekho.com/images/carexteriorimages/930x620/Bugatti/Chiron/8451/1633582433934/exterior-image-164.jpg"
         ],
         availability_status: "Unavailable",
-        seller_name: "TrailblazeAuto Private Reserve"
+        seller_name: "TrailblazeAuto Private Reserve",
+        discount_percentage: 0
     },
     {
         name: "P1 Private",
@@ -325,7 +332,8 @@ const private_cars = [
         ],
         availability_status: "Unavailable",
         condition: "Used",
-        seller_name: "Trailblaze Private High-End"
+        seller_name: "Trailblaze Private High-End",
+        discount_percentage: 35
     },
     {
         name: "Sierra",
@@ -531,7 +539,8 @@ const private_cars = [
             "https://stimg.cardekho.com/images/carexteriorimages/930x620/Aston-Martin/Vantage/11671/1713933297665/window-line-158.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
+        seller_name: "TrailblazeAuto Private Reserve",
+        discount_percentage: 10
     }
 ];
 
