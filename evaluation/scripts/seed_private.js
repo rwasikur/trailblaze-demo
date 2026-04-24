@@ -23,7 +23,7 @@ const private_cars = [
         exterior_color: "Two-tone Nautical Blue",
         interior_color: "Crystal White",
 
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Geneva",
         insurance_validity: "Dec 2025",
 
@@ -39,7 +39,8 @@ const private_cars = [
         ],
 
         availability_status: "Available",
-        seller_name: "Trailblaze Private Reserve"
+        seller_name: "Trailblaze Private Reserve",
+        discount_percentage: 10
     }
     ,
     {
@@ -55,7 +56,7 @@ const private_cars = [
         mileage: "1,200 mi",
         exterior_color: "Sport Grey Metallic",
         interior_color: "Heritage Design Black/Cognac",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Zurich",
         insurance_validity: "Aug 2025",
         description: "Limited edition 911 with a ducktail spoiler and manual gearbox, exclusive to private members.",
@@ -67,7 +68,8 @@ const private_cars = [
         ],
         availability_status: "Available",
         condition: "Used",
-        seller_name: "Trailblaze Private Reserve"
+        seller_name: "Trailblaze Private Reserve",
+        discount_percentage: 0
     }
     ,
     {
@@ -83,7 +85,7 @@ const private_cars = [
         mileage: "2,100 mi",
         exterior_color: "Ultra Red",
         interior_color: "White",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Palo Alto",
         insurance_validity: "Jan 2026",
         description: "Tesla Model S Plaid reserved for private fleet — tri-motor performance with full autopilot.",
@@ -93,7 +95,8 @@ const private_cars = [
             "https://stimg.cardekho.com/images/carexteriorimages/930x620/Tesla/Model-S/5252/1611840999494/side-mirror-(glass)-92.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
+        seller_name: "TrailblazeAuto Private Reserve",
+        discount_percentage: 12
     },
     {
         name: "Range Rover Autobiography Private",
@@ -108,7 +111,7 @@ const private_cars = [
         mileage: "12,000 mi",
         exterior_color: "Eiger Grey",
         interior_color: "Caraway Leather",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Dubai",
         insurance_validity: "Oct 2025",
         description: "Range Rover Autobiography in private fleet — executive SUV with premium cabin.",
@@ -133,7 +136,7 @@ const private_cars = [
         mileage: "800 mi",
         exterior_color: "Viridian Green",
         interior_color: "Linen/Cumbrian Green",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Monaco",
         insurance_validity: "May 2026",
         description: "Bentley Continental GT exclusively for private members — handcrafted luxury grand tourer.",
@@ -144,7 +147,8 @@ const private_cars = [
             "https://stimg.cardekho.com/images/carinteriorimages/930x620/Bentley/Continental/7771/1676965589168/gear-shifter-87.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
+        seller_name: "TrailblazeAuto Private Reserve",
+        discount_percentage: 15
     },
     {
         name: "Urus Private",
@@ -159,7 +163,7 @@ const private_cars = [
         mileage: "6,700 mi",
         exterior_color: "Giallo Auge",
         interior_color: "Nero Ade",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Sant'Agata",
         insurance_validity: "Jul 2025",
         description: "Lamborghini Urus restricted to private fleet — super SUV with 650hp twin-turbo V8.",
@@ -170,7 +174,8 @@ const private_cars = [
             "https://stimg.cardekho.com/images/carexteriorimages/930x620/Lamborghini/Urus/10635/1724844423793/rear-right-side-48.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
+        seller_name: "TrailblazeAuto Private Reserve",
+        discount_percentage: 0
     },
     {
         name: "DBS Superleggera Private",
@@ -185,7 +190,7 @@ const private_cars = [
         mileage: "1,500 mi",
         exterior_color: "Hyper Red",
         interior_color: "Phantom Grey",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Gaydon",
         insurance_validity: "Feb 2026",
         description: "Aston Martin DBS restricted to private fleet — gorgeous flagship GT with a twin-turbo v12.",
@@ -195,7 +200,8 @@ const private_cars = [
             "https://stimg.cardekho.com/images/carexteriorimages/930x620/Aston-Martin/Aston-Martin-DBS-Superleggera/6904/1556269949670/rear-left-view-121.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
+        seller_name: "TrailblazeAuto Private Reserve",
+        discount_percentage: 20
     },
     {
         name: "F8 Tributo Private",
@@ -210,7 +216,7 @@ const private_cars = [
         mileage: "450 mi",
         exterior_color: "Rosso Corsa",
         interior_color: "Nero",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Maranello",
         insurance_validity: "Nov 2026",
         description: "Ferrari F8 Tributo for private members only — an homage to the most powerful V8 in Ferrari history.",
@@ -247,7 +253,8 @@ const private_cars = [
             "https://stimg.cardekho.com/images/carexteriorimages/930x620/Bugatti/Chiron/8451/1633582433934/exterior-image-164.jpg"
         ],
         availability_status: "Unavailable",
-        seller_name: "TrailblazeAuto Private Reserve"
+        seller_name: "TrailblazeAuto Private Reserve",
+        discount_percentage: 0
     },
     {
         name: "P1 Private",
@@ -325,7 +332,8 @@ const private_cars = [
         ],
         availability_status: "Unavailable",
         condition: "Used",
-        seller_name: "Trailblaze Private High-End"
+        seller_name: "Trailblaze Private High-End",
+        discount_percentage: 35
     },
     {
         name: "Sierra",
@@ -521,7 +529,7 @@ const private_cars = [
         mileage: "1,500 mi",
         exterior_color: "Skyfall Silver",
         interior_color: "Deep Black Leather",
-        number_of_owners: 1,
+        number_of_owners: 0,
         registration_city: "Gaydon",
         insurance_validity: "May 2025",
         description: "The Aston Martin Vantage is a limited-edition flagship with a handcrafted aluminum body and a 7.3L V12 engine.",
@@ -531,7 +539,8 @@ const private_cars = [
             "https://stimg.cardekho.com/images/carexteriorimages/930x620/Aston-Martin/Vantage/11671/1713933297665/window-line-158.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
+        seller_name: "TrailblazeAuto Private Reserve",
+        discount_percentage: 10
     }
 ];
 
@@ -547,13 +556,22 @@ const seedPrivate = async () => {
         await SaleHistory.destroy({ where: {}, cascade: true });
         await Car.destroy({ where: {}, truncate: true, cascade: true });
 
-        await Car.bulkCreate(private_cars);
+        // Ensure New condition for cars with 0 owners
+        const carsToCreate = private_cars.map(c => ({
+            ...c,
+            condition: c.number_of_owners === 0 ? 'New' : (c.condition || 'Used')
+        }));
+
+        await Car.bulkCreate(carsToCreate);
         console.log("Private vehicle seed data loaded!");
 
         // Seed Sale History for private cars with distinct data
         console.log("Seeding private historical transaction data...");
         const allCars = await Car.findAll();
         for (const car of allCars) {
+            // New arrivals (owners = 0) should not have a sale history
+            if (car.number_of_owners === 0) continue;
+
             const currentYear = new Date().getFullYear();
             const age = Math.max(1, currentYear - car.model_year);
             const records = [];
@@ -572,22 +590,28 @@ const seedPrivate = async () => {
                 sale_status: "Sold"
             });
 
-            // 2. Intermediate Sales (Appreciation focus for Private fleet)
+            // 2. Intermediate Sales (Price logic as per user request: drops for multiple users)
             if (car.number_of_owners > 1) {
+                let previousPrice = records[0].price;
                 for (let i = 1; i < car.number_of_owners; i++) {
-                    const yearStep = Math.floor(age / car.number_of_owners);
-                    const progress = i / car.number_of_owners;
-                    // Hypercars in private fleet almost always appreciate
-                    const priceFactor = 0.3 + (progress * 1.2);
+                    const yearStep = Math.max(1, Math.floor(age / car.number_of_owners));
+                    // User Request: "it will be less preicee" (depreciation)
+                    // Even for private fleet, we'll show a depreciation for the 'use' of the vehicle
+                    // Classics/Hypercars might appreciate, but for consistency with user request, 
+                    // we'll implement a logic where cars lose value as they gain hands (e.g., 10-15% drop).
+                    const isAppreciatingClassic = car.model_year < 2000 && car.price_per_day > 100000;
+                    const factor = isAppreciatingClassic ? 1.15 : 0.85;
+                    const nextPrice = Math.floor(previousPrice * factor);
 
                     records.push({
                         car_id: car._id,
                         sale_date: new Date(car.model_year + (yearStep * i), 2, 14),
-                        price: Math.floor(baseValue * priceFactor),
+                        price: nextPrice,
                         seller_name: i === 1 ? "Anonymous Mogul" : `Private Collector ${i}`,
                         buyer_name: i === car.number_of_owners - 1 ? "Trailblaze Private Stock" : `Private Collector ${i + 1}`,
                         sale_status: "Sold"
                     });
+                    previousPrice = nextPrice;
                 }
             }
 

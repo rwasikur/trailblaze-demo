@@ -16,7 +16,7 @@ const AddCarPage = () => {
     const [formData, setFormData] = useState({
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
         price_per_day: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '',
-        number_of_owners: 0, registration_city: '', insurance_validity: '', description: '',
+        number_of_owners: 0, registration_city: '', insurance_validity: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0], description: '',
         availability_status: 'Available', image_url: '', secondary_images: [], condition: 'New'
     });
 
@@ -92,6 +92,73 @@ const AddCarPage = () => {
 
     const nextStep = (e) => {
         if (e) e.preventDefault();
+
+        // Step 1 Validation
+        if (currentStep === 1) {
+            const price = parseInt(formData.price_per_day);
+            if (isNaN(price) || price < 100) {
+                toast.error('Price must be at least $100');
+                return;
+            }
+            if (price > 10000000) { // $10M max for ultra-luxury
+                toast.error('Price exceeds maximum allowed limit ($10,000,000)');
+                return;
+            }
+            if (!formData.brand || !formData.name || !formData.model_year) {
+                toast.error('Please fill in all basic information');
+                return;
+            }
+            const year = parseInt(formData.model_year);
+            if (year < 1886 || year > new Date().getFullYear() + 1) {
+                toast.error('Please enter a valid model year');
+                return;
+            }
+        }
+
+        // Step 2 Validation
+        if (currentStep === 2) {
+            if (!formData.transmission || !formData.fuel_type || !formData.seating_capacity) {
+                toast.error('Please fill in all specifications');
+                return;
+            }
+            if (parseInt(formData.seating_capacity) <= 0 || parseInt(formData.seating_capacity) > 60) {
+                toast.error('Seating capacity must be between 1 and 60');
+                return;
+            }
+        }
+
+        // Step 3 Validation
+        if (currentStep === 3) {
+            if (formData.condition === 'Used' && parseInt(formData.number_of_owners) <= 0) {
+                toast.error('Pre-owned vehicles must have at least 1 previous owner');
+                return;
+            }
+            if (!formData.insurance_validity) {
+                toast.error('Insurance validity date is required');
+                return;
+            }
+            const validityDate = new Date(formData.insurance_validity);
+            validityDate.setHours(0, 0, 0, 0);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (validityDate < today) {
+                toast.error('Insurance has already expired');
+                return;
+            }
+
+            // Differentiation: New cars should have longer insurance
+            if (formData.condition === 'New') {
+                const oneYearFromNow = new Date();
+                oneYearFromNow.setFullYear(today.getFullYear() + 1);
+                oneYearFromNow.setHours(0, 0, 0, 0);
+                if (validityDate < oneYearFromNow) {
+                    toast.error('New vehicles must have at least 1 year of valid insurance');
+                    return;
+                }
+            }
+        }
+
         setCurrentStep(prev => Math.min(prev + 1, steps.length));
     };
 
@@ -107,6 +174,7 @@ const AddCarPage = () => {
             return nextStep();
         }
 
+        // Final validation is now handled per-step in nextStep
         try {
             const token = localStorage.getItem('adminToken');
             const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -155,14 +223,28 @@ const AddCarPage = () => {
                 <Card className="flex-1 border-slate-200 shadow-sm overflow-hidden bg-white flex flex-col min-h-0">
                     <CardContent className="p-0 flex flex-col h-full">
                         <form onSubmit={handleAddCar} className="flex flex-col h-full">
-                            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+                            <div className="flex-1 overflow-y-auto p-6 md:p-8 pb-32 space-y-6">
                                 {currentStep === 1 && (
                                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                                         <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Basic Information</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2 md:col-span-2">
                                                 <label className="block text-sm font-bold text-slate-700">Vehicle Condition</label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all" value={formData.condition} onChange={(e) => setFormData({ ...formData, condition: e.target.value, number_of_owners: e.target.value === 'New' ? 0 : formData.number_of_owners })} required>
+                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all" value={formData.condition} onChange={(e) => {
+                                                    const isNew = e.target.value === 'New';
+                                                    let insuranceVal = formData.insurance_validity;
+                                                    if (isNew) {
+                                                        const date = new Date();
+                                                        date.setFullYear(date.getFullYear() + 1);
+                                                        insuranceVal = date.toISOString().split('T')[0];
+                                                    }
+                                                    setFormData({
+                                                        ...formData,
+                                                        condition: e.target.value,
+                                                        number_of_owners: isNew ? 0 : formData.number_of_owners,
+                                                        insurance_validity: insuranceVal
+                                                    });
+                                                }} required>
                                                     <option value="New">Brand New (Showroom)</option>
                                                     <option value="Used">Pre-Owned (Secondary Market)</option>
                                                 </select>
@@ -172,25 +254,17 @@ const AddCarPage = () => {
                                                 <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value, name: '' })} required>
                                                     <option value="">Select Brand</option>
                                                     {brands.map(b => <option key={b} value={b}>{b}</option>)}
-                                                    <option value="Other">Other</option>
                                                 </select>
                                             </div>
-                                            {formData.brand === 'Other' ? (
-                                                <Input label="Custom Brand Name" value={formData.custom_brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required />
-                                            ) : null}
                                             <div className="space-y-2">
                                                 <label className="block text-sm font-bold text-slate-700">Car Name</label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} disabled={!formData.brand || formData.brand === 'Other'} required>
+                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} disabled={!formData.brand} required>
                                                     <option value="">Select Model</option>
                                                     {models.map(m => <option key={m} value={m}>{m}</option>)}
-                                                    <option value="Other">Other</option>
                                                 </select>
                                             </div>
-                                            {formData.name === 'Other' || formData.brand === 'Other' ? (
-                                                <Input label="Specific Model Name" value={formData.name === 'Other' ? '' : formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-                                            ) : null}
-                                            <Input label="Model Year" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
-                                            <Input label="Price ($)" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
+                                            <Input label="Model Year" type="number" min="1970" max={new Date().getFullYear() + 1} value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
+                                            <Input label="Price ($)" type="number" min="1" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
 
                                             <div className="space-y-2">
                                                 <label className="block text-sm font-bold text-slate-700">Exterior Color</label>
@@ -222,8 +296,19 @@ const AddCarPage = () => {
                                                     <option value="Manual">Manual</option>
                                                 </select>
                                             </div>
-                                            <Input label="Fuel Type" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required />
-                                            <Input label="Seating Capacity" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-bold text-slate-700">Fuel Type</label>
+                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required>
+                                                    <option value="">Select Fuel</option>
+                                                    <option value="Petrol">Petrol</option>
+                                                    <option value="Diesel">Diesel</option>
+                                                    <option value="Electric">Electric</option>
+                                                    <option value="Hybrid">Hybrid</option>
+                                                    <option value="Plug-in Hybrid">Plug-in Hybrid (PHEV)</option>
+                                                    <option value="CNG">CNG</option>
+                                                </select>
+                                            </div>
+                                            <Input label="Seating Capacity" type="number" min="1" max="60" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
                                             <Input label="Range (e.g. 350km)" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
                                             <Input label="Body Type (e.g. SUV)" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
                                             <Input label="Mileage (e.g. 40 km)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
@@ -236,10 +321,10 @@ const AddCarPage = () => {
                                         <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Registration & Details</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                             <div className="md:col-span-1">
-                                                <Input label="Number of Owners" type="number" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value })} disabled={formData.condition === 'New'} className={formData.condition === 'New' ? 'opacity-50' : ''} />
+                                                <Input label="Number of Owners" type="number" min="0" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: Math.max(0, parseInt(e.target.value) || 0) })} disabled={formData.condition === 'New'} className={formData.condition === 'New' ? 'opacity-50' : ''} />
                                             </div>
                                             <Input label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
-                                            <Input label="Insurance Validity" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} />
+                                            <Input label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
                                             <div className="space-y-2">
                                                 <label className="block text-sm font-bold text-slate-700">Availability</label>
                                                 <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}>

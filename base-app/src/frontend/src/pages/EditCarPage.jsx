@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
+import { BRANDS_MODELS } from '../constants/carData';
 
 const EditCarPage = () => {
     const { id } = useParams();
@@ -20,6 +21,9 @@ const EditCarPage = () => {
     const [multiLoading, setMultiLoading] = useState(false);
     const mainFileRef = useRef(null);
     const multiFileRef = useRef(null);
+
+    const brands = Object.keys(BRANDS_MODELS).sort();
+    const models = formData.brand && BRANDS_MODELS[formData.brand] ? BRANDS_MODELS[formData.brand] : [];
 
     useEffect(() => {
         const fetchCar = async () => {
@@ -115,6 +119,59 @@ const EditCarPage = () => {
 
     const handleEditCar = async (e) => {
         e.preventDefault();
+
+        // VALIDATIONS (Matching AddCarPage)
+        const price = parseInt(formData.price_per_day);
+        if (isNaN(price) || price < 100) {
+            toast.error('Price must be at least $100');
+            return;
+        }
+        if (price > 10000000) {
+            toast.error('Price exceeds maximum allowed limit ($10,000,000)');
+            return;
+        }
+
+        const year = parseInt(formData.model_year);
+        if (year < 1886 || year > new Date().getFullYear() + 1) {
+            toast.error('Please enter a valid model year');
+            return;
+        }
+
+        if (parseInt(formData.seating_capacity) <= 0 || parseInt(formData.seating_capacity) > 60) {
+            toast.error('Seating capacity must be between 1 and 60');
+            return;
+        }
+
+        if (formData.condition === 'Used' && parseInt(formData.number_of_owners) <= 0) {
+            toast.error('Pre-owned vehicles must have at least 1 previous owner');
+            return;
+        }
+
+        if (!formData.insurance_validity) {
+            toast.error('Insurance validity date is required');
+            return;
+        }
+
+        const validityDate = new Date(formData.insurance_validity);
+        validityDate.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (validityDate < today) {
+            toast.error('Insurance has already expired');
+            return;
+        }
+
+        if (formData.condition === 'New') {
+            const oneYearFromNow = new Date();
+            oneYearFromNow.setFullYear(today.getFullYear() + 1);
+            oneYearFromNow.setHours(0, 0, 0, 0);
+            if (validityDate < oneYearFromNow) {
+                toast.error('New vehicles must have at least 1 year of valid insurance');
+                return;
+            }
+        }
+
         try {
             const token = localStorage.getItem('adminToken');
             const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -148,12 +205,24 @@ const EditCarPage = () => {
                 <Card className="flex-1 border-slate-200 shadow-sm overflow-hidden bg-white flex flex-col min-h-0">
                     <CardContent className="p-0 flex flex-col h-full">
                         <form onSubmit={handleEditCar} className="flex flex-col h-full">
-                            <div className="flex-1 overflow-y-auto p-6 md:p-8">
+                            <div className="flex-1 overflow-y-auto p-6 md:p-8 pb-32">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <Input label="Car Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-                                    <Input label="Brand" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required />
-                                    <Input label="Model Year" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
-                                    <Input label="Price ($)" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-slate-700">Brand</label>
+                                        <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value, name: '' })} required>
+                                            <option value="">Select Brand</option>
+                                            {brands.map(b => <option key={b} value={b}>{b}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-slate-700">Car Name</label>
+                                        <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} disabled={!formData.brand} required>
+                                            <option value="">Select Model</option>
+                                            {models.map(m => <option key={m} value={m}>{m}</option>)}
+                                        </select>
+                                    </div>
+                                    <Input label="Model Year" type="number" min="1970" max={new Date().getFullYear() + 1} value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
+                                    <Input label="Price ($)" type="number" min="1" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Vehicle Condition</label>
                                         <select
@@ -181,8 +250,19 @@ const EditCarPage = () => {
                                             <option value="Manual">Manual</option>
                                         </select>
                                     </div>
-                                    <Input label="Fuel Type" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required />
-                                    <Input label="Seating Capacity" type="text" inputMode="numeric" pattern="[0-9]*" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-slate-700">Fuel Type</label>
+                                        <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required>
+                                            <option value="">Select Fuel</option>
+                                            <option value="Petrol">Petrol</option>
+                                            <option value="Diesel">Diesel</option>
+                                            <option value="Electric">Electric</option>
+                                            <option value="Hybrid">Hybrid</option>
+                                            <option value="Plug-in Hybrid">Plug-in Hybrid (PHEV)</option>
+                                            <option value="CNG">CNG</option>
+                                        </select>
+                                    </div>
+                                    <Input label="Seating Capacity" type="number" min="1" max="60" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
                                     <Input label="Range (e.g. 350km)" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
                                     <Input label="Body Type (e.g. SUV)" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
                                     <Input label="Mileage (e.g. 40km)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
@@ -220,7 +300,7 @@ const EditCarPage = () => {
                                         className={formData.condition === 'New' ? 'opacity-50 grayscale bg-slate-100 cursor-not-allowed' : ''}
                                     />
                                     <Input label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
-                                    <Input label="Insurance Validity" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} />
+                                    <Input label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
 
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Availability</label>

@@ -58,7 +58,13 @@ test('AC 3: Deep Vehicle Specification Access', async ({ page, baseURL }) => {
 });
 
 test('AC 4: Verified Ownership Transaction History', async ({ page, baseURL }) => {
-    const car = await getFirstCar(baseURL || '');
+    const ctx = await playwrightRequest.newContext();
+    const res = await ctx.get(`${baseURL}/api/cars`);
+    const body = await res.json();
+    const cars = body.cars ?? body;
+    const car = cars.find((c: any) => (c.condition === 'Used' || c.number_of_owners > 0)) || cars[0];
+    await ctx.dispose();
+
     await page.goto(`${baseURL}/car/${car._id}`);
     await page.getByText('History', { exact: true }).click();
     await expect(page.getByText(/Ownership History/i)).toBeVisible();
@@ -123,13 +129,20 @@ test('AC 10: Fleet Expansion: Brand New Vehicle', async ({ page, baseURL }) => {
     await expect(page.getByRole('heading', { name: /Specifications/i })).toBeVisible();
 
     await page.locator('label:has-text("Transmission") + select').selectOption('Automatic');
-    await page.locator('label:has-text("Fuel Type") + input').fill('Electric');
+    await page.locator('label:has-text("Fuel Type") + select').selectOption('Electric');
     await page.locator('label:has-text("Seating Capacity") + input').fill('5');
 
     await page.getByRole('button', { name: /Next/i }).click();
 
     // Step 3: Registration
     await expect(page.getByRole('heading', { name: /Registration & Details/i })).toBeVisible();
+    await page.locator('label:has-text("Registration City") + input').fill('San Francisco');
+
+    const oneYearLater = new Date();
+    oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+    const dateStr = oneYearLater.toISOString().split('T')[0];
+    await page.locator('label:has-text("Insurance Validity") + input').fill(dateStr);
+
     await page.getByRole('button', { name: /Next/i }).click();
 
     // Step 4: Media
@@ -174,7 +187,7 @@ test('AC 11: Fleet Expansion: Pre-Owned Vehicle', async ({ page, baseURL }) => {
     await expect(page.getByRole('heading', { name: /Specifications/i })).toBeVisible();
 
     await page.locator('label:has-text("Transmission") + select').selectOption('Automatic');
-    await page.locator('label:has-text("Fuel Type") + input').fill('Petrol');
+    await page.locator('label:has-text("Fuel Type") + select').selectOption('Petrol');
     await page.locator('label:has-text("Seating Capacity") + input').fill('4');
 
     await page.getByRole('button', { name: /Next/i }).click();
@@ -185,6 +198,13 @@ test('AC 11: Fleet Expansion: Pre-Owned Vehicle', async ({ page, baseURL }) => {
     const ownersInput = page.locator('label:has-text("Number of Owners") + input');
     await expect(ownersInput).toBeEnabled();
     await ownersInput.fill('2');
+
+    await page.locator('label:has-text("Registration City") + input').fill('Los Angeles');
+
+    const futureDate = new Date();
+    futureDate.setMonth(futureDate.getMonth() + 6);
+    const dateStr = futureDate.toISOString().split('T')[0];
+    await page.locator('label:has-text("Insurance Validity") + input').fill(dateStr);
 
     await page.getByRole('button', { name: /Next/i }).click();
 
@@ -210,13 +230,29 @@ test('AC 12: Existing Fleet Data Mutation (Edit Car)', async ({ page, baseURL })
     await login(page, baseURL || '', USERS.admin3);
     const car = await getFirstCar(baseURL || '');
     await page.goto(`${baseURL}/admin/edit-car/${car._id}`, { waitUntil: 'networkidle' });
-    const newName = `Updated ${car.name}`;
-    await page.locator('label:has-text("Car Name") + input').fill(newName);
+
+    // Change Brand and wait for model attached
+    await page.locator('label:has-text("Brand") + select').selectOption('Tesla');
+    await expect(page.locator('label:has-text("Car Name") + select option').nth(1)).toBeAttached();
+
+    const newModel = 'Model 3';
+    await page.locator('label:has-text("Car Name") + select').selectOption(newModel);
+
+    // Ensure validations pass by filling other mandatory fields
+    await page.locator('label:has-text("Price ($)") + input').fill('50000');
+    await page.locator('label:has-text("Seating Capacity") + input').fill('5');
+
+    const oneYearLater = new Date();
+    oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+    const dateStr = oneYearLater.toISOString().split('T')[0];
+    await page.locator('label:has-text("Insurance Validity") + input').fill(dateStr);
+
     await page.getByRole('button', { name: /Save Changes/i }).click();
     await expect(page).toHaveURL(/admin\/catalogue/);
+
     // Verify on public page
     await page.goto(`${baseURL}/car/${car._id}`);
-    await expect(page.locator('#car-detail-name')).toContainText(newName);
+    await expect(page.locator('#car-detail-name')).toContainText(newModel);
 });
 
 test('AC 13: Catalogue Status Lifecycle Management', async ({ page, baseURL }) => {
@@ -311,4 +347,21 @@ test('AC 21: Invalid Admin Profile Update', async ({ page, baseURL }) => {
     await page.getByRole('button', { name: /Synchronize Profile Data/i }).click();
     const validationMsg = await nameInput.evaluate((el: HTMLInputElement) => el.validationMessage);
     expect(validationMsg).not.toBe('');
+});
+
+test('AC 22: Administrative Registration Workflow', async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/admin/signup`);
+    await page.locator('#admin-signup-name').fill('New Administrator');
+    await page.locator('#admin-signup-email').fill(`admin_2${Date.now()}@test.com`);
+    await page.locator('#admin-signup-password').fill('password123');
+    await page.locator('#admin-signup-button').click();
+    await expect(page).toHaveURL(/admin$/);
+});
+
+test('AC 23: Administrative Authentication Workflow', async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/admin`);
+    await page.locator('#admin-email-input').fill('admin@test.com');
+    await page.locator('#admin-password-input').fill('password123');
+    await page.locator('#admin-login-button').click();
+    await expect(page).toHaveURL(/dashboard/);
 });
