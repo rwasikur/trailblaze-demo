@@ -27,7 +27,9 @@
         "Users attempting to navigate directly to protected routes like /admin/dashboard or /admin/ Catalogue without a session are forced back to the login page.",
         "Navigating to a non-existent or invalid vehicle ID (e.g., /car/non-existent) displays a 'Vehicle Not Found' message and a return-to-fleet option.",
         "Providing an invalid or unreachable image URL in the Add/Edit form correctly handles error states by falling back to a default asset placeholder.",
-        "Attempting to synchronize the administrative profile with invalid data (e.g., removing a mandatory Full Name) prevents the update operation."
+        "Attempting to synchronize the administrative profile with invalid data (e.g., removing a mandatory Full Name) prevents the update operation.",
+        "The application must support an Administrative 'Sign Up' process that successfully registers new administrators and redirects them to the admin login portal.",
+        "Administrators must be able to securely authenticate via the '/admin' portal to access the centralized fleet management dashboard."
       ]
     }
   ]
