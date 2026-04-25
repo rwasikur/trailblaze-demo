@@ -4,13 +4,12 @@ import CarCard from '../components/CarCard';
 import CatalogueHero from '../components/catalogue/CatalogueHero';
 import CatalogueHighlights from '../components/catalogue/CatalogueHighlights';
 
-import { BRANDS_MODELS } from '../constants/carData';
-
 const BrowseCarsPage = () => {
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const [activeFilter, setActiveFilter] = useState('All');
+    const [recentCarIds, setRecentCarIds] = useState([]);
 
     useEffect(() => {
         const fetchCars = async () => {
@@ -26,14 +25,37 @@ const BrowseCarsPage = () => {
             }
         };
         fetchCars();
+
+        const sync = () => {
+            try {
+                const raw = localStorage.getItem('recentCars');
+                setRecentCarIds(JSON.parse(raw || '[]'));
+            } catch (e) {
+                console.error('Error parsing recentCars', e);
+                setRecentCarIds([]);
+            }
+        };
+        sync();
+        window.addEventListener('storage', sync);
+        window.addEventListener('recentCarsUpdated', sync);
+        return () => {
+            window.removeEventListener('storage', sync);
+            window.removeEventListener('recentCarsUpdated', sync);
+        };
     }, []);
 
     const filteredCars = useMemo(() => {
+        if (activeFilter === 'Recent') {
+            const idMap = new Map(recentCarIds.map((id, i) => [id, i]));
+            return cars
+                .filter(car => idMap.has(car._id))
+                .sort((a, b) => idMap.get(a._id) - idMap.get(b._id)); // Keep visit order
+        }
         if (activeFilter === 'All') return cars;
         if (activeFilter === 'New Arrivals') return cars.filter(c => c.condition === 'New');
         if (activeFilter === 'Pre-Owned') return cars.filter(c => c.condition === 'Used');
         return cars;
-    }, [cars, activeFilter]);
+    }, [cars, activeFilter, recentCarIds]);
 
     const featuredCar = useMemo(() => filteredCars[0], [filteredCars]);
     const remainingCars = useMemo(() => filteredCars.slice(1), [filteredCars]);
@@ -81,7 +103,7 @@ const BrowseCarsPage = () => {
                 {/* Filter Controls */}
                 <div className="mb-12 flex flex-col gap-8 md:flex-row md:items-center md:justify-between border-b border-slate-200 pb-8">
                     <div className="flex bg-slate-100 p-1.5 rounded-2xl w-fit shadow-sm border border-slate-200">
-                        {['All', 'New Arrivals', 'Pre-Owned'].map((filter) => (
+                        {['All', 'Recent', 'New Arrivals', 'Pre-Owned'].map((filter) => (
                             <button
                                 key={filter}
                                 onClick={() => setActiveFilter(filter)}
@@ -97,22 +119,18 @@ const BrowseCarsPage = () => {
                 </div>
 
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-32 text-center">
-                        <div className="h-10 w-10 rounded-full border-4 border-blue-600 border-t-transparent animate-spin mb-6 shadow-blue-200 shadow-lg"></div>
-                        <p className="text-sm font-bold tracking-widest text-slate-400 uppercase">Curating the collection...</p>
+                    <div className="flex flex-col items-center justify-center rounded-[2rem] border border-slate-200 bg-white py-24 text-center shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
+                        <div className="h-12 w-12 rounded-full border-4 border-accent border-t-transparent animate-spin"></div>
+                        <p className="mt-5 text-lg font-medium text-slate-500">Loading the collection...</p>
                     </div>
-                ) : filteredCars.length === 0 ? (
-                    <div className="rounded-[2.5rem] border-2 border-dashed border-slate-200 bg-white px-6 py-32 text-center shadow-xl">
-                        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-50">
-                            <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                        </div>
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">No matches found</h2>
-                        <p className="mx-auto mt-4 max-w-md text-base text-slate-500 leading-relaxed">We couldn't find any vehicles in the "{activeFilter}" category that match our quality standards today.</p>
-                        <button onClick={() => setActiveFilter('All')} className="mt-10 rounded-2xl bg-slate-900 px-8 py-4 text-sm font-bold text-white shadow-xl transition-all hover:bg-blue-600 active:scale-95">View Full Collection</button>
+                ) : cars.length === 0 ? (
+                    <div className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-6 py-24 text-center shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
+                        <h2 className="text-3xl font-black text-slate-900">No cars found</h2>
+                        <p className="mx-auto mt-3 max-w-xl text-base text-slate-500">The catalogue is empty right now.</p>
                     </div>
                 ) : (
                     <div className="space-y-16 lg:space-y-24">
-                        {featuredCar && activeFilter === 'All' && (
+                        {featuredCar && (activeFilter === 'All' || activeFilter === 'Recent') && (
                             <section className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
                                 <div className="flex flex-col justify-center rounded-[3rem] border border-slate-200 bg-white p-8 shadow-2xl md:p-12">
                                     <div className="inline-flex w-fit items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.25em] text-blue-600 mb-8">
@@ -127,22 +145,40 @@ const BrowseCarsPage = () => {
                                             <div className="h-1.5 w-1.5 rounded-full bg-blue-600"></div>
                                             <span className="text-xs font-bold uppercase tracking-widest text-slate-400 italic">Certified Integrity</span>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-blue-600"></div>
-                                            <span className="text-xs font-bold uppercase tracking-widest text-slate-400 italic">220-Point Inspection</span>
+                                        <div className="hidden rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-500 md:block">
+                                            Premium spotlight
                                         </div>
                                     </div>
+                                    <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
+                                        Start with the hero vehicle, then continue into the full grid below. The layout is
+                                        now split into a prominent feature and a clean browsing wall for the rest of the catalogue.
+                                    </p>
                                 </div>
                                 <CarCard car={featuredCar} featured />
                             </section>
                         )}
 
                         <section className="space-y-12">
-                            <div id="car-grid" className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                                {(featuredCar && activeFilter === 'All' ? remainingCars : filteredCars).map((car) => (
-                                    <CarCard key={car._id} car={car} />
-                                ))}
-                            </div>
+                            {filteredCars.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center rounded-[3rem] border border-dashed border-slate-300 bg-white py-24 text-center shadow-[0_20px_50px_rgba(15,23,42,0.04)]">
+                                    <div className="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center mb-6">
+                                        <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                    <h2 className="text-3xl font-black text-slate-900">No matches found</h2>
+                                    <p className="mx-auto mt-3 max-w-sm text-base text-slate-500">
+                                        We couldn't find any vehicles matching your current selection.
+                                        Try adjusting your filters or browsing the full collection.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div id="car-grid" className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                                    {((featuredCar && (activeFilter === 'All' || activeFilter === 'Recent')) ? remainingCars : filteredCars).map((car) => (
+                                        <CarCard key={car._id} car={car} />
+                                    ))}
+                                </div>
+                            )}
                         </section>
                     </div>
                 )}
@@ -150,7 +186,6 @@ const BrowseCarsPage = () => {
         </div>
     );
 };
-
 
 export default BrowseCarsPage;
 

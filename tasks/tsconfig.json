@@ -3,11 +3,14 @@
     "target": "ESNext",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "types": ["node", "@playwright/test"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
   },
-  "include": ["**/*.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.json"
+  ]
 }
