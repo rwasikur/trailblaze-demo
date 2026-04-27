@@ -52,7 +52,7 @@ const CarDetailsPage = () => {
             <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
                 <div className="flex justify-between items-center">
                     <Button id="back-to-catalogue" variant="outline" onClick={() => navigate(-1)} className="text-sm">
-                        &larr; Back to Catalogue
+                        &larr; Back to Fleet
                     </Button>
                 </div>
                 <div className="flex justify-center mt-12"><p className="text-slate-500 font-medium animate-pulse">Loading details...</p></div>
@@ -64,10 +64,10 @@ const CarDetailsPage = () => {
             <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
                 <div className="flex justify-between items-center">
                     <Button id="back-to-catalogue" variant="outline" onClick={() => navigate(-1)} className="text-sm">
-                        &larr; Back to Catalogue
+                        &larr; Back to Fleet
                     </Button>
                 </div>
-                <div className="flex justify-center mt-12"><p className="text-slate-500 font-medium">Car not found.</p></div>
+                <div className="flex justify-center mt-12"><p className="text-slate-500 font-medium">Vehicle Not Found</p></div>
             </div>
         </div>
     );
@@ -92,6 +92,7 @@ const CarDetailsPage = () => {
         { id: 'Specs', label: 'Specs' },
         { id: 'Colours', label: 'Colours' },
         { id: 'Range', label: 'Range' },
+        { id: 'History', label: 'History' },
         { id: 'Images', label: 'Images' },
     ];
 
@@ -100,7 +101,7 @@ const CarDetailsPage = () => {
             <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
                 <div className="flex justify-between items-center">
                     <Button id="back-to-catalogue" variant="outline" onClick={() => navigate(-1)} className="text-sm">
-                        &larr; Back to Catalogue
+                        &larr; Back to Fleet
                     </Button>
                 </div>
 
@@ -277,6 +278,27 @@ const CarDetailsPage = () => {
                                         ) : (
                                             <p className="text-slate-500 text-sm">Currently details not available.</p>
                                         )}
+                                    </div>
+                                )}
+
+                                {activeTab === 'History' && (
+                                    <div className="flex-1">
+                                        <h3 className="mb-4 text-slate-900 font-bold text-lg">Ownership History</h3>
+                                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                                            <div className="flex items-center justify-between py-3 border-b border-slate-200">
+                                                <span className="text-slate-500 text-sm font-medium uppercase tracking-wider">Number of Owners</span>
+                                                <span className="text-slate-900 font-bold">{car.number_of_owners || '1st Owner'}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between py-3 border-b border-slate-200">
+                                                <span className="text-slate-500 text-sm font-medium uppercase tracking-wider">Vehicle Condition</span>
+                                                <span className="text-slate-900 font-bold">{car.condition || 'Brand New'}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between py-3">
+                                                <span className="text-slate-500 text-sm font-medium uppercase tracking-wider">Verification Status</span>
+                                                <span className="text-emerald-600 font-bold uppercase tracking-widest text-xs bg-emerald-50 px-2 py-1 rounded">Verified</span>
+                                            </div>
+                                        </div>
+                                        <p className="mt-4 text-slate-500 text-sm">All vehicles in our catalogue undergo a rigorous 150-point inspection and history verification process.</p>
                                     </div>
                                 )}
 
