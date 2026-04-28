@@ -1,0 +1,42 @@
+{
+  "tasks": [
+    {
+      "task_id": "task-10",
+      "difficulty": "hard",
+      "description": "Implement data aggregation on the backend to provide fleet performance metrics, visualized on the dashboard with a Pie Chart for fleet status distribution.",
+      "branch": "task-10",
+      "test_case_location": "tasks/test-cases/task-10/",
+       "acceptance_criteria": [
+        "`totalFleet` must equal the number of car records returned by `Car.findAll()` inside `getFleetAnalytics`.",
+        "`availableCount` must count only car records where `availability_status === \"Available\"`.",
+        "`unavailableCount` must equal `totalFleet - availableCount`.",
+        "`availabilityRate` must equal `Math.round((availableCount / totalFleet) * 100)` when `totalFleet > 0`.",
+        "When `totalFleet > 0`, `averageDailyRate` must equal `Math.round(sum(price_per_day) / totalFleet)`, with missing, empty, or non-numeric `price_per_day` values counted as `0`.",
+        "When `totalFleet > 0`, `availableDailyRate` must equal the sum of `price_per_day` only for car records where `availability_status === \"Available\"`, with missing, empty, or non-numeric `price_per_day` values counted as `0`.",
+        "`averageFleetAge` must use only finite positive `model_year` values and equal `Math.round(sum(currentYear - model_year) / validYearCount)`.",
+        "`oldestModelYear` must equal the minimum finite positive `model_year`.",
+        "`newestModelYear` must equal the maximum finite positive `model_year`.",
+        "`expiredInsuranceCount` must count only parsable `insurance_validity` dates earlier than the server current date/time.",
+        "`insuranceExpiringSoonCount` must count only parsable `insurance_validity` dates from the server current date/time through 30 calendar days after it.",
+        "`brandDistribution` must be sorted by `count` in descending order.",
+        "`registrationCityDistribution` must be sorted by `count` in descending order.",
+        "Each returned object in `fuelTypeDistribution` must contain `fuelType`, `count`, and `percentage`, where `percentage` equals `Math.round((count / totalFleet) * 100)` when `totalFleet > 0`.",
+        "`totalSalesRevenue` must equal `SaleHistory.sum(\"price\")`.",
+        "`totalVehiclesSold` must equal `SaleHistory.count()`.",
+        "When the analytics API returns `totalSalesRevenue: 12345`, the `/admin/dashboard` page must display `Total Sales Revenue` with the value `$12,345`.",
+        "When `statusDistribution` contains at least two statuses with non-zero counts, the `/admin/dashboard` page must display a fleet status chart with one visible legend row per returned status, and each legend row must show the status name, vehicle count, and percentage from the API response.",
+        "If there are zero car records, `totalFleet`, `availableCount`, `unavailableCount`, `availabilityRate`, `availableDailyRate`, `averageDailyRate`, `averageFleetAge`, `expiredInsuranceCount`, and `insuranceExpiringSoonCount` must return `0`.",
+        "If there are zero finite positive `model_year` values, `averageFleetAge` must return `0`.",
+        "If there are zero finite positive `model_year` values, `oldestModelYear` must return `null`.",
+        "If there are zero finite positive `model_year` values, `newestModelYear` must return `null`.",
+        "If `insurance_validity` is missing, empty, or unparsable, that car record must not increment `expiredInsuranceCount`.",
+        "If `insurance_validity` is missing, empty, or unparsable, that car record must not increment `insuranceExpiringSoonCount`.",
+        "If `statusDistribution` is an empty array and no analytics request error exists, the `/admin/dashboard` page must display `No fleet status data available.` and must not display a fleet status chart.",
+        "If `fuelTypeDistribution` is an empty array, the `/admin/dashboard` page must display `No fuel type data available.` in the Fuel Type Breakdown section.",
+        "If the analytics summary API request fails, the `/admin/dashboard` page must display `Unable to load fleet analytics. Select Retry to request the latest data.`.",
+        "After an analytics summary API request failure, selecting `Retry` on `/admin/dashboard` must send one additional `GET /api/cars/analytics/summary` request.",
+        "If `SaleHistory.sum(\"price\")` returns `null`, `totalSalesRevenue` must return `0`."
+      ]
+    }
+  ]
+}
