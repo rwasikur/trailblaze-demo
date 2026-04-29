@@ -5,7 +5,10 @@
       "difficulty": "hard",
       "description": "Implement data aggregation on the backend to provide fleet performance metrics, visualized on the dashboard with a Pie Chart for fleet status distribution.",
       "branch": "task-10",
-      "test_case_location": "tasks/test-cases/task-10/",
+      "test_case_location": [
+                "tasks/test-cases/task-10/public/task-10.spec.ts",
+                "evaluation/private-test-cases/task-10/private/task-10.spec.ts"
+            ],
        "acceptance_criteria": [
         "`totalFleet` must equal the number of car records returned by `Car.findAll()` inside `getFleetAnalytics`.",
         "`availableCount` must count only car records where `availability_status === \"Available\"`.",
