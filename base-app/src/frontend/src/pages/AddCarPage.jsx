@@ -174,6 +174,12 @@ const AddCarPage = () => {
             return nextStep();
         }
 
+        // Image Validation
+        if (!formData.image_url) {
+            toast.error('A main profile image is required for every vehicle entry.');
+            return;
+        }
+
         // Final validation is now handled per-step in nextStep
         try {
             const token = localStorage.getItem('adminToken');
@@ -264,7 +270,7 @@ const AddCarPage = () => {
                                                 </select>
                                             </div>
                                             <Input label="Model Year" type="number" min="1970" max={new Date().getFullYear() + 1} value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
-                                            <Input label="Price ($)" type="number" min="1" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
+                                            <Input label="Price (₹)" type="number" min="1" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
 
                                             <div className="space-y-2">
                                                 <label className="block text-sm font-bold text-slate-700">Exterior Color</label>
@@ -325,13 +331,6 @@ const AddCarPage = () => {
                                             </div>
                                             <Input label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
                                             <Input label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
-                                            <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Availability</label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}>
-                                                    <option value="Available">Available</option>
-                                                    <option value="Unavailable">Unavailable</option>
-                                                </select>
-                                            </div>
                                             <div className="md:col-span-3 space-y-2">
                                                 <label className="block text-sm font-bold text-slate-700">Description</label>
                                                 <textarea className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all resize-y min-h-[120px]" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="3" />

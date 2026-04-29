@@ -39,11 +39,29 @@ const createCar = async (req, res) => {
         const seller_name = req.admin ? req.admin.full_name : 'TrailblazeAuto Dealership';
         const seller_email = req.admin ? req.admin.email : 'contact@trailblazeauto.com';
 
+        // Validation
+        if (!name || !brand || !model_year || !price_per_day) {
+            return res.status(400).json({ message: 'Missing required fields: Name, Brand, Year, and Price are mandatory.' });
+        }
+
+        if (!image_url) {
+            return res.status(400).json({ message: 'A main vehicle image is mandatory.' });
+        }
+
+        const p_model_year = parseInt(model_year);
+        const p_seating_capacity = parseInt(seating_capacity) || 0;
+        const p_price_per_day = parseInt(price_per_day);
+
+        if (isNaN(p_model_year) || p_model_year < 1886 || p_model_year > new Date().getFullYear() + 1) {
+            return res.status(400).json({ message: 'Please provide a valid model year.' });
+        }
+
+        if (isNaN(p_price_per_day) || p_price_per_day <= 0) {
+            return res.status(400).json({ message: 'Price must be a positive number.' });
+        }
+
         // Sanitize integer fields
         const sanitizedOwners = (condition === 'New') ? 0 : (parseInt(number_of_owners) || 0);
-        const p_model_year = parseInt(model_year) || 0;
-        const p_seating_capacity = parseInt(seating_capacity) || 0;
-        const p_price_per_day = parseInt(price_per_day) || 0;
 
         try {
             const createdCar = await Car.create({
