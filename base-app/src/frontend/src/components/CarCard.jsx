@@ -46,7 +46,11 @@ const CarCard = ({ car, featured = false }) => {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
 
-
+                        <div className="absolute top-4 left-4 animate-in fade-in zoom-in duration-500 delay-100">
+                            <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl backdrop-blur-md border border-white/20 ${car.condition === 'New' ? 'bg-indigo-600/90 text-white' : 'bg-slate-800/90 text-white'}`}>
+                                {car.condition === 'New' ? 'Brand New' : 'Pre-Owned'}
+                            </span>
+                        </div>
 
                         <div className="absolute top-4 right-4 animate-in fade-in zoom-in duration-500">
                             <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl backdrop-blur-md border border-white/20 ${fuelTheme(car.fuel_type)}`}>
@@ -110,7 +114,7 @@ const CarCard = ({ car, featured = false }) => {
                                         onClick={handleBuyClick}
                                         className="h-12 px-6 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest shadow-xl transition-all duration-300 hover:bg-blue-600 hover:scale-105 active:scale-95"
                                     >
-                                        Buy Now
+                                        Book Now
                                     </button>
                                     <div id={`car-card-${car._id}-view-details`} className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-900 shadow-sm transition-all duration-300 hover:bg-slate-200 group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:scale-110 active:scale-95">
                                         <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7-7 7" /></svg>
