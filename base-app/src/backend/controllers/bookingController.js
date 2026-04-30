@@ -4,9 +4,21 @@ const Car = require('../models/Car');
 const createBooking = async (req, res) => {
     try {
         const { car_id, user_name, user_email, user_contact } = req.body;
-        
+
         if (!car_id || !user_name || !user_email || !user_contact) {
             return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        // Check for duplicate booking
+        const existingBooking = await Booking.findOne({
+            where: {
+                car_id,
+                user_email
+            }
+        });
+
+        if (existingBooking) {
+            return res.status(400).json({ message: 'A booking request with this email already exists for this vehicle.' });
         }
 
         // Email validation
@@ -76,12 +88,12 @@ const updateBookingStatus = async (req, res) => {
             // Auto-reject other pending bookings for the same car
             await Booking.update(
                 { status: 'Rejected' },
-                { 
-                    where: { 
+                {
+                    where: {
                         car_id: booking.car_id,
                         status: 'Pending',
                         _id: { [require('sequelize').Op.ne]: booking._id }
-                    } 
+                    }
                 }
             );
         }

@@ -11,6 +11,7 @@ const AdminDashboard = () => {
     const [cars, setCars] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [activeTab, setActiveTab] = useState('vehicles');
+    const [editingBookingId, setEditingBookingId] = useState(null);
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
@@ -190,26 +191,62 @@ const AdminDashboard = () => {
                                                             </Badge>
                                                         </td>
                                                         <td className="px-6 py-5 text-right">
-                                                            {booking.status === 'Pending' && (
-                                                                <div className="flex justify-end gap-2">
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="slate"
-                                                                        className="h-8 px-4 text-[9px] bg-emerald-600 hover:bg-emerald-700 border-none font-black uppercase tracking-widest shadow-md shadow-emerald-600/10"
-                                                                        onClick={() => handleBookingStatus(booking._id, 'Accepted')}
-                                                                    >
-                                                                        Accept
-                                                                    </Button>
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="outline"
-                                                                        className="h-8 px-4 text-[9px] text-red-600 border-red-100 hover:bg-red-50 font-black uppercase tracking-widest"
-                                                                        onClick={() => handleBookingStatus(booking._id, 'Rejected')}
-                                                                    >
-                                                                        Reject
-                                                                    </Button>
-                                                                </div>
-                                                            )}
+                                                            <div className="flex justify-end gap-2">
+                                                                {editingBookingId === booking._id ? (
+                                                                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-300">
+                                                                        <select
+                                                                            className="h-8 px-2 text-[9px] font-black uppercase tracking-widest bg-slate-100 border border-slate-200 rounded-lg outline-none focus:border-slate-900 transition-all"
+                                                                            value={booking.status}
+                                                                            onChange={(e) => {
+                                                                                handleBookingStatus(booking._id, e.target.value);
+                                                                                setEditingBookingId(null);
+                                                                            }}
+                                                                        >
+                                                                            <option value="Pending">Pending</option>
+                                                                            <option value="Accepted">Accepted</option>
+                                                                            <option value="Rejected">Rejected</option>
+                                                                        </select>
+                                                                        <button 
+                                                                            onClick={() => setEditingBookingId(null)}
+                                                                            className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 px-2"
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        {booking.status === 'Pending' ? (
+                                                                            <div className="flex justify-end gap-2">
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="slate"
+                                                                                    className="h-8 px-4 text-[9px] bg-emerald-600 hover:bg-emerald-700 border-none font-black uppercase tracking-widest shadow-md shadow-emerald-600/10"
+                                                                                    onClick={() => handleBookingStatus(booking._id, 'Accepted')}
+                                                                                >
+                                                                                    Accept
+                                                                                </Button>
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="outline"
+                                                                                    className="h-8 px-4 text-[9px] text-red-600 border-red-100 hover:bg-red-50 font-black uppercase tracking-widest"
+                                                                                    onClick={() => handleBookingStatus(booking._id, 'Rejected')}
+                                                                                >
+                                                                                    Reject
+                                                                                </Button>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                className="h-8 px-4 text-[9px] font-black uppercase tracking-widest border-slate-200 hover:border-slate-900 transition-all"
+                                                                                onClick={() => setEditingBookingId(booking._id)}
+                                                                            >
+                                                                                Edit Status
+                                                                            </Button>
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))}

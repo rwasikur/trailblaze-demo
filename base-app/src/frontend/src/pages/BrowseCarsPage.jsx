@@ -1,10 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import api from '../api';
 import CarCard from '../components/CarCard';
-import CatalogueHero from '../components/catalogue/CatalogueHero';
-import CatalogueHighlights from '../components/catalogue/CatalogueHighlights';
-
-import { BRANDS_MODELS } from '../constants/carData';
 
 const BrowseCarsPage = () => {
     const [cars, setCars] = useState([]);
@@ -31,13 +27,13 @@ const BrowseCarsPage = () => {
 
     const filteredCars = useMemo(() => {
         return cars.filter(car => {
-            const matchesSearch = 
+            const matchesSearch =
                 car.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 car.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 car.body_type?.toLowerCase().includes(searchQuery.toLowerCase());
 
-            const matchesCondition = 
-                conditionFilter === 'All' || 
+            const matchesCondition =
+                conditionFilter === 'All' ||
                 (conditionFilter === 'New' && car.condition === 'New') ||
                 (conditionFilter === 'Pre-Owned' && car.condition === 'Used');
 
@@ -88,7 +84,7 @@ const BrowseCarsPage = () => {
                         </div>
 
                         <div className="h-8 w-px bg-slate-100 mx-3"></div>
-                        
+
                         <div className="relative flex-1 group">
                             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                                 <svg className="h-4 w-4 text-slate-300 group-focus-within:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +118,7 @@ const BrowseCarsPage = () => {
                         </div>
                         <h2 className="text-3xl font-black text-slate-900 tracking-tight">No matches found</h2>
                         <p className="mx-auto mt-4 max-w-md text-base text-slate-500 leading-relaxed">We couldn't find any vehicles matching your search criteria.</p>
-                        <button onClick={() => {setSearchQuery(''); setConditionFilter('All');}} className="mt-10 rounded-2xl bg-slate-900 px-8 py-4 text-sm font-bold text-white shadow-xl transition-all hover:bg-blue-600 active:scale-95">Clear All Filters</button>
+                        <button onClick={() => { setSearchQuery(''); setConditionFilter('All'); }} className="mt-10 rounded-2xl bg-slate-900 px-8 py-4 text-sm font-bold text-white shadow-xl transition-all hover:bg-blue-600 active:scale-95">Clear All Filters</button>
                     </div>
                 ) : (
                     <div className="space-y-12">

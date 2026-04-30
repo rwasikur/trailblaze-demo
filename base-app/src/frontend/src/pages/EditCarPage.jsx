@@ -20,6 +20,7 @@ const EditCarPage = () => {
     const [loading, setLoading] = useState(true);
     const [mainLoading, setMainLoading] = useState(false);
     const [multiLoading, setMultiLoading] = useState(false);
+    const [usedDataCache, setUsedDataCache] = useState({ owners: 0, history: [] });
     const mainFileRef = useRef(null);
     const multiFileRef = useRef(null);
 
@@ -58,6 +59,10 @@ const EditCarPage = () => {
                     condition: data.condition || 'Used',
                     number_of_owners: data.number_of_owners !== undefined && data.number_of_owners !== null ? data.number_of_owners : 0,
                     past_owners: data.past_owners || []
+                });
+                setUsedDataCache({
+                    owners: data.number_of_owners !== undefined && data.number_of_owners !== null ? data.number_of_owners : 0,
+                    history: data.past_owners || []
                 });
             } catch (error) {
                 console.error('Error fetching car details', error);
@@ -140,12 +145,14 @@ const EditCarPage = () => {
         }
 
         setFormData({ ...formData, number_of_owners: val, past_owners: updatedPastOwners });
+        setUsedDataCache({ owners: val, history: updatedPastOwners });
     };
 
     const handlePastOwnerChange = (index, field, value) => {
         const newPastOwners = [...(formData.past_owners || [])];
         newPastOwners[index] = { ...newPastOwners[index], [field]: value };
         setFormData({ ...formData, past_owners: newPastOwners });
+        setUsedDataCache(prev => ({ ...prev, history: newPastOwners }));
     };
 
     const handleEditCar = async (e) => {
@@ -331,11 +338,21 @@ const EditCarPage = () => {
                                             value={formData.condition}
                                             onChange={(e) => {
                                                 const val = e.target.value;
-                                                setFormData({
-                                                    ...formData,
-                                                    condition: val,
-                                                    number_of_owners: val === 'New' ? 0 : formData.number_of_owners
-                                                });
+                                                if (val === 'New') {
+                                                    setFormData({
+                                                        ...formData,
+                                                        condition: val,
+                                                        number_of_owners: 0,
+                                                        past_owners: []
+                                                    });
+                                                } else {
+                                                    setFormData({
+                                                        ...formData,
+                                                        condition: val,
+                                                        number_of_owners: usedDataCache.owners,
+                                                        past_owners: usedDataCache.history
+                                                    });
+                                                }
                                             }}
                                             required
                                         >

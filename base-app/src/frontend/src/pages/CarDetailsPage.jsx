@@ -218,7 +218,7 @@ const CarDetailsPage = () => {
                                             validityStatus = <span className="text-red-600">Expired</span>;
                                         }
                                     }
-                                    specs.push({ l: 'Validity', v: validityStatus });
+                                    specs.push({ l: 'Insurance Validity', v: validityStatus });
                                     specs.push({ l: 'Seating', v: `${car.seating_capacity} Seats` });
 
                                     return specs.map((s, i) => (
