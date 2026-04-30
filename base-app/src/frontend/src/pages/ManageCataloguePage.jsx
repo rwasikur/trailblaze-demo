@@ -96,60 +96,41 @@ const ManageCataloguePage = () => {
                                             </td>
                                         </tr>
                                     ) : (
-                                        cars.map((car) => {
-                                            let badgeVariant = 'default';
-                                            if (car.availability_status === 'Available') badgeVariant = 'available';
-                                            else badgeVariant = 'unavailable';
-
-                                            return (
-                                                <tr key={car._id} className="hover:bg-slate-50/50 transition-colors">
-                                                    <td className="px-6 py-4 text-slate-400 font-mono text-xs">...{car._id.substring(car._id.length - 6)}</td>
-                                                    <td className="px-6 py-4 font-bold text-slate-900">{car.name}</td>
-                                                    <td className="px-6 py-4 text-slate-600 font-medium">{car.brand}</td>
-                                                    <td className="px-6 py-4 text-slate-600 font-medium">${car.price_per_day}</td>
-                                                    <td className="px-6 py-4">
-                                                        <Badge variant={badgeVariant}>
-                                                            <span className="mr-1.5 opacity-70">{car.availability_status === 'Available' ? '●' : '■'}</span>
-                                                            {car.availability_status}
-                                                        </Badge>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right relative">
-                                                        <div className="relative inline-block text-left">
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => setActiveDropdown(activeDropdown === car._id ? null : car._id)}
-                                                                className="h-8 text-xs font-semibold px-3"
-                                                            >
-                                                                Options ▼
-                                                            </Button>
-                                                            {activeDropdown === car._id && (
-                                                                <>
-                                                                    <div onClick={() => setActiveDropdown(null)} className="fixed inset-0 z-40 bg-transparent"></div>
-                                                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-50 p-1 divide-y divide-slate-100 font-medium text-sm text-left">
-                                                                        <div className="py-1">
-                                                                            <button 
-                                                                                onClick={() => { 
-                                                                                    const nextStatus = car.availability_status === 'Available' ? 'Unavailable' : 'Available';
-                                                                                    updateStatusHandler(car._id, nextStatus); 
-                                                                                    setActiveDropdown(null); 
-                                                                                }} 
-                                                                                className="w-full text-left px-3 py-2 text-slate-600 hover:bg-slate-50 transition-colors rounded-md"
-                                                                            >
-                                                                                {car.availability_status === 'Available' ? '⊗ Mark as Unavailable' : '↩ Mark as Available'}
-                                                                            </button>
-                                                                        </div>
-                                                                        <div className="py-1">
-                                                                            <button onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-car/${car._id}`); }} className="w-full text-left px-3 py-2 text-blue-600 hover:bg-slate-50 transition-colors rounded-md">✎ Edit Vehicle</button>
-                                                                        </div>
+                                        cars.map((car) => (
+                                            <tr key={car._id} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-6 py-4 text-slate-400 font-mono text-xs">...{car._id.substring(car._id.length - 6)}</td>
+                                                <td className="px-6 py-4 font-bold text-slate-900">{car.name}</td>
+                                                <td className="px-6 py-4 text-slate-600 font-medium">{car.brand}</td>
+                                                <td className="px-6 py-4 text-slate-600 font-medium">₹{car.price_per_day}</td>
+                                                <td className="px-6 py-4">
+                                                    <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'}>
+                                                        {car.availability_status}
+                                                    </Badge>
+                                                </td>
+                                                <td className="px-6 py-4 text-right relative">
+                                                    <div className="relative inline-block text-left">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => setActiveDropdown(activeDropdown === car._id ? null : car._id)}
+                                                            className="h-8 text-xs font-semibold px-3"
+                                                        >
+                                                            Options ▼
+                                                        </Button>
+                                                        {activeDropdown === car._id && (
+                                                            <>
+                                                                <div onClick={() => setActiveDropdown(null)} className="fixed inset-0 z-40 bg-transparent"></div>
+                                                                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-50 p-1 divide-y divide-slate-100 font-medium text-sm text-left">
+                                                                    <div className="py-1">
+                                                                        <button onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-car/${car._id}`); }} className="w-full text-left px-3 py-2 text-blue-600 hover:bg-slate-50 transition-colors rounded-md">✎ Edit Vehicle</button>
                                                                     </div>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
                                     )}
                                 </tbody>
                             </table>
@@ -160,6 +141,5 @@ const ManageCataloguePage = () => {
         </div>
     );
 };
-
 
 export default ManageCataloguePage;

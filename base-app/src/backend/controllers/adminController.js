@@ -28,6 +28,11 @@ const updateCar = async (req, res) => {
     try {
         const car = await Car.findByPk(req.params.id);
         if (car) {
+            // Validation
+            if (req.body.name === "" || req.body.brand === "" || req.body.image_url === "") {
+                return res.status(400).json({ message: "Name, Brand, and Main Image cannot be empty." });
+            }
+
             car.name = req.body.name || car.name;
             car.brand = req.body.brand || car.brand;
             car.model_year = req.body.model_year ? parseInt(req.body.model_year) : car.model_year;

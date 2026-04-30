@@ -7,6 +7,7 @@ const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 const carRoutes = require('./routes/carRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
 
 connectDB();
 
@@ -18,6 +19,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/cars', carRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 app.get('/', (req, res) => {
     res.send('API Engine Running...');

@@ -172,6 +172,11 @@ const EditCarPage = () => {
             }
         }
 
+        if (!formData.image_url) {
+            toast.error('A main profile image is required.');
+            return;
+        }
+
         try {
             const token = localStorage.getItem('adminToken');
             const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -222,7 +227,7 @@ const EditCarPage = () => {
                                         </select>
                                     </div>
                                     <Input label="Model Year" type="number" min="1970" max={new Date().getFullYear() + 1} value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
-                                    <Input label="Price ($)" type="number" min="1" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
+                                    <Input label="Price (₹)" type="number" min="1" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Vehicle Condition</label>
                                         <select
@@ -301,15 +306,15 @@ const EditCarPage = () => {
                                     />
                                     <Input label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
                                     <Input label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
-
+ 
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Availability</label>
-                                        <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-emerald-50 text-emerald-900 focus:bg-white focus:ring-2 focus:ring-emerald-900/10 focus:border-emerald-900 outline-none transition-all font-semibold" value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}>
+                                        <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}>
                                             <option value="Available">Available</option>
-                                            <option value="Unavailable">Unavailable</option>
+                                            <option value="Sold">Sold</option>
                                         </select>
                                     </div>
-
+ 
                                     <div className="md:col-span-2 lg:col-span-3 space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Description</label>
                                         <textarea

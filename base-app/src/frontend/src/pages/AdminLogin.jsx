@@ -66,7 +66,7 @@ const AdminLogin = () => {
                 <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/20 rounded-[2.5rem] p-10 md:p-14 shadow-2xl transition-all">
                     <div className="text-center mb-10">
                         <h1 className="text-3xl font-black tracking-tight mb-2 uppercase italic text-blue-500">
-                            {isLogin ? 'Admin Portal' : 'Admin Register'}
+                            {isLogin ? 'Admin Login' : 'Admin Register'}
                         </h1>
                         <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em]">
                             {isLogin ? 'Sign in to manage your fleet' : 'Create an account to manage your fleet'}
