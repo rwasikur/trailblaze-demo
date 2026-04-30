@@ -80,13 +80,13 @@ const AdminDashboard = () => {
 
                 {/* Tabs */}
                 <div className="flex gap-2 p-1.5 bg-slate-200/50 rounded-2xl w-fit">
-                    <button 
+                    <button
                         onClick={() => setActiveTab('vehicles')}
                         className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'vehicles' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         Vehicles ({cars.length})
                     </button>
-                    <button 
+                    <button
                         onClick={() => setActiveTab('bookings')}
                         className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'bookings' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
@@ -122,11 +122,13 @@ const AdminDashboard = () => {
                                                 {cars.map(car => (
                                                     <tr id={`car-row-${car._id}`} key={car._id} className="hover:bg-slate-50/30 transition-colors group">
                                                         <td className="px-6 py-5">
-                                                            <div className="font-black text-slate-900 text-sm">{car.brand} {car.name}</div>
+                                                            <div className="font-black text-slate-900 text-sm">
+                                                                {car.name.toLowerCase().startsWith(car.brand.toLowerCase()) ? car.name : `${car.brand} ${car.name}`}
+                                                            </div>
                                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{car.fuel_type} • {car.transmission}</div>
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-600 font-bold text-sm">{car.model_year}</td>
-                                                        <td className="px-6 py-5 text-slate-900 font-black text-sm">₹{car.price_per_day?.toLocaleString()}</td>
+                                                        <td className="px-6 py-5 text-slate-900 font-black text-sm">₹{car.price?.toLocaleString()}</td>
                                                         <td className="px-6 py-5">
                                                             <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'}>
                                                                 {car.availability_status}
@@ -174,8 +176,10 @@ const AdminDashboard = () => {
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-600 font-bold text-sm tracking-tight">{booking.user_contact}</td>
                                                         <td className="px-6 py-5">
-                                                            <div className="font-black text-slate-900 text-sm">{booking.car?.brand} {booking.car?.name}</div>
-                                                            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">₹{booking.car?.price_per_day?.toLocaleString()}</div>
+                                                            <div className="font-black text-slate-900 text-sm">
+                                                                {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
+                                                            </div>
+                                                            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">₹{booking.car?.price?.toLocaleString()}</div>
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-500 text-[11px] font-black uppercase tracking-tighter">
                                                             {new Date(booking.createdAt).toLocaleDateString()}
@@ -188,17 +192,17 @@ const AdminDashboard = () => {
                                                         <td className="px-6 py-5 text-right">
                                                             {booking.status === 'Pending' && (
                                                                 <div className="flex justify-end gap-2">
-                                                                    <Button 
-                                                                        size="sm" 
-                                                                        variant="slate" 
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="slate"
                                                                         className="h-8 px-4 text-[9px] bg-emerald-600 hover:bg-emerald-700 border-none font-black uppercase tracking-widest shadow-md shadow-emerald-600/10"
                                                                         onClick={() => handleBookingStatus(booking._id, 'Accepted')}
                                                                     >
                                                                         Accept
                                                                     </Button>
-                                                                    <Button 
-                                                                        size="sm" 
-                                                                        variant="outline" 
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
                                                                         className="h-8 px-4 text-[9px] text-red-600 border-red-100 hover:bg-red-50 font-black uppercase tracking-widest"
                                                                         onClick={() => handleBookingStatus(booking._id, 'Rejected')}
                                                                     >

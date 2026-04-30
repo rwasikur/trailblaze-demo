@@ -1,546 +1,806 @@
-const { connectDB } = require('../config/db');
-const Car = require('../models/Car');
-const Admin = require('../models/Admin');
-const SaleHistory = require('../models/SaleHistory');
+const { connectDB } = require('../../base-app/src/backend/config/db');
+const { Op } = require('sequelize');
+const Car = require('../../base-app/src/backend/models/Car');
+const Admin = require('../../base-app/src/backend/models/Admin');
+const SaleHistory = require('../../base-app/src/backend/models/SaleHistory');
+const Booking = require('../../base-app/src/backend/models/Booking');
 
 const private_cars = [
-
     {
-        name: "Maybach S680 Private",
-        brand: "Mercedes-Maybach",
-
-        model_year: 2024,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        seating_capacity: 4,
-
-        price_per_day: 1800,
-
-        range: "444 mi",
-        body_type: "Sedan",
-        mileage: "12 mpg city / 21 mpg highway",
-
-        exterior_color: "Two-tone Nautical Blue",
-        interior_color: "Crystal White",
-
-        number_of_owners: 0,
-        registration_city: "Geneva",
-        insurance_validity: "Dec 2025",
-
-        description: "The pinnacle of Mercedes luxury, reserved for private fleet executive travel.",
-
-        // Your provided working image link
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Mercedes-Benz/Maybach-S-Class/10866/1763536299202/front-left-side-47.jpg",
-
-        secondary_images: [
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Mercedes-Benz/Maybach-S-Class/10866/1690453886358/front-view-118.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Mercedes-Benz/Maybach-S-Class/10866/1690453886358/rear-right-side-48.jpg"
-
-        ],
-
-        availability_status: "Available",
-        seller_name: "Trailblaze Private Reserve",
-        discount_percentage: 10
-    }
-    ,
-    {
-        name: "911 Sport Classic Private",
-        brand: "Porsche",
-        model_year: 2023,
+        name: "Dzire",
+        brand: "Maruti Suzuki",
+        model: "Dzire",
+        model_year: 2018,
+        price: 450000,
+        currency: "INR",
+        condition: "Used",
+        number_of_owners: 1,
+        seller_type: "Dealer",
         transmission: "Manual",
         fuel_type: "Petrol",
-        seating_capacity: 4,
-        price_per_day: 2800,
-        range: "16 kmpl",
-        body_type: "Coupe",
-        mileage: "1,200 mi",
-        exterior_color: "Sport Grey Metallic",
-        interior_color: "Heritage Design Black/Cognac",
-        number_of_owners: 0,
-        registration_city: "Zurich",
-        insurance_validity: "Aug 2025",
-        description: "Limited edition 911 with a ducktail spoiler and manual gearbox, exclusive to private members.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Porsche/911/11757/1762933836560/front-left-side-47.jpg",
-        secondary_images: [
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Porsche/911/11757/1762933836560/rear-left-view-121.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Porsche/911/11757/1762933836560/rear-view-119.jpg",
-
-        ],
-        availability_status: "Available",
-        condition: "Used",
-        seller_name: "Trailblaze Private Reserve",
-        discount_percentage: 0
-    }
-    ,
-    {
-        name: "Model S Plaid Private",
-        brand: "Tesla",
-        model_year: 2024,
-        transmission: "Automatic",
-        fuel_type: "Electric",
+        mileage: "45,000 km",
+        mileage_unit: "km",
+        fuel_efficiency: "21.21 kmpl",
+        body_type: "Hatchback",
         seating_capacity: 5,
-        price_per_day: 18000,
-        range: "396 mi",
-        body_type: "Sedan",
-        mileage: "2,100 mi",
-        exterior_color: "Ultra Red",
-        interior_color: "White",
-        number_of_owners: 0,
-        registration_city: "Palo Alto",
-        insurance_validity: "Jan 2026",
-        description: "Tesla Model S Plaid reserved for private fleet — tri-motor performance with full autopilot.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Tesla/Model-S/5252/1752499273852/front-left-side-47.jpg",
-        secondary_images: [
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Tesla/Model-S/5252/1611840999494/top-view-117.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Tesla/Model-S/5252/1611840999494/side-mirror-(glass)-92.jpg"
+        exterior_color: "Solid Fire Red",
+        interior_color: "Black",
+        registration_number: "MH02AB1234",
+        registration_city: "Mumbai",
+        registration_state: "Maharashtra",
+        registration_year: 2018,
+        insurance_validity: "Oct 2024",
+        insurance_type: "Comprehensive",
+        rc_status: "Active",
+        description: "Well-maintained Maruti Suzuki Swift LXi. Single owner, regular servicing done at authorized service center. Good fuel economy and perfect for city driving.",
+        thumbnail_image: "https://i.pinimg.com/1200x/a0/86/71/a086718b056e41421eaebc4996d71f09.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/b7/f7/51/b7f7518ecd19cf75e6dc0def9060e747.jpg",
+            "https://i.pinimg.com/1200x/f8/d8/4a/f8d84af03ab51178865e65365406e9ef.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve",
-        discount_percentage: 12
+        is_featured: false,
+        discount_percentage: 5,
+        views: 854,
+        range: "160",
+        past_owners: [
+            {
+                sale_date: "2018-05-15",
+                sale_price: 750000,
+                seller_name: "Maruti Suzuki Arena",
+                buyer_name: "Rajesh Kumar"
+            }
+        ]
     },
     {
-        name: "Range Rover Autobiography Private",
-        brand: "Land Rover",
-        model_year: 2023,
+        name: "i20 Asta",
+        brand: "Hyundai",
+        model: "i20",
+        model_year: 2019,
+        price: 650000,
+        currency: "INR",
+        condition: "Used",
+        number_of_owners: 2,
+        seller_type: "Dealer",
+        transmission: "Manual",
+        fuel_type: "Petrol",
+        mileage: "32,000 km",
+        mileage_unit: "km",
+        fuel_efficiency: "20.35 kmpl",
+        body_type: "Hatchback",
+        seating_capacity: 5,
+        exterior_color: "Polar White",
+        interior_color: "Dual Tone",
+        registration_number: "DL01CD5678",
+        registration_city: "New Delhi",
+        registration_state: "Delhi",
+        registration_year: 2019,
+        insurance_validity: "Dec 2024",
+        insurance_type: "Third Party",
+        rc_status: "Active",
+        description: "Premium Hyundai i20 Asta with alloy wheels and touchscreen infotainment. Very clean interior and exterior.",
+        thumbnail_image: "https://i.pinimg.com/736x/43/92/95/43929567de08994099a9a62ce2b0ce7c.jpg",
+        images: [
+            "https://i.pinimg.com/736x/f4/7a/ed/f47aedc76ee298fb4c4d53ad917b8703.jpg",
+            "https://i.pinimg.com/736x/17/33/d6/1733d6f49180f6069be4bea1411e3fe7.jpg",
+            "https://i.pinimg.com/1200x/d5/b6/da/d5b6daba6bed1b3be603ef3909ee2983.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: true,
+        discount_percentage: 20,
+        views: 1205,
+        range: "170",
+        past_owners: [
+            {
+                sale_date: "2019-02-10",
+                sale_price: 950000,
+                seller_name: "Hyundai Motor Plaza",
+                buyer_name: "Amit Shah"
+            },
+            {
+                sale_date: "2021-11-20",
+                sale_price: 780000,
+                seller_name: "Amit Shah",
+                buyer_name: "Priya Sharma"
+            }
+        ]
+    },
+    {
+        name: "Nexon XZ+",
+        brand: "Tata",
+        model: "Nexon",
+        model_year: 2020,
+        price: 850000,
+        currency: "INR",
+        condition: "Used",
+        number_of_owners: 1,
+        seller_type: "Dealer",
         transmission: "Automatic",
         fuel_type: "Diesel",
+        mileage: "28,000 km",
+        mileage_unit: "km",
+        fuel_efficiency: "21.5 kmpl",
+        body_type: "SUV",
         seating_capacity: 5,
-        price_per_day: 20000,
-        range: "14 kmpl",
-        body_type: "SUV",
-        mileage: "12,000 mi",
-        exterior_color: "Eiger Grey",
-        interior_color: "Caraway Leather",
-        number_of_owners: 0,
-        registration_city: "Dubai",
-        insurance_validity: "Oct 2025",
-        description: "Range Rover Autobiography in private fleet — executive SUV with premium cabin.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Land-Rover/Range-Rover/8743/1769596936159/front-left-side-47.jpg",
-        secondary_images: [
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Land-Rover/Range-Rover/12533/1775802721227/side-view-(left)-90.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Land-Rover/Range-Rover/11540/1719037924320/exterior-image-165.jpg"
+        exterior_color: "Foliage Green",
+        interior_color: "Black and Beige",
+        registration_number: "KA03EF9012",
+        registration_city: "Bengaluru",
+        registration_state: "Karnataka",
+        registration_year: 2020,
+        insurance_validity: "Mar 2025",
+        insurance_type: "Comprehensive",
+        rc_status: "Active",
+        description: "5-star safety rated Tata Nexon XZ+ Diesel AMT. Excellent condition with zero dep insurance.",
+        thumbnail_image: "https://i.pinimg.com/736x/1b/ab/1e/1bab1e2a0122ea3ebf0e2fc1966d0f09.jpg",
+        images: [
+            "https://i.pinimg.com/736x/32/cf/ca/32cfca19229daebdaf4fbede3f26cf3b.jpg",
+            "https://i.pinimg.com/736x/ee/29/57/ee2957f880506e0802b604e7433f78a5.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
+        is_featured: false,
+        discount_percentage: 5,
+        views: 450,
+        range: "120"
     },
     {
-        name: "Continental GT Private",
-        brand: "Bentley",
-        model_year: 2024,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        seating_capacity: 4,
-        price_per_day: 35000,
-        range: "12 kmpl",
-        body_type: "Coupe",
-        mileage: "800 mi",
-        exterior_color: "Viridian Green",
-        interior_color: "Linen/Cumbrian Green",
-        number_of_owners: 0,
-        registration_city: "Monaco",
-        insurance_validity: "May 2026",
-        description: "Bentley Continental GT exclusively for private members — handcrafted luxury grand tourer.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Bentley/Continental/10473/1769060132454/front-left-side-47.jpg",
-        secondary_images: [
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Bentley/Continental/7771/1676965640042/rear-right-side-48.jpg",
-            "https://stimg.cardekho.com/images/carinteriorimages/930x620/Bentley/Continental/7771/1676965589168/dashboard-59.jpg",
-            "https://stimg.cardekho.com/images/carinteriorimages/930x620/Bentley/Continental/7771/1676965589168/gear-shifter-87.jpg"
-        ],
-        availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve",
-        discount_percentage: 15
-    },
-    {
-        name: "Urus Private",
-        brand: "Lamborghini",
-        model_year: 2023,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        seating_capacity: 4,
-        price_per_day: 30000,
-        range: "10 kmpl",
-        body_type: "SUV",
-        mileage: "6,700 mi",
-        exterior_color: "Giallo Auge",
-        interior_color: "Nero Ade",
-        number_of_owners: 0,
-        registration_city: "Sant'Agata",
-        insurance_validity: "Jul 2025",
-        description: "Lamborghini Urus restricted to private fleet — super SUV with 650hp twin-turbo V8.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Lamborghini/Urus/10636/1769059431316/front-left-side-47.jpg",
-        secondary_images: [
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Lamborghini/Urus/10635/1724844423793/rear-left-view-121.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Lamborghini/Urus/10635/1724844423793/rear-view-119.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Lamborghini/Urus/10635/1724844423793/rear-right-side-48.jpg"
-        ],
-        availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve",
-        discount_percentage: 0
-    },
-    {
-        name: "DBS Superleggera Private",
-        brand: "Aston Martin",
-        model_year: 2023,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        seating_capacity: 4,
-        price_per_day: 40000,
-        range: "9 kmpl",
-        body_type: "Coupe",
-        mileage: "1,500 mi",
-        exterior_color: "Hyper Red",
-        interior_color: "Phantom Grey",
-        number_of_owners: 0,
-        registration_city: "Gaydon",
-        insurance_validity: "Feb 2026",
-        description: "Aston Martin DBS restricted to private fleet — gorgeous flagship GT with a twin-turbo v12.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Aston-Martin/Aston-Martin-DBS-Superleggera/6904/1556271600796/front-left-side-47.jpg",
-        secondary_images: [
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Aston-Martin/Aston-Martin-DBS-Superleggera/6904/1556269949670/front-view-118.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Aston-Martin/Aston-Martin-DBS-Superleggera/6904/1556269949670/rear-left-view-121.jpg"
-        ],
-        availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve",
-        discount_percentage: 20
-    },
-    {
-        name: "F8 Tributo Private",
-        brand: "Ferrari",
-        model_year: 2024,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        seating_capacity: 2,
-        price_per_day: 45000,
-        range: "11 kmpl",
-        body_type: "Coupe",
-        mileage: "450 mi",
-        exterior_color: "Rosso Corsa",
-        interior_color: "Nero",
-        number_of_owners: 0,
-        registration_city: "Maranello",
-        insurance_validity: "Nov 2026",
-        description: "Ferrari F8 Tributo for private members only — an homage to the most powerful V8 in Ferrari history.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Ferrari/F8-Tributo/7945/1769146100207/front-left-side-47.jpg",
-        secondary_images: [
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Ferrari/F8-Tributo/7945/1598599471404/front-view-118.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Ferrari/F8-Tributo/7945/1598599471404/fornt-left-view-89.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Ferrari/F8-Tributo/7945/1598599471404/rear-view-119.jpg"
-        ],
-        availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
-    },
-    {
-        name: "Chiron Private",
-        brand: "Bugatti",
-        model_year: 2022,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        seating_capacity: 2,
-        price_per_day: 150000,
-        range: "8 kmpl",
-        body_type: "Coupe",
-        mileage: "230 mi",
-        exterior_color: "Noire",
-        interior_color: "Gris",
+        name: "Thar LX",
+        brand: "Mahindra",
+        model: "Thar",
+        model_year: 2021,
+        price: 1450000,
+        currency: "INR",
+        condition: "Used",
         number_of_owners: 1,
-        registration_city: "Molsheim",
-        insurance_validity: "Apr 2025",
-        description: "Bugatti Chiron reserved for our most exclusive private members. Features an 8.0L quad-turbocharged W16 engine.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Bugatti/Chiron/8451/1633582433934/front-left-side-47.jpg",
-        secondary_images: [
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Bugatti/Chiron/8451/1633582433934/front-view-118.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Bugatti/Chiron/8451/1633582433934/side-view-(left)-90.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Bugatti/Chiron/8451/1633582433934/exterior-image-164.jpg"
+        seller_type: "Dealer",
+        transmission: "Automatic",
+        fuel_type: "Diesel",
+        mileage: "15,000 km",
+        mileage_unit: "km",
+        fuel_efficiency: "15.2 kmpl",
+        body_type: "SUV",
+        seating_capacity: 4,
+        exterior_color: "Red Rage",
+        interior_color: "Black",
+        registration_number: "TS09GH3456",
+        registration_city: "Hyderabad",
+        registration_state: "Telangana",
+        registration_year: 2021,
+        insurance_validity: "Jan 2025",
+        insurance_type: "Comprehensive",
+        rc_status: "Active",
+        description: "Mahindra Thar LX Hard Top Diesel Automatic. Rarely used for off-roading. Modifications include custom alloy wheels and premium audio.",
+        thumbnail_image: "https://i.pinimg.com/1200x/d9/97/3b/d9973b0bb2d30a58e9da9d5979874778.jpg",
+        images: [
+            "https://i.pinimg.com/736x/41/50/92/4150920d20fbbf974cc5cbbdaa49a7ec.jpg",
+            "https://i.pinimg.com/736x/1b/d7/61/1bd7616b64d1eb5207021fced8495e35.jpg"
         ],
-        availability_status: "Unavailable",
-        seller_name: "TrailblazeAuto Private Reserve",
-        discount_percentage: 0
+        availability_status: "Available",
+        is_featured: true,
+        discount_percentage: 8,
+        views: 2500,
+        range: "155"
     },
     {
-        name: "P1 Private",
-        brand: "McLaren",
-        model_year: 2015,
+        name: "City ZX",
+        brand: "Honda",
+        model: "City",
+        model_year: 2017,
+        price: 720000,
+        currency: "INR",
+        condition: "Used",
+        number_of_owners: 2,
+        seller_type: "Dealer",
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        mileage: "55,000 km",
+        mileage_unit: "km",
+        fuel_efficiency: "18 kmpl",
+        body_type: "Sedan",
+        seating_capacity: 5,
+        exterior_color: "Radiant Red Metallic",
+        interior_color: "Beige Leather",
+        registration_number: "GJ01IJ7890",
+        registration_city: "Ahmedabad",
+        registration_state: "Gujarat",
+        registration_year: 2017,
+        insurance_validity: "Nov 2024",
+        insurance_type: "Comprehensive",
+        rc_status: "Active",
+        description: "Top end Honda City ZX CVT with sunroof and leather seats. Very smooth drive and excellent cabin space.",
+        thumbnail_image: "https://i.pinimg.com/736x/ff/1a/c1/ff1ac17cc8ca54f4258679aa879b8d1b.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/9b/57/05/9b5705842e0ae772dc440451a57f7241.jpg",
+            "https://i.pinimg.com/1200x/e1/2f/71/e12f71393ec1430cd03bd23a59f6039a.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: false,
+        discount_percentage: 10,
+        views: 670,
+        range: "180"
+    },
+    {
+        name: "Innova Crysta 2.4 Z",
+        brand: "Toyota",
+        model: "Innova Crysta",
+        model_year: 2018,
+        price: 1850000,
+        currency: "INR",
+        condition: "Used",
+        number_of_owners: 1,
+        seller_type: "Dealer",
+        transmission: "Automatic",
+        fuel_type: "Diesel",
+        mileage: "85,000 km",
+        mileage_unit: "km",
+        fuel_efficiency: "13.68 kmpl",
+        body_type: "MUV",
+        seating_capacity: 7,
+        exterior_color: "Super White",
+        interior_color: "Camel Brown Leather",
+        registration_number: "TN09KL1234",
+        registration_city: "Chennai",
+        registration_state: "Tamil Nadu",
+        registration_year: 2018,
+        insurance_validity: "Feb 2025",
+        insurance_type: "Third Party",
+        rc_status: "Active",
+        description: "Highly reliable Toyota Innova Crysta. Top model with captain seats and automatic transmission.",
+        thumbnail_image: "https://i.pinimg.com/736x/4b/6a/9d/4b6a9d184003e00c1077441d5d73ed64.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/21/3f/69/213f691b5ff4fc35461a01daf2907a6f.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: true,
+        discount_percentage: 15,
+        views: 3200,
+        range: "175"
+    },
+    {
+        name: "Seltos HTX",
+        brand: "Kia",
+        model: "Seltos",
+        model_year: 2020,
+        price: 1250000,
+        currency: "INR",
+        condition: "Used",
+        number_of_owners: 1,
+        seller_type: "Dealer",
+        transmission: "Manual",
+        fuel_type: "Petrol",
+        mileage: "22,000 km",
+        mileage_unit: "km",
+        fuel_efficiency: "16.5 kmpl",
+        body_type: "SUV",
+        seating_capacity: 5,
+        exterior_color: "Glacier White Pearl",
+        interior_color: "Black",
+        registration_number: "HR26MN5678",
+        registration_city: "Gurgaon",
+        registration_state: "Haryana",
+        registration_year: 2020,
+        insurance_validity: "Aug 2024",
+        insurance_type: "Comprehensive",
+        rc_status: "Active",
+        description: "Well maintained Kia Seltos HTX. Features a sunroof, 10.25-inch display, and air purifier.",
+        thumbnail_image: "https://i.pinimg.com/1200x/44/f2/5c/44f25cd4711d7d7601f4026029ffaaad.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/11/f8/bf/11f8bf97e3594144a2affc572b7dd722.jpg",
+            "https://i.pinimg.com/1200x/db/ff/4a/dbff4a407f09dd85de710e3477cfb755.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: false,
+        discount_percentage: 0,
+        views: 980,
+        range: "170"
+    },
+    {
+        name: "EcoSport Titanium",
+        brand: "Ford",
+        model: "EcoSport",
+        model_year: 2019,
+        price: 680000,
+        currency: "INR",
+        condition: "Used",
+        number_of_owners: 2,
+        seller_type: "Dealer",
+        transmission: "Manual",
+        fuel_type: "Diesel",
+        mileage: "48,000 km",
+        mileage_unit: "km",
+        fuel_efficiency: "21.7 kmpl",
+        body_type: "SUV",
+        seating_capacity: 5,
+        exterior_color: "Diamond White",
+        interior_color: "Black & Golden",
+        registration_number: "WB02OP9012",
+        registration_city: "Kolkata",
+        registration_state: "West Bengal",
+        registration_year: 2019,
+        insurance_validity: "Sep 2024",
+        insurance_type: "Comprehensive",
+        rc_status: "Active",
+        description: "Solid build Ford EcoSport. Great driving dynamics, diesel engine provides excellent punch and economy.",
+        thumbnail_image: "https://i.pinimg.com/1200x/ef/d4/0a/efd40ade52ed54f4808b5872ff33a2d3.jpg",
+        images: [
+            "https://i.pinimg.com/736x/0f/2c/1f/0f2c1fefcc6f6ebdd8e48901f62c4587.jpg",
+            "https://i.pinimg.com/1200x/c5/ad/00/c5ad008eee3df6507724263cda992889.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: false,
+        discount_percentage: 5,
+        views: 410,
+        range: "165"
+    },
+    {
+        name: "Polo GT TSI",
+        brand: "Volkswagen",
+        model: "Polo",
+        model_year: 2016,
+        price: 520000,
+        currency: "INR",
+        condition: "Used",
+        number_of_owners: 3,
+        seller_type: "Dealer",
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        mileage: "60,000 km",
+        mileage_unit: "km",
+        fuel_efficiency: "16.47 kmpl",
+        body_type: "Hatchback",
+        seating_capacity: 5,
+        exterior_color: "White",
+        interior_color: "Black and Grey",
+        registration_number: "UP16QR3456",
+        registration_city: "Noida",
+        registration_state: "Uttar Pradesh",
+        registration_year: 2016,
+        insurance_validity: "Jan 2025",
+        insurance_type: "Third Party",
+        rc_status: "Active",
+        description: "Enthusiast's choice Polo GT TSI with the legendary 7-speed DSG. Mechanically sound and serviced regularly.",
+        thumbnail_image: "https://i.pinimg.com/1200x/58/5f/20/585f204e876a1f781b1f92d5154351d0.jpg",
+        images: [
+            "https://i.pinimg.com/736x/99/c1/de/99c1deb472b3ef93fbece8fe97517801.jpg",
+            "https://i.pinimg.com/736x/d5/85/bf/d585bf7fb3be8854345cbb0912f31d54.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: false,
+        discount_percentage: 0,
+        views: 850,
+        range: "230"
+    },
+    {
+        name: "Duster RXZ",
+        brand: "Renault",
+        model: "Duster",
+        model_year: 2018,
+        price: 600000,
+        currency: "INR",
+        condition: "Used",
+        number_of_owners: 1,
+        seller_type: "Dealer",
+        transmission: "Manual",
+        fuel_type: "Diesel",
+        mileage: "72,000 km",
+        mileage_unit: "km",
+        fuel_efficiency: "19.87 kmpl",
+        body_type: "SUV",
+        seating_capacity: 5,
+        exterior_color: "blue & black",
+        interior_color: "Black",
+        registration_number: "KL01ST7890",
+        registration_city: "Trivandrum",
+        registration_state: "Kerala",
+        registration_year: 2018,
+        insurance_validity: "May 2025",
+        insurance_type: "Comprehensive",
+        rc_status: "Active",
+        description: "Rugged Renault Duster with brilliant ride quality. Perfect for long trips and broken roads.",
+        thumbnail_image: "https://i.pinimg.com/736x/8a/c4/11/8ac4112707b8b3189b61b8692d8e5f1f.jpg",
+        images: [
+            "https://i.pinimg.com/736x/45/84/39/458439885eec665ece6180e3e36037d8.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: false,
+        discount_percentage: 8,
+        views: 330,
+        range: "160"
+    },
+    {
+        name: "Safari Accomplished",
+        brand: "Tata",
+        model: "Safari",
+        model_year: 2024,
+        price: 2549000,
+        currency: "INR",
+        condition: "New",
+        number_of_owners: 0,
+        seller_type: "Dealer",
+        transmission: "Automatic",
+        fuel_type: "Diesel",
+        mileage: "0 km",
+        mileage_unit: "km",
+        fuel_efficiency: "14.5 kmpl",
+        body_type: "SUV",
+        seating_capacity: 7,
+        exterior_color: "Cosmic Gold",
+        interior_color: "Oyster White",
+        registration_number: null,
+        insurance_validity: "Jan 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "Brand new Tata Safari Accomplished AT. Experience premium luxury with advanced ADAS, panoramic sunroof, and 7-seater comfort.",
+        thumbnail_image: "https://i.pinimg.com/1200x/86/f9/7e/86f97ef63f30f448f49b768884c41137.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/bb/0f/8f/bb0f8fae28e202c57273f0075812ebe4.jpg",
+            "https://i.pinimg.com/1200x/54/42/94/544294887db31768e18f7e2a8be5ed72.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: true,
+        discount_percentage: 10,
+        views: 1500,
+        range: "175"
+    },
+    {
+        name: "XUV700 AX7",
+        brand: "Mahindra",
+        model: "XUV700",
+        model_year: 2024,
+        price: 2499000,
+        currency: "INR",
+        condition: "New",
+        number_of_owners: 0,
+        seller_type: "Dealer",
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        mileage: "0 km",
+        mileage_unit: "km",
+        fuel_efficiency: "13 kmpl",
+        body_type: "SUV",
+        seating_capacity: 7,
+        exterior_color: "Midnight Black",
+        interior_color: "Light Beige",
+        registration_number: null,
+        insurance_validity: "Jan 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "Mahindra XUV700 AX7 Luxury Pack. Equipped with Alexa, ADAS level 2, and massive dual screens.",
+        thumbnail_image: "https://i.pinimg.com/736x/5d/03/cc/5d03cc06ea4f7bb38be73453058c7ed1.jpg",
+        images: [
+            "https://i.pinimg.com/736x/19/25/3e/19253ecb44acbceb319c17d0337e460e.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: true,
+        discount_percentage: 10,
+        views: 4200,
+        range: "190"
+    },
+    {
+        name: "Creta SX(O)",
+        brand: "Hyundai",
+        model: "Creta",
+        model_year: 2024,
+        price: 2015000,
+        currency: "INR",
+        condition: "New",
+        number_of_owners: 0,
+        seller_type: "Dealer",
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        mileage: "0 km",
+        mileage_unit: "km",
+        fuel_efficiency: "18.4 kmpl",
+        body_type: "SUV",
+        seating_capacity: 5,
+        exterior_color: "Abyss Black",
+        interior_color: "Grey/Black Two-Tone",
+        registration_number: null,
+        insurance_validity: "Feb 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "The all-new Hyundai Creta SX(O) IVT. Segment defining SUV with updated design and class-leading features.",
+        thumbnail_image: "https://i.pinimg.com/1200x/62/f9/43/62f943b1e5b75150850cb39e9e33e798.jpg",
+        images: [
+            "https://i.pinimg.com/736x/0d/19/e1/0d19e17706b66f63d75d9e669efce8c4.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: false,
+        discount_percentage: 8,
+        views: 2100,
+        range: "180"
+    },
+    {
+        name: "Grand Vitara Alpha",
+        brand: "Maruti Suzuki",
+        model: "Grand Vitara",
+        model_year: 2024,
+        price: 1999000,
+        currency: "INR",
+        condition: "New",
+        number_of_owners: 0,
+        seller_type: "Dealer",
         transmission: "Automatic",
         fuel_type: "Hybrid",
-        seating_capacity: 2,
-        price_per_day: 120000,
-        range: "13 kmpl",
-        body_type: "Coupe",
-        mileage: "3,800 mi",
-        exterior_color: "Volcano Orange",
-        interior_color: "Carbon Black",
-        number_of_owners: 2,
-        registration_city: "London",
-        insurance_validity: "Sep 2025",
-        description: "McLaren P1 for private fleet. A legendary hybrid hypercar combining F1 technology with striking aerodynamics.",
-        image_url: "https://stimg2.cardekho.com/images/carNewsEditorImages/15257/0.jpg",
-        secondary_images: [
-            "https://stimg2.cardekho.com/images/carNewsEditorImages/15257/1.jpg",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTK5Fa5wPFLYdpHm0_vt04mJmgEHBKAnBCYkA&s"
+        mileage: "0 km",
+        mileage_unit: "km",
+        fuel_efficiency: "27.97 kmpl",
+        body_type: "SUV",
+        seating_capacity: 5,
+        exterior_color: "Nexa Blue",
+        interior_color: "Bordeaux and Black",
+        registration_number: null,
+        insurance_validity: "Mar 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "Maruti Suzuki Grand Vitara Strong Hybrid Alpha. Experience exceptional fuel economy and silent EV mode driving.",
+        thumbnail_image: "https://i.pinimg.com/1200x/68/be/94/68be94762044f8fc662a1844b3eadda1.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/67/7a/8f/677a8ffd2bf7d8ad33dd9a403eb2d52c.jpg",
+            "https://i.pinimg.com/1200x/56/38/55/563855e4137b11c99506c4b8399c43ec.jpg"
         ],
         availability_status: "Available",
-        condition: "Used",
-        seller_name: "TrailblazeAuto Private Reserve"
+        is_featured: true,
+        discount_percentage: 0,
+        views: 1800,
+        range: "170"
     },
     {
-        name: "F40 Private",
-        brand: "Ferrari",
-        model_year: 1987,
-        transmission: "Manual",
-        fuel_type: "Petrol",
-        seating_capacity: 2,
-        price_per_day: 250000,
-        range: "6 kmpl",
-        body_type: "Coupe",
-        mileage: "8,900 mi",
-        exterior_color: "Rosso Corsa",
-        interior_color: "Red Cloth",
-        number_of_owners: 2,
-        registration_city: "Rome",
-        insurance_validity: "Jun 2026",
-        description: "The Ferrari F40 is the ultimate analogue supercar. Built to celebrate Ferrari's 40th anniversary, it was the last car personally approved by Enzo Ferrari.",
-        image_url: "https://cdn.ferrari.com/cms/network/media/img/resize/5de7923a91756c07f10b1720-ferrari-f40-1987-intro-share?width=1080",
-        secondary_images: [
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhKwVWo4rWV5Bw8XZY8th8O02yRaphLHSPlA&s",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2iUOCl-2pmA2XJ809kzwj9k9axCN7oPSDBQ&s"
-        ],
-        availability_status: "Available",
-        condition: "Used",
-        seller_name: "Trailblaze Private Reserve"
-    },
-    {
-        name: "F1 XP5 Private",
-        brand: "McLaren",
-        model_year: 1993,
-        transmission: "Manual",
-        fuel_type: "Petrol",
-        seating_capacity: 3,
-        price_per_day: 12000,
-        range: "8 kmpl",
-        body_type: "Coupe",
-        mileage: "4,500 mi",
-        exterior_color: "Dark Silver",
-        interior_color: "Red/Black Leather",
-        number_of_owners: 1,
-        registration_city: "Woking",
-        insurance_validity: "Nov 2025",
-        description: "One of the original experimental prototypes of the McLaren F1, now held in our private reserve.",
-        image_url: "https://cdn.forza.net/strapi-uploads/assets/Forza_Motorsport_MCL_F1_93_Grand_Oak_Car_History_01_16x9_WM_20a3e864c5.jpg",
-        secondary_images: [
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdeIx3mm3elUvZtZBnohR5OvF-tURZ5gAYFb4o9Dsnvw&s",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbcOSYHTUF2liurbWKVF16xUIHkLtCjNz4wg&s"
-        ],
-        availability_status: "Unavailable",
-        condition: "Used",
-        seller_name: "Trailblaze Private High-End",
-        discount_percentage: 35
-    },
-    {
-        name: "Sierra",
-        brand: "Tata",
-        model_year: 1988,
-        transmission: "Manual",
-        fuel_type: "Petrol",
-        seating_capacity: 2,
-        price_per_day: 180000,
-        range: "5 kmpl",
-        body_type: "Coupe",
-        mileage: "15,400 mi",
-        exterior_color: "Bianco Polo",
-        interior_color: "White Leather",
-        number_of_owners: 3,
-        registration_city: "Zürich",
-        insurance_validity: "Mar 2026",
-        description: "The Tata sierra is the quintessential poster car. This 'Quattrovalvole' model represents the peak of Countach performance.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Tata/Sierra/12271/1765181428462/front-left-side-47.jpg",
-        secondary_images: [
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Tata/Sierra/12271/1765181428462/side-view-(left)-90.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Tata/Sierra/12271/1765181428462/rear-right-side-48.jpg"
-        ],
-        availability_status: "Available",
-        condition: "Used",
-        seller_name: "TrailblazeAuto Private Reserve"
-    },
-    {
-        name: "Carrera GT Private",
-        brand: "Porsche",
-        model_year: 2005,
-        transmission: "Manual",
-        fuel_type: "Petrol",
-        seating_capacity: 2,
-        price_per_day: 210000,
-        range: "12 kmpl",
-        body_type: "Coupe",
-        mileage: "2,100 mi",
-        exterior_color: "GT Silver",
-        interior_color: "Terracotta",
-        number_of_owners: 2,
-        registration_city: "Leipzig",
-        insurance_validity: "Jan 2026",
-        description: "The Porsche Carrera GT is one of the last great analogue supercars. Features a race-derived V10 that produces one of the best sounds in automotive history.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Porsche/Porsche-Carrera-GT/785/1562843571849/front-left-side-47.jpg",
-        secondary_images: [
-            "https://static0.hotcarsimages.com/wordpress/wp-content/uploads/2021/11/Yellow-2005-Porsche-Carrera-GT-Supercar.jpg?w=1200&h=628&fit=crop",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3yq7rc7vtaZB7OLANt3kgkwBY2-d5mjPg1g&s"
-        ],
-        availability_status: "Available",
-        condition: "Used",
-        seller_name: "TrailblazeAuto Private Reserve"
-    },
-    {
-        name: "Enzo Private",
-        brand: "Ferrari",
-        model_year: 2002,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        seating_capacity: 2,
-        price_per_day: 350000,
-        range: "8 kmpl",
-        body_type: "Coupe",
-        mileage: "1,100 mi",
-        exterior_color: "Rosso Scuderia",
-        interior_color: "Cuoio Leather",
-        number_of_owners: 2,
-        registration_city: "Modena",
-        insurance_validity: "Feb 2026",
-        description: "Named after the founder, the Ferrari Enzo brought f1 technology to the road. This V12 masterpiece is a cornerstone of any serious private collection.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Ferrari/Ferrari-Enzo/1658/front-left-side-47.jpg",
-        secondary_images: [
-            "https://stimg.cardekho.com/images/car-images/large/Ferrari/Ferrari-Enzo/ferrari-enzo4.jpg",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpfmXZS8FWsGWn0Ul3hK22kRe-z3qDRPMXrQ&s"
-        ],
-        availability_status: "Available",
-        condition: "Used",
-        seller_name: "TrailblazeAuto Private Reserve"
-    },
-    {
-        name: "EB110 SS Private",
-        brand: "Bugatti",
-        model_year: 1992,
-        transmission: "Manual",
-        fuel_type: "Petrol",
-        seating_capacity: 2,
-        price_per_day: 380000,
-        range: "7 kmpl",
-        body_type: "Coupe",
-        mileage: "1,800 mi",
-        exterior_color: "Bugatti Blue",
-        interior_color: "Grey",
-        number_of_owners: 1,
-        registration_city: "Campogalliano",
-        insurance_validity: "Dec 2025",
-        description: "The Bugatti EB110 Super Sport is a quad-turbocharged V12 masterpiece from the 90s, featuring active aerodynamics and four-wheel drive.",
-        image_url: "https://cdn.dealeraccelerate.com/bagauction/25/4664/204195/790x1024/1992-bugatti-eb110-gt",
-        secondary_images: [
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQ1X013F-9Qpte6Fd7LdibE6Xezk3CS_C_HA&s",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjrDXFfsG1EDhOYW8sEMGvOE3Ux4YvMlGKmA&s",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3bXZzWoXawx18KdhS2Hss3fxVVg8WWjKOSg&s"
-        ],
-        availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
-    },
-    {
-        name: "F Pace",
-        brand: "Jaguar",
-        model_year: 1992,
-        transmission: "Manual",
-        fuel_type: "Petrol",
-        seating_capacity: 2,
-        price_per_day: 320000,
-        range: "6 kmpl",
-        body_type: "Coupe",
-        mileage: "2,500 mi",
-        exterior_color: "Silver",
-        interior_color: "Black",
-        number_of_owners: 2,
-        registration_city: "Coventry",
-        insurance_validity: "Aug 2025",
-        description: "The Jaguar F-Pace  was briefly the world's fastest production car. Its twin-turbo V6 and low-slung silhouette make it a private fleet essential.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Jaguar/F-Pace/10644/1755774688332/front-left-side-47.jpg",
-        secondary_images: [
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Jaguar/F-Pace/10644/1750059519742/exterior-image-165.jpg",
-            "https://stimg.cardekho.com/images/carinteriorimages/930x620/Jaguar/F-Pace/10644/1690011966066/door-view-of-driver-seat-51.jpg"
-
-        ],
-        availability_status: "Unavailable",
-        condition: "Used",
-        seller_name: "TrailblazeAuto Private Reserve"
-    },
-    {
-        name: "CLK GTR Private",
-        brand: "Mercedes-Benz",
-        model_year: 1998,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        seating_capacity: 2,
-        price_per_day: 650000,
-        range: "4 kmpl",
-        body_type: "Coupe",
-        mileage: "500 mi",
-        exterior_color: "Silver Arrow",
-        interior_color: "Checkered Alcantara",
-        number_of_owners: 1,
-        registration_city: "Affalterbach",
-        insurance_validity: "Jul 2026",
-        description: "A road-legal variant of the GT championship winner. The CLK GTR is a brutal, pure racing machine for the street.",
-        image_url: "https://cars.bonhams.com/_next/image.jpg?url=https%3A%2F%2Fimg1.bonhams.com%2Fimage%3Fsrc%3DImages%2Flive%2F2015-05%2F14%2F9174285-1-1.jpeg&w=2400&q=75",
-        secondary_images: [
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSM5Q99yuTeY95RS0kF_CI1mvtjDMgMTKJLRQ&s",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGUWVSISofo8UU3F3PKINnZkJXNzj3N1-5KQ&s"
-        ],
-        availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
-    },
-    {
-        name: "Senna Private",
-        brand: "McLaren",
-        model_year: 2019,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        seating_capacity: 2,
-        price_per_day: 180000,
-        range: "12 kmpl",
-        body_type: "Coupe",
-        mileage: "1,100 mi",
-        exterior_color: "Cyber Yellow",
-        interior_color: "Black/Yellow Alcantara",
-        number_of_owners: 1,
-        registration_city: "Woking",
-        insurance_validity: "Mar 2026",
-        description: "The McLaren Senna is built for the track, but legal for the road. It represents the ultimate connection between car and driver.",
-        image_url: "https://i.ndtvimg.com/i/2017-12/2019-mclaren-senna_827x510_51512909269.jpg",
-        secondary_images: [
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQRcsOrBytU3LDH9-BGfQ0CmX3aOdxB19jwg&s",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkO_CktUVyIXOyoYk5ZOPTpUpZ8k6ytJzh3g&s"
-        ],
-        availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve"
-    },
-    {
-        name: "Vantage",
-        brand: "Aston Martin",
+        name: "Sonet X-Line",
+        brand: "Kia",
+        model: "Sonet",
         model_year: 2024,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        seating_capacity: 2,
-        price_per_day: 280000,
-        range: "10 kmpl",
-        body_type: "Coupe",
-        mileage: "1,500 mi",
-        exterior_color: "Skyfall Silver",
-        interior_color: "Deep Black Leather",
+        price: 1499000,
+        currency: "INR",
+        condition: "New",
         number_of_owners: 0,
-        registration_city: "Gaydon",
-        insurance_validity: "May 2025",
-        description: "The Aston Martin Vantage is a limited-edition flagship with a handcrafted aluminum body and a 7.3L V12 engine.",
-        image_url: "https://stimg.cardekho.com/images/carexteriorimages/930x620/Aston-Martin/Vantage/11671/1769509518605/front-left-side-47.jpg",
-        secondary_images: [
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Aston-Martin/Vantage/11671/1713933297665/side-view-(left)-90.jpg",
-            "https://stimg.cardekho.com/images/carexteriorimages/930x620/Aston-Martin/Vantage/11671/1713933297665/window-line-158.jpg"
+        seller_type: "Dealer",
+        transmission: "Automatic",
+        fuel_type: "Diesel",
+        mileage: "0 km",
+        mileage_unit: "km",
+        fuel_efficiency: "19.0 kmpl",
+        body_type: "SUV",
+        seating_capacity: 5,
+        exterior_color: "Matte Graphite",
+        interior_color: "Sage Green",
+        registration_number: null,
+        insurance_validity: "Apr 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "Kia Sonet X-Line Diesel AT. The most aggressive and feature-rich compact SUV in its segment.",
+        thumbnail_image: "https://i.pinimg.com/736x/2d/b2/ba/2db2ba68804becb5bff9d9f3392e9b03.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/db/53/c4/db53c492437c6f62df15733f38e575da.jpg"
         ],
         availability_status: "Available",
-        seller_name: "TrailblazeAuto Private Reserve",
-        discount_percentage: 10
+        is_featured: false,
+        discount_percentage: 12,
+        views: 950,
+        range: "170"
+    },
+    {
+        name: "Fortuner Legender",
+        brand: "Toyota",
+        model: "Fortuner",
+        model_year: 2024,
+        price: 4366000,
+        currency: "INR",
+        condition: "New",
+        number_of_owners: 0,
+        seller_type: "Dealer",
+        transmission: "Automatic",
+        fuel_type: "Diesel",
+        mileage: "0 km",
+        mileage_unit: "km",
+        fuel_efficiency: "14.4 kmpl",
+        body_type: "SUV",
+        seating_capacity: 7,
+        exterior_color: "Pearl White with Black Roof",
+        interior_color: "Black & Maroon",
+        registration_number: null,
+        insurance_validity: "Jan 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "Toyota Fortuner Legender 4x2 AT. The boss of Indian roads with unmatched presence and reliability.",
+        thumbnail_image: "https://i.pinimg.com/736x/31/44/7e/31447e81b70fa293c1cf0abaf84dcc48.jpg",
+        images: [
+            "https://i.pinimg.com/736x/cd/ca/44/cdca44acbd0a4a1c72092d452984dc1e.jpg",
+            "https://i.pinimg.com/1200x/54/c8/e3/54c8e313b16f964f1b380bceddb9bcde.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: true,
+        discount_percentage: 20,
+        views: 5200,
+        range: "180"
+    },
+    {
+        name: "Hector Savvy Pro",
+        brand: "MG",
+        model: "Hector",
+        model_year: 2024,
+        price: 2199000,
+        currency: "INR",
+        condition: "New",
+        number_of_owners: 0,
+        seller_type: "Dealer",
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        mileage: "0 km",
+        mileage_unit: "km",
+        fuel_efficiency: "13.5 kmpl",
+        body_type: "SUV",
+        seating_capacity: 5,
+        exterior_color: "Glaze Red",
+        interior_color: "Oak White and Black",
+        registration_number: null,
+        insurance_validity: "May 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "MG Hector Savvy Pro CVT. Features a massive 14-inch HD portrait infotainment system and Level 2 ADAS.",
+        thumbnail_image: "https://i.pinimg.com/736x/e7/cc/31/e7cc31959dabb14ada838c150ea8f00a.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/2e/2f/41/2e2f41dddb177e8c09ef76245792f1dc.jpg",
+            "https://i.pinimg.com/736x/a6/43/79/a6437978fe2f4e133804f32608032e16.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: false,
+        discount_percentage: 15,
+        views: 1100,
+        range: "175"
+    },
+    {
+        name: "Slavia Style",
+        brand: "Skoda",
+        model: "Slavia",
+        model_year: 2024,
+        price: 1899000,
+        currency: "INR",
+        condition: "New",
+        number_of_owners: 0,
+        seller_type: "Dealer",
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        mileage: "0 km",
+        mileage_unit: "km",
+        fuel_efficiency: "18.73 kmpl",
+        body_type: "Sedan",
+        seating_capacity: 5,
+        exterior_color: "Crystal Blue",
+        interior_color: "Beige/Black",
+        registration_number: null,
+        insurance_validity: "Feb 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "Skoda Slavia Style 1.5 TSI DSG. The most powerful sedan in its class offering true European driving dynamics.",
+        thumbnail_image: "https://i.pinimg.com/736x/4b/21/2e/4b212e983a1d803b484be3d05cfd844d.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/0a/71/08/0a7108395a0feff54a556914fa0e496d.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: false,
+        discount_percentage: 8,
+        views: 1350,
+        range: "190"
+    },
+    {
+        name: "Elevate ZX",
+        brand: "Honda",
+        model: "Elevate",
+        model_year: 2024,
+        price: 1630000,
+        currency: "INR",
+        condition: "New",
+        number_of_owners: 0,
+        seller_type: "Dealer",
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        mileage: "0 km",
+        mileage_unit: "km",
+        fuel_efficiency: "16.92 kmpl",
+        body_type: "SUV",
+        seating_capacity: 5,
+        exterior_color: "Phoenix Orange",
+        interior_color: "Brown/Black",
+        registration_number: null,
+        insurance_validity: "Mar 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "Honda Elevate ZX CVT. Honda's latest SUV offering unmatched comfort, class-leading ground clearance, and Honda Sensing ADAS.",
+        thumbnail_image: "https://i.pinimg.com/736x/48/a1/6c/48a16cdded03dc96894ef37514ad836c.jpg",
+        images: [
+            "https://i.pinimg.com/736x/1f/85/da/1f85daf874e5fed742ab8c284bfee1ff.jpg",
+            "https://i.pinimg.com/736x/57/cd/8c/57cd8c547e1e9a107988637fa591cd1c.jpg"
+        ],
+        availability_status: "Available",
+        is_featured: false,
+        discount_percentage: 0,
+        views: 1650,
+        range: "160"
+    },
+    {
+        name: "Punch Creative",
+        brand: "Tata",
+        model: "Punch",
+        model_year: 2024,
+        price: 899000,
+        currency: "INR",
+        condition: "New",
+        number_of_owners: 0,
+        seller_type: "Dealer",
+        transmission: "Manual",
+        fuel_type: "Petrol",
+        mileage: "0 km",
+        mileage_unit: "km",
+        fuel_efficiency: "20.09 kmpl",
+        body_type: "SUV",
+        seating_capacity: 5,
+        exterior_color: "Tornado Blue",
+        interior_color: "Grey/Black",
+        registration_number: null,
+        insurance_validity: "May 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "Tata Punch Creative. Micro SUV with 5-star Global NCAP safety rating and bold design.",
+        thumbnail_image: "https://i.pinimg.com/736x/b8/36/52/b8365283ad256ebb48983d0676314f3e.jpg",
+        images: [
+            "https://i.pinimg.com/736x/98/55/a9/9855a979dbd0c838bda623b44ccccbfa.jpg",
+            "https://i.pinimg.com/1200x/eb/47/16/eb47164471c352554d944f8ad20b7259.jpg",
+            "https://i.pinimg.com/736x/71/a1/bc/71a1bc6af0247be157085cddfd86bc1d.jpg",
+            "https://i.pinimg.com/736x/94/4c/b2/944cb27445e22e2c57e4c9716ff09e86.jpg"
+        ],
+        availability_status: "Sold",
+        is_featured: false,
+        discount_percentage: 12,
+        views: 800,
+        range: "150"
+    },
+    {
+        name: "Meridian",
+        brand: "Jeep",
+        model: "Meridian",
+        model_year: 2025,
+        transmission: "Automatic",
+        fuel_type: "Electric",
+        seating_capacity: 6,
+        price: 234235,
+        range: "233",
+        body_type: "SUV",
+        mileage: "345",
+        exterior_color: "Rosso Corsa",
+        interior_color: "Red Racing Seats",
+        number_of_owners: 0,
+        registration_city: "dsgdhhfsh",
+        insurance_validity: "2027-04-30",
+        description: "asfsdgdfzbfdnz",
+        thumbnail_image: "/uploads/cars/car-1777534580865-629036071.jpg",
+        images: [],
+        seller_name: "System Administrator",
+        seller_email: "admin@test.com",
+        availability_status: "Available",
+        condition: "New",
+        past_owners: []
+    }
+];
+
+const sample_bookings = [
+    {
+        user_name: "John Doe",
+        user_email: "john.doe@example.com",
+        user_contact: "1234567890",
+        status: "Accepted"
+    },
+    {
+        user_name: "Jane Smith",
+        user_email: "jane.smith@gmail.com",
+        user_contact: "2345678901",
+        status: "Pending"
+    },
+    {
+        user_name: "Bob Wilson",
+        user_email: "bob.wilson@outlook.com",
+        user_contact: "3456789012",
+        status: "Rejected"
     }
 ];
 
@@ -549,98 +809,103 @@ const seedPrivate = async () => {
         console.log("Running private database seeding (Postgres/Sequelize)...");
         await connectDB();
 
-        // Sync and clear tables
+        // Sync tables
         await Car.sync({ alter: true });
-        await SaleHistory.sync({ alter: true });
+        await Booking.sync({ alter: true });
+        // SaleHistory sync removed as it is no longer used for seeding ownership history
 
-        await SaleHistory.destroy({ where: {}, cascade: true });
-        await Car.destroy({ where: {}, truncate: true, cascade: true });
+        let created = 0;
+        let updated = 0;
 
-        // Ensure New condition for cars with 0 owners
-        const carsToCreate = private_cars.map(c => ({
-            ...c,
-            condition: c.number_of_owners === 0 ? 'New' : (c.condition || 'Used')
-        }));
-
-        await Car.bulkCreate(carsToCreate);
-        console.log("Private vehicle seed data loaded!");
-
-        // Seed Sale History for private cars with distinct data
-        console.log("Seeding private historical transaction data...");
-        const allCars = await Car.findAll();
-        for (const car of allCars) {
-            // New arrivals (owners = 0) should not have a sale history
-            if (car.number_of_owners === 0) continue;
-
-            const currentYear = new Date().getFullYear();
-            const age = Math.max(1, currentYear - car.model_year);
-            const records = [];
-            const isMegaClass = car.price_per_day > 3000 || car.model_year < 2000;
-            // Determine if the price_per_day is a rental rate or a full asset value
-            const isRentalRate = car.price_per_day < 20000;
-            const baseValue = isRentalRate ? car.price_per_day * (isMegaClass ? 700 : 250) : car.price_per_day;
-
-            // 1. Initial Sale (Record-breaking Auction)
-            records.push({
-                car_id: car._id,
-                sale_date: new Date(car.model_year, 0, 1),
-                price: Math.floor(baseValue * (isMegaClass ? 0.3 : 1.1)),
-                seller_name: "Sotheby's Private Sales",
-                buyer_name: "Anonymous Mogul",
-                sale_status: "Sold"
+        for (const carData of private_cars) {
+            const existingCar = await Car.findOne({
+                where: {
+                    [Op.or]: [
+                        { name: carData.name },
+                        { name: `${carData.brand} ${carData.name}` }
+                    ],
+                    brand: carData.brand,
+                    model_year: carData.model_year,
+                }
             });
 
-            // 2. Intermediate Sales (Price logic as per user request: drops for multiple users)
-            if (car.number_of_owners > 1) {
-                let previousPrice = records[0].price;
-                for (let i = 1; i < car.number_of_owners; i++) {
-                    const yearStep = Math.max(1, Math.floor(age / car.number_of_owners));
-                    // User Request: "it will be less preicee" (depreciation)
-                    // Even for private fleet, we'll show a depreciation for the 'use' of the vehicle
-                    // Classics/Hypercars might appreciate, but for consistency with user request, 
-                    // we'll implement a logic where cars lose value as they gain hands (e.g., 10-15% drop).
-                    const isAppreciatingClassic = car.model_year < 2000 && car.price_per_day > 100000;
-                    const factor = isAppreciatingClassic ? 1.15 : 0.85;
-                    const nextPrice = Math.floor(previousPrice * factor);
+            if (existingCar) {
+                await existingCar.update({
+                    ...carData,
+                    price: carData.price,
+                    image_url: carData.thumbnail_image,
+                    secondary_images: carData.images || [],
+                });
+                updated += 1;
 
-                    records.push({
+                // Seed SaleHistory if sold and not already present
+                if (carData.availability_status === 'Sold') {
+                    const existingHistory = await SaleHistory.findOne({ where: { car_id: existingCar._id } });
+                    if (!existingHistory) {
+                        await SaleHistory.create({
+                            car_id: existingCar._id,
+                            sale_date: new Date(),
+                            price: carData.price,
+                            seller_name: 'TrailblazeAuto Dealership',
+                            buyer_name: carData.past_owners && carData.past_owners.length > 0 ? carData.past_owners[0].buyer_name : 'Valued Customer',
+                            sale_status: 'Sold'
+                        });
+                    }
+                }
+            } else {
+                const car = await Car.create({
+                    ...carData,
+                    price: carData.price,
+                    image_url: carData.thumbnail_image,
+                    secondary_images: carData.images || [],
+                });
+                created += 1;
+
+                // Seed SaleHistory if sold
+                if (carData.availability_status === 'Sold') {
+                    await SaleHistory.create({
                         car_id: car._id,
-                        sale_date: new Date(car.model_year + (yearStep * i), 2, 14),
-                        price: nextPrice,
-                        seller_name: i === 1 ? "Anonymous Mogul" : `Private Collector ${i}`,
-                        buyer_name: i === car.number_of_owners - 1 ? "Trailblaze Private Stock" : `Private Collector ${i + 1}`,
-                        sale_status: "Sold"
+                        sale_date: new Date(),
+                        price: carData.price,
+                        seller_name: 'TrailblazeAuto Dealership',
+                        buyer_name: carData.past_owners && carData.past_owners.length > 0 ? carData.past_owners[0].buyer_name : 'Valued Customer',
+                        sale_status: 'Sold'
                     });
-                    previousPrice = nextPrice;
                 }
             }
+        }
 
-            if (records.length > 0) {
-                await SaleHistory.bulkCreate(records);
+        // Seed some sample bookings
+        console.log("Seeding sample bookings...");
+        const allCars = await Car.findAll();
+        for (let i = 0; i < sample_bookings.length; i++) {
+            const bookingData = sample_bookings[i];
+            // Assign to different cars
+            const car = allCars[i % allCars.length];
+
+            // For 'Accepted' booking, ensure car is 'Sold'
+            if (bookingData.status === 'Accepted' && car.availability_status !== 'Sold') {
+                await car.update({ availability_status: 'Sold' });
+            }
+
+            // Check if booking already exists for this user and car
+            const existingBooking = await Booking.findOne({
+                where: {
+                    user_email: bookingData.user_email,
+                    car_id: car._id
+                }
+            });
+
+            if (!existingBooking) {
+                await Booking.create({
+                    ...bookingData,
+                    car_id: car._id
+                });
             }
         }
-        console.log("Private historical transaction data seeded!");
 
-        // Seed Additional Admins and Users (Append)
-        const private_users = [
-            { full_name: "Private Admin", email: "admin@test.com", password: "password123", role: "admin" },
-            // Additional Admins
-            { full_name: "Private Admin 1", email: "admin1@pri.com", password: "pri123", role: "admin" },
-            { full_name: "Private Admin 2", email: "admin2@pri.com", password: "pri123", role: "admin" },
-            { full_name: "Private Admin 3", email: "admin3@pri.com", password: "pri123", role: "admin" },
-            { full_name: "Private Admin 4", email: "admin4@pri.com", password: "pri123", role: "admin" },
-            { full_name: "Private Admin 5", email: "admin5@pri.com", password: "pri123", role: "admin" },
-        ];
+        console.log(`Private vehicle seed data loaded. Created: ${created}, Updated: ${updated}`);
 
-        console.log("Seeding private auxiliary accounts...");
-        for (const userData of private_users) {
-            await Admin.findOrCreate({
-                where: { email: userData.email },
-                defaults: userData,
-                individualHooks: true
-            });
-        }
-        console.log("Private auxiliary accounts seeded!");
 
         process.exit(0);
     } catch (err) {

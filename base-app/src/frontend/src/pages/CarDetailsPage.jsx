@@ -39,7 +39,43 @@ const CarDetailsPage = () => {
             'Mars Red': '#ad0e0e',
             'Checkered Cloth': '#333333',
             'Signature Black': '#000000',
-            'Boticelli Leather': '#3d2b1f'
+            'Boticelli Leather': '#3d2b1f',
+            'Solid Fire Red': '#c21807',
+            'Black': '#000000',
+            'Dual Tone': '#808080',
+            'Foliage Green': '#4a5d23',
+            'Black and Beige': '#d5c4a1',
+            'Red Rage': '#cc0000',
+            'Radiant Red Metallic': '#b30000',
+            'Beige Leather': '#f5f5dc',
+            'Super White': '#ffffff',
+            'Camel Brown Leather': '#c19a6b',
+            'Glacier White Pearl': '#f8f9fa',
+            'Diamond White': '#fffafa',
+            'Black & Golden': '#332f2c',
+            'White': '#ffffff',
+            'Black and Grey': '#555555',
+            'blue & black': '#1e3f66',
+            'Cosmic Gold': '#c5b358',
+            'Oyster White': '#e3d6c1',
+            'Midnight Black': '#111111',
+            'Light Beige': '#f5f5dc',
+            'Abyss Black': '#0a0a0a',
+            'Grey/Black Two-Tone': '#4a4a4a',
+            'Nexa Blue': '#003366',
+            'Bordeaux and Black': '#4d0011',
+            'Matte Graphite': '#36454f',
+            'Sage Green': '#77815c',
+            'Pearl White with Black Roof': '#f0ebd8',
+            'Black & Maroon': '#800000',
+            'Glaze Red': '#8b0000',
+            'Oak White and Black': '#e8e4c9',
+            'Crystal Blue': '#5cb3ff',
+            'Beige/Black': '#d1bfae',
+            'Phoenix Orange': '#ff7f00',
+            'Brown/Black': '#5c4033',
+            'Tornado Blue': '#1f4788',
+            'Grey/Black': '#555555'
         };
         const normalized = Object.keys(colors).find(k => k.toLowerCase() === name.toLowerCase());
         return normalized ? colors[normalized] : name;
@@ -94,66 +130,126 @@ const CarDetailsPage = () => {
     const renderTabContent = () => {
         switch (activeTab) {
             case 'Price':
-                return (
-                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-4">
-                        <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Financial Breakdown</h3>
-                        <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
-                            <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
-                                <span className="text-slate-500 text-sm font-bold">Ex-Showroom Price</span>
-                                <span className="text-2xl font-black text-slate-900">₹{car.price_per_day?.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
-                                <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
-                                <span className="text-slate-900 text-sm font-bold">Varies by City</span>
-                            </div>
-                            <div className="flex justify-between items-center pt-2">
-                                <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Valuation</span>
-                                <span className="text-4xl font-black text-blue-600">₹{car.price_per_day?.toLocaleString()}</span>
+                if (car.condition === 'Used') {
+                    let originalPrice;
+                    if (car.past_owners && car.past_owners.length > 0) {
+                        const sortedHistory = [...car.past_owners].sort((a, b) => new Date(a.sale_date) - new Date(b.sale_date));
+                        console.log(sortedHistory, "sortedHistory");
+                        originalPrice = sortedHistory[0].sale_price || sortedHistory[0].price || car.price;
+                    } else {
+                        const depreciationFactor = Math.min((car.number_of_owners || 1) * 0.15, 0.7);
+                        originalPrice = Math.round(car.price / (1 - depreciationFactor));
+                    }
+                    console.log(originalPrice, "originalPrice");
+                    // if (typeof originalPrice !== 'number' || isNaN(originalPrice)) {
+                    //     originalPrice = car.price || 0;
+                    // }
+                    console.log(originalPrice, "originalPrice");
+                    const depreciationAmount = originalPrice - (car.price || 0);
+                    console.log(depreciationAmount, "depreciationAmount");
+                    return (
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-4">
+                            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Financial Breakdown</h3>
+                            <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
+                                <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
+                                    <span className="text-slate-500 text-sm font-bold">Original Ex-Showroom</span>
+                                    <span className="text-lg font-bold text-slate-400 line-through">₹{originalPrice.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
+                                    <span className="text-slate-500 text-sm font-bold">Owner Depreciation ({car.number_of_owners} Owners)</span>
+                                    <span className="text-red-500 text-sm font-bold">- ₹{depreciationAmount.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
+                                    <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
+                                    <span className="text-slate-900 text-sm font-bold">Varies by City</span>
+                                </div>
+                                <div className="flex justify-between items-center pt-2">
+                                    <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Current Valuation</span>
+                                    <span className="text-4xl font-black text-blue-600">₹{car.price?.toLocaleString()}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                );
+                    );
+                } else {
+                    return (
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-4">
+                            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Financial Breakdown</h3>
+                            <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
+                                <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
+                                    <span className="text-slate-500 text-sm font-bold">Ex-Showroom Price</span>
+                                    <span className="text-2xl font-black text-slate-900">₹{car.price?.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
+                                    <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
+                                    <span className="text-slate-900 text-sm font-bold">Varies by City</span>
+                                </div>
+                                <div className="flex justify-between items-center pt-2">
+                                    <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Valuation</span>
+                                    <span className="text-4xl font-black text-blue-600">₹{car.price?.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
             case 'Specs':
                 return (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-6">
                         <div>
                             <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4">Technical Specifications</h3>
                             <div className="grid grid-cols-2 gap-3">
-                                {[
-                                    { l: 'Mileage', v: car.mileage || 'Low Mile' },
-                                    { l: 'Transmission', v: car.transmission },
-                                    { l: 'Range', v: car.range || 'Max' },
-                                    { l: 'City Hub', v: car.registration_city || 'HQ' },
-                                    { l: 'Validity', v: car.insurance_validity || 'Valid' },
-                                    { l: 'Seating', v: `${car.seating_capacity} Seats` },
-                                ].map((s, i) => (
-                                    <div key={i} className="bg-slate-50/50 border border-slate-100 p-4 rounded-xl">
-                                        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">{s.l}</div>
-                                        <div className="text-base font-black text-slate-900">{s.v}</div>
-                                    </div>
-                                ))}
+                                {(() => {
+                                    const specs = [
+                                        { l: 'Mileage', v: car.mileage || (car.condition === 'New' ? '0 km' : 'N/A') },
+                                        { l: 'Transmission', v: car.transmission }
+                                    ];
+
+                                    if (car.condition === 'Used') {
+                                        specs.push({ l: 'City Hub', v: car.registration_city || 'N/A' });
+                                        specs.push({ l: 'Prev Owners', v: car.number_of_owners?.toString() || '1' });
+                                    } else {
+                                        specs.push({ l: 'Condition', v: 'Brand New' });
+                                        specs.push({ l: 'Registration', v: 'Pending' });
+                                    }
+
+                                    let validityStatus = car.insurance_validity || 'Valid';
+                                    if (car.insurance_validity) {
+                                        const expiryDate = new Date(car.insurance_validity);
+                                        if (!isNaN(expiryDate) && expiryDate < new Date()) {
+                                            validityStatus = <span className="text-red-600">Expired</span>;
+                                        }
+                                    }
+                                    specs.push({ l: 'Validity', v: validityStatus });
+                                    specs.push({ l: 'Seating', v: `${car.seating_capacity} Seats` });
+
+                                    return specs.map((s, i) => (
+                                        <div key={i} className="bg-slate-50/50 border border-slate-100 p-4 rounded-xl">
+                                            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">{s.l}</div>
+                                            <div className="text-base font-black text-slate-900">{s.v}</div>
+                                        </div>
+                                    ));
+                                })()}
                             </div>
                         </div>
 
                         <div className="pt-2">
                             <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4">Aesthetic Profiles</h3>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                        <div className="w-10 h-10 rounded-lg shadow-inner border-2 border-white" style={{ backgroundColor: getColorCode(car.exterior_color) }}></div>
-                                        <div>
-                                            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Exterior</div>
-                                            <div className="text-sm font-black text-slate-900 truncate max-w-[100px]">{car.exterior_color || 'Standard'}</div>
-                                        </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                    <div className="w-10 h-10 rounded-lg shadow-inner border-2 border-white" style={{ backgroundColor: getColorCode(car.exterior_color) }}></div>
+                                    <div>
+                                        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Exterior</div>
+                                        <div className="text-sm font-black text-slate-900 truncate max-w-[100px]">{car.exterior_color || 'Standard'}</div>
                                     </div>
-                                    <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                        <div className="w-10 h-10 rounded-lg shadow-inner border-2 border-white" style={{ backgroundColor: getColorCode(car.interior_color) }}></div>
-                                        <div>
-                                            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Interior</div>
-                                            <div className="text-sm font-black text-slate-900 truncate max-w-[100px]">{car.interior_color || 'Standard'}</div>
-                                        </div>
+                                </div>
+                                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                    <div className="w-10 h-10 rounded-lg shadow-inner border-2 border-white" style={{ backgroundColor: getColorCode(car.interior_color) }}></div>
+                                    <div>
+                                        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Interior</div>
+                                        <div className="text-sm font-black text-slate-900 truncate max-w-[100px]">{car.interior_color || 'Standard'}</div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
                         <div className="pt-2">
                             <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2">Description</h3>
@@ -185,7 +281,7 @@ const CarDetailsPage = () => {
                             <h1 id="car-detail-name" className="text-4xl font-black text-slate-900 tracking-tight leading-none">{car.name}</h1>
                             <div className="mt-3 flex items-center gap-3">
                                 <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full border ${car.condition === 'New' ? 'bg-blue-600 text-white border-blue-600' : 'bg-amber-100 text-amber-800 border-amber-200'}`}>
-                                    {car.condition === 'New' ? 'Brand New' : 'Certified Elite'}
+                                    {car.condition === 'New' ? 'Brand New' : 'Certified'}
                                 </span>
                             </div>
                         </div>
@@ -194,7 +290,7 @@ const CarDetailsPage = () => {
                             <div className="flex justify-between items-end relative z-10">
                                 <div>
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Acquisition</div>
-                                    <div className="text-4xl font-black tracking-tight">₹{car.price_per_day?.toLocaleString()}</div>
+                                    <div className="text-4xl font-black tracking-tight">₹{car.price?.toLocaleString()}</div>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Official Seller</div>
@@ -213,8 +309,8 @@ const CarDetailsPage = () => {
                                 <div className="font-black text-slate-900 text-sm">{car.body_type || 'GT'}</div>
                             </div>
                             <div className="space-y-0.5">
-                                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Range</div>
-                                <div className="font-black text-blue-600 text-sm">{car.range || 'Max'}</div>
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Seating</div>
+                                <div className="font-black text-blue-600 text-sm">{car.seating_capacity} Seats</div>
                             </div>
                         </div>
                     </div>
@@ -254,11 +350,10 @@ const CarDetailsPage = () => {
                     <button
                         onClick={() => car.availability_status === 'Available' && setIsPurchaseModalOpen(true)}
                         disabled={car.availability_status !== 'Available'}
-                        className={`h-10 px-8 rounded-full font-black uppercase tracking-[0.2em] text-[11px] transition-all shrink-0 ${
-                            car.availability_status === 'Available' 
-                            ? 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/20' 
+                        className={`h-10 px-8 rounded-full font-black uppercase tracking-[0.2em] text-[11px] transition-all shrink-0 ${car.availability_status === 'Available'
+                            ? 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/20'
                             : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
-                        }`}
+                            }`}
                     >
                         {car.availability_status === 'Available' ? 'Book Now' : 'Sold Out'}
                     </button>
@@ -308,10 +403,10 @@ const CarDetailsPage = () => {
                 </div>
             )}
 
-            <PurchaseModal 
-                car={car} 
-                isOpen={isPurchaseModalOpen} 
-                onClose={() => setIsPurchaseModalOpen(false)} 
+            <PurchaseModal
+                car={car}
+                isOpen={isPurchaseModalOpen}
+                onClose={() => setIsPurchaseModalOpen(false)}
             />
         </div>
     );

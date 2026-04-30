@@ -5,16 +5,17 @@ import { toast } from 'react-toastify';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
-import { BRANDS_MODELS } from '../constants/carData';
+import Select from 'react-select';
+import { BRANDS_MODELS, EXTERIOR_COLORS, INTERIOR_COLORS } from '../constants/carData';
 
 const EditCarPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
-        price_per_day: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '',
+        price: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '',
         number_of_owners: 0, registration_city: '', insurance_validity: '', description: '',
-        availability_status: 'Available', image_url: '', condition: 'Used'
+        availability_status: 'Available', image_url: '', secondary_images: [], condition: 'Used', past_owners: []
     });
     const [loading, setLoading] = useState(true);
     const [mainLoading, setMainLoading] = useState(false);
@@ -25,6 +26,12 @@ const EditCarPage = () => {
     const brands = Object.keys(BRANDS_MODELS).sort();
     const models = formData.brand && BRANDS_MODELS[formData.brand] ? BRANDS_MODELS[formData.brand] : [];
 
+    const currentYear = new Date().getFullYear();
+    const yearOptions = Array.from({ length: currentYear - 1970 + 1 }, (_, i) => {
+        const year = (currentYear - i).toString();
+        return { value: year, label: year };
+    });
+
     useEffect(() => {
         const fetchCar = async () => {
             try {
@@ -32,24 +39,25 @@ const EditCarPage = () => {
                 setFormData({
                     name: data.name || '',
                     brand: data.brand || '',
-                    model_year: data.model_year || '',
+                    model_year: data.model_year?.toString() || '',
                     transmission: data.transmission || '',
                     fuel_type: data.fuel_type || '',
                     seating_capacity: data.seating_capacity || '',
-                    price_per_day: data.price_per_day || '',
+                    price: data.price || '',
                     range: data.range || '',
                     body_type: data.body_type || '',
                     mileage: data.mileage || '',
                     exterior_color: data.exterior_color || '',
                     interior_color: data.interior_color || '',
                     registration_city: data.registration_city || '',
-                    insurance_validity: data.insurance_validity || '',
+                    insurance_validity: data.insurance_validity ? new Date(data.insurance_validity).toISOString().split('T')[0] : '',
                     description: data.description || '',
                     secondary_images: data.secondary_images || [],
                     availability_status: data.availability_status || 'Available',
                     image_url: data.image_url || '',
                     condition: data.condition || 'Used',
-                    number_of_owners: data.number_of_owners !== undefined && data.number_of_owners !== null ? data.number_of_owners : 0
+                    number_of_owners: data.number_of_owners !== undefined && data.number_of_owners !== null ? data.number_of_owners : 0,
+                    past_owners: data.past_owners || []
                 });
             } catch (error) {
                 console.error('Error fetching car details', error);
@@ -117,11 +125,34 @@ const EditCarPage = () => {
         }));
     };
 
+    const handleOwnerCountChange = (e) => {
+        const val = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0);
+        const targetLength = val === '' ? 0 : val;
+        let updatedPastOwners = [...(formData.past_owners || [])];
+
+        if (targetLength > updatedPastOwners.length) {
+            const diff = targetLength - updatedPastOwners.length;
+            for (let i = 0; i < diff; i++) {
+                updatedPastOwners.push({ sale_date: '', sale_price: '', seller_name: '', buyer_name: '' });
+            }
+        } else if (targetLength < updatedPastOwners.length) {
+            updatedPastOwners = updatedPastOwners.slice(0, targetLength);
+        }
+
+        setFormData({ ...formData, number_of_owners: val, past_owners: updatedPastOwners });
+    };
+
+    const handlePastOwnerChange = (index, field, value) => {
+        const newPastOwners = [...(formData.past_owners || [])];
+        newPastOwners[index] = { ...newPastOwners[index], [field]: value };
+        setFormData({ ...formData, past_owners: newPastOwners });
+    };
+
     const handleEditCar = async (e) => {
         e.preventDefault();
 
         // VALIDATIONS (Matching AddCarPage)
-        const price = parseInt(formData.price_per_day);
+        const price = parseInt(formData.price);
         if (isNaN(price) || price < 100) {
             toast.error('Price must be at least $100');
             return;
@@ -147,6 +178,15 @@ const EditCarPage = () => {
             return;
         }
 
+        if (formData.condition === 'Used' && formData.past_owners && formData.past_owners.length > 0) {
+            const lastOwner = formData.past_owners[formData.past_owners.length - 1];
+            const lastPrice = parseInt(lastOwner.sale_price);
+            if (!isNaN(lastPrice) && parseInt(formData.price) >= lastPrice) {
+                toast.error(`Price must be less than the last sale price (₹${lastPrice.toLocaleString()})`);
+                return;
+            }
+        }
+
         if (!formData.insurance_validity) {
             toast.error('Insurance validity date is required');
             return;
@@ -170,6 +210,16 @@ const EditCarPage = () => {
                 toast.error('New vehicles must have at least 1 year of valid insurance');
                 return;
             }
+        }
+
+        if (!formData.exterior_color) {
+            toast.error('Exterior color is required');
+            return;
+        }
+
+        if (!formData.interior_color) {
+            toast.error('Interior color is required');
+            return;
         }
 
         if (!formData.image_url) {
@@ -214,20 +264,66 @@ const EditCarPage = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Brand</label>
-                                        <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value, name: '' })} required>
-                                            <option value="">Select Brand</option>
-                                            {brands.map(b => <option key={b} value={b}>{b}</option>)}
-                                        </select>
+                                        <Select
+                                            options={brands.map(b => ({ value: b, label: b }))}
+                                            value={formData.brand ? { value: formData.brand, label: formData.brand } : null}
+                                            onChange={(selected) => setFormData({ ...formData, brand: selected ? selected.value : '', name: '' })}
+                                            placeholder="Select Brand"
+                                            isSearchable
+                                            styles={{
+                                                control: (base, state) => ({
+                                                    ...base,
+                                                    minHeight: '48px',
+                                                    backgroundColor: state.isFocused ? 'white' : '#f8fafc',
+                                                    borderColor: state.isFocused ? '#0f172a' : '#e2e8f0',
+                                                    borderRadius: '0.5rem',
+                                                    boxShadow: state.isFocused ? '0 0 0 2px rgba(15, 23, 42, 0.1)' : 'none'
+                                                })
+                                            }}
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Car Name</label>
-                                        <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} disabled={!formData.brand} required>
-                                            <option value="">Select Model</option>
-                                            {models.map(m => <option key={m} value={m}>{m}</option>)}
-                                        </select>
+                                        <Select
+                                            options={models.map(m => ({ value: m, label: m }))}
+                                            value={formData.name ? { value: formData.name, label: formData.name } : null}
+                                            onChange={(selected) => setFormData({ ...formData, name: selected ? selected.value : '' })}
+                                            placeholder="Select Model"
+                                            isSearchable
+                                            isDisabled={!formData.brand}
+                                            styles={{
+                                                control: (base, state) => ({
+                                                    ...base,
+                                                    minHeight: '48px',
+                                                    backgroundColor: state.isFocused ? 'white' : '#f8fafc',
+                                                    borderColor: state.isFocused ? '#0f172a' : '#e2e8f0',
+                                                    borderRadius: '0.5rem',
+                                                    boxShadow: state.isFocused ? '0 0 0 2px rgba(15, 23, 42, 0.1)' : 'none'
+                                                })
+                                            }}
+                                        />
                                     </div>
-                                    <Input label="Model Year" type="number" min="1970" max={new Date().getFullYear() + 1} value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
-                                    <Input label="Price (₹)" type="number" min="1" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-slate-700">Model Year</label>
+                                        <Select
+                                            options={yearOptions}
+                                            value={formData.model_year ? { value: formData.model_year, label: formData.model_year } : null}
+                                            onChange={(selected) => setFormData({ ...formData, model_year: selected ? selected.value : '' })}
+                                            placeholder="Select Year"
+                                            isSearchable
+                                            styles={{
+                                                control: (base, state) => ({
+                                                    ...base,
+                                                    minHeight: '48px',
+                                                    backgroundColor: state.isFocused ? 'white' : '#f8fafc',
+                                                    borderColor: state.isFocused ? '#0f172a' : '#e2e8f0',
+                                                    borderRadius: '0.5rem',
+                                                    boxShadow: state.isFocused ? '0 0 0 2px rgba(15, 23, 42, 0.1)' : 'none'
+                                                })
+                                            }}
+                                        />
+                                    </div>
+                                    <Input label="Price (₹)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Vehicle Condition</label>
                                         <select
@@ -276,37 +372,51 @@ const EditCarPage = () => {
                                         <label className="block text-sm font-bold text-slate-700">Exterior Color</label>
                                         <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })}>
                                             <option value="">Select</option>
-                                            <option value="Black">Black</option>
-                                            <option value="White">White</option>
-                                            <option value="Silver">Silver</option>
-                                            <option value="Grey">Grey</option>
-                                            <option value="Blue">Blue</option>
-                                            <option value="Red">Red</option>
+                                            {EXTERIOR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Interior Color</label>
                                         <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })}>
                                             <option value="">Select</option>
-                                            <option value="Black">Black</option>
-                                            <option value="White">White</option>
-                                            <option value="Beige">Beige</option>
-                                            <option value="Brown">Brown</option>
-                                            <option value="Grey">Grey</option>
+                                            {INTERIOR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
                                         </select>
                                     </div>
 
-                                    <Input
-                                        label="Number of Owners"
-                                        type="number"
-                                        value={formData.number_of_owners === "" ? 0 : formData.number_of_owners}
-                                        onChange={(e) => setFormData({ ...formData, number_of_owners: e.target.value === "" ? 0 : e.target.value })}
-                                        disabled={formData.condition === 'New'}
-                                        className={formData.condition === 'New' ? 'opacity-50 grayscale bg-slate-100 cursor-not-allowed' : ''}
-                                    />
-                                    <Input label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
+                                    {formData.condition === 'Used' && (
+                                        <>
+                                            <Input
+                                                label="Number of Owners"
+                                                type="number"
+                                                value={formData.number_of_owners}
+                                                onChange={handleOwnerCountChange}
+                                            />
+                                            <Input label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
+                                        </>
+                                    )}
                                     <Input label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
- 
+
+                                    <div className="md:col-span-3">
+                                        {formData.condition === 'Used' && formData.past_owners && formData.past_owners.length > 0 && (
+                                            <div className="space-y-4 border-t border-slate-100 pt-6 mt-2">
+                                                <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Past Owner History</h4>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {formData.past_owners.map((owner, index) => (
+                                                        <div key={index} className="bg-slate-50 rounded-xl border border-slate-200 p-4 relative space-y-4">
+                                                            <div className="absolute top-0 right-0 bg-slate-900 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl rounded-tr-xl">OWNER {index + 1}</div>
+                                                            <div className="grid grid-cols-1 gap-4 pt-2">
+                                                                <Input label="Sale Date" type="date" value={owner.sale_date ? new Date(owner.sale_date).toISOString().split('T')[0] : ''} onChange={(e) => handlePastOwnerChange(index, 'sale_date', e.target.value)} required />
+                                                                <Input label="Sale Price (₹)" type="number" min="0" value={owner.sale_price || ''} onChange={(e) => handlePastOwnerChange(index, 'sale_price', e.target.value)} required />
+                                                                <Input label="Seller Name" value={owner.seller_name || ''} onChange={(e) => handlePastOwnerChange(index, 'seller_name', e.target.value)} required />
+                                                                <Input label="Buyer Name" value={owner.buyer_name || ''} onChange={(e) => handlePastOwnerChange(index, 'buyer_name', e.target.value)} required />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Availability</label>
                                         <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}>
@@ -314,7 +424,7 @@ const EditCarPage = () => {
                                             <option value="Sold">Sold</option>
                                         </select>
                                     </div>
- 
+
                                     <div className="md:col-span-2 lg:col-span-3 space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Description</label>
                                         <textarea

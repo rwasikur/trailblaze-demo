@@ -12,8 +12,8 @@ const CatalogueHero = ({ cars = [] }) => {
   const averagePrice =
     cars.length > 0
       ? Math.round(
-          cars.reduce((sum, car) => sum + (Number(car.price_per_day) || 0), 0) / cars.length
-        )
+        cars.reduce((sum, car) => sum + (Number(car.price) || 0), 0) / cars.length
+      )
       : null;
 
   return (

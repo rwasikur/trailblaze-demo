@@ -20,7 +20,7 @@ const CarCard = ({ car, featured = false }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const imageUrl = car.image_url || 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=800';
     const isAvailable = !car.availability_status || car.availability_status === 'Available';
-    const priceLabel = car.price_per_day ? `₹${car.price_per_day.toLocaleString()}` : 'Price on request';
+    const priceLabel = car.price ? `₹${car.price.toLocaleString()}` : 'Price on request';
     const summary = car.description
         ? car.description.replace(/<[^>]*>/g, '').slice(0, featured ? 220 : 120)
         : 'A premium Trailblazer listing with complete detail panels and image-led browsing.';
@@ -89,19 +89,21 @@ const CarCard = ({ car, featured = false }) => {
                         </div>
 
                         <div className="mt-6 flex flex-col gap-6">
-                            <div className="grid grid-cols-3 gap-2 pb-6 border-b border-slate-100">
+                            <div className={`grid ${car.condition === 'New' ? 'grid-cols-2' : 'grid-cols-3'} gap-2 pb-6 border-b border-slate-100`}>
                                 <div className="text-center">
                                     <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">Drive</div>
                                     <div className="text-xs font-bold text-slate-900">{car.transmission?.slice(0, 4) || 'N/A'}</div>
                                 </div>
-                                <div className="text-center border-x border-slate-100">
+                                <div className={`text-center ${car.condition !== 'New' ? 'border-x border-slate-100' : ''}`}>
                                     <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">Seats</div>
                                     <div className="text-xs font-bold text-slate-900">{car.seating_capacity || 'N/A'}</div>
                                 </div>
-                                <div className="text-center">
-                                    <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">Miles</div>
-                                    <div className="text-xs font-bold text-slate-900">{car.condition === 'New' ? '0km' : (car.mileage?.split(' ')[0] || 'N/A')}</div>
-                                </div>
+                                {car.condition !== 'New' && (
+                                    <div className="text-center">
+                                        <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">Miles</div>
+                                        <div className="text-xs font-bold text-slate-900">{car.mileage?.split(' ')[0] || 'N/A'}</div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex items-center justify-between gap-4">
@@ -110,7 +112,7 @@ const CarCard = ({ car, featured = false }) => {
                                     <div id={`car-card-${car._id}-price`} className="text-2xl font-black text-slate-900 tracking-tight">{priceLabel}</div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <button 
+                                    <button
                                         onClick={handleBuyClick}
                                         className="h-12 px-6 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest shadow-xl transition-all duration-300 hover:bg-blue-600 hover:scale-105 active:scale-95"
                                     >
@@ -125,10 +127,10 @@ const CarCard = ({ car, featured = false }) => {
                     </div>
                 </article>
             </Link>
-            <PurchaseModal 
-                car={car} 
-                isOpen={isModalOpen} 
-                onClose={() => setIsModalOpen(false)} 
+            <PurchaseModal
+                car={car}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
             />
         </>
     );

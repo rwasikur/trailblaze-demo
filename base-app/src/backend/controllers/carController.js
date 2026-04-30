@@ -1,5 +1,4 @@
 const Car = require('../models/Car.js');
-const SaleHistory = require('../models/SaleHistory.js');
 
 const getCars = async (req, res) => {
     try {
@@ -14,9 +13,7 @@ const getCars = async (req, res) => {
 
 const getCarById = async (req, res) => {
     try {
-        const car = await Car.findByPk(req.params.id, {
-            include: [{ model: SaleHistory, as: 'saleHistory' }]
-        });
+        const car = await Car.findByPk(req.params.id);
         if (car) {
             res.json(car);
         } else {
@@ -31,16 +28,16 @@ const createCar = async (req, res) => {
     try {
         const {
             name, brand, model_year, transmission, fuel_type, seating_capacity,
-            price_per_day, range, body_type, mileage, exterior_color, interior_color,
+            price, range, body_type, mileage, exterior_color, interior_color,
             number_of_owners, registration_city, insurance_validity, description,
-            image_url, secondary_images, availability_status, condition
+            image_url, secondary_images, availability_status, condition, past_owners
         } = req.body;
 
         const seller_name = req.admin ? req.admin.full_name : 'TrailblazeAuto Dealership';
         const seller_email = req.admin ? req.admin.email : 'contact@trailblazeauto.com';
 
         // Validation
-        if (!name || !brand || !model_year || !price_per_day) {
+        if (!name || !brand || !model_year || !price) {
             return res.status(400).json({ message: 'Missing required fields: Name, Brand, Year, and Price are mandatory.' });
         }
 
@@ -50,13 +47,13 @@ const createCar = async (req, res) => {
 
         const p_model_year = parseInt(model_year);
         const p_seating_capacity = parseInt(seating_capacity) || 0;
-        const p_price_per_day = parseInt(price_per_day);
+        const p_price = parseInt(price);
 
         if (isNaN(p_model_year) || p_model_year < 1886 || p_model_year > new Date().getFullYear() + 1) {
             return res.status(400).json({ message: 'Please provide a valid model year.' });
         }
 
-        if (isNaN(p_price_per_day) || p_price_per_day <= 0) {
+        if (isNaN(p_price) || p_price <= 0) {
             return res.status(400).json({ message: 'Price must be a positive number.' });
         }
 
@@ -65,29 +62,31 @@ const createCar = async (req, res) => {
 
         try {
             const createdCar = await Car.create({
-                name, 
-                brand, 
-                model_year: p_model_year, 
-                transmission, 
-                fuel_type, 
+                name,
+                brand,
+                model_year: p_model_year,
+                transmission,
+                fuel_type,
                 seating_capacity: p_seating_capacity,
-                price_per_day: p_price_per_day, 
-                range, 
-                body_type, 
-                mileage, 
-                exterior_color, 
+                price: p_price,
+                range,
+                body_type,
+                mileage,
+                exterior_color,
                 interior_color,
-                number_of_owners: sanitizedOwners, 
-                registration_city, 
-                insurance_validity, 
+                number_of_owners: sanitizedOwners,
+                registration_city,
+                insurance_validity,
                 description,
-                image_url, 
+                image_url,
                 secondary_images: secondary_images || [],
-                availability_status, 
-                seller_name, 
-                seller_email, 
-                condition
+                availability_status,
+                seller_name,
+                seller_email,
+                condition,
+                past_owners: past_owners || []
             });
+
             res.status(201).json(createdCar);
         } catch (error) {
             console.error('Error creating car:', error);
