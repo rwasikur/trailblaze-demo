@@ -17,6 +17,7 @@ const Car = sequelize.define('Car', {
     range: { type: DataTypes.STRING },
     body_type: { type: DataTypes.STRING },
     mileage: { type: DataTypes.STRING },
+    total_distance_covered: { type: DataTypes.STRING },
     exterior_color: { type: DataTypes.STRING },
     interior_color: { type: DataTypes.STRING },
     number_of_owners: { type: DataTypes.INTEGER },

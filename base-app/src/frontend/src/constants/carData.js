@@ -16,9 +16,11 @@ export const BRANDS_MODELS = {
 };
 
 export const EXTERIOR_COLORS = [
-    "Black", "White", "Silver", "Grey", "Blue", "Red", "Green", "Yellow", "Orange", "Brown", "Pearl White", "Midnight Blue", "Rosso Corsa", "Brooklyn Grey", "Carmine Red", "Jet Black Metallic", "Obsidian Black"
+    "Black", "White", "Silver", "Grey", "Blue", "Red", "Green", "Yellow", "Orange", "Brown", "Pearl White", "Midnight Blue", "Rosso Corsa", "Brooklyn Grey", "Carmine Red", "Jet Black Metallic", "Obsidian Black",
+    "Crimson Red", "Aurora Silver", "Crystal White", "Foliage Blue", "Red Rage", "Super White", "Glacier White Pearl", "Diamond White", "blue & black", "Cosmic Gold", "Midnight Black", "Abyss Black", "Nexa Blue", "Pearl White with Black Roof", "Crystal Blue", "Tornado Blue"
 ];
 
 export const INTERIOR_COLORS = [
-    "Black", "White", "Beige", "Brown", "Grey", "Tan", "Red", "Cognac", "Black Merino Leather", "Grey Leather", "Red Racing Seats", "Red Nappa", "Black Alcantara", "Light Oyster", "Luxor Beige", "Toasted Caramel"
+    "Black", "White", "Beige", "Brown", "Grey", "Tan", "Red", "Cognac", "Black Merino Leather", "Grey Leather", "Red Racing Seats", "Red Nappa", "Black Alcantara", "Light Oyster", "Luxor Beige", "Toasted Caramel",
+    "Black and White", "Black Leather", "Camel Brown Leather", "Black and Grey", "Bordeaux and Black", "Black & Maroon", "Oak White and Black", "Grey/Black"
 ];

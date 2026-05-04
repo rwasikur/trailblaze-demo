@@ -43,6 +43,7 @@ const updateCar = async (req, res) => {
             car.range = req.body.range !== undefined ? req.body.range : car.range;
             car.body_type = req.body.body_type || car.body_type;
             car.mileage = req.body.mileage !== undefined ? req.body.mileage : car.mileage;
+            car.total_distance_covered = req.body.total_distance_covered !== undefined ? req.body.total_distance_covered : car.total_distance_covered;
             car.exterior_color = req.body.exterior_color || car.exterior_color;
             car.interior_color = req.body.interior_color || car.interior_color;
 

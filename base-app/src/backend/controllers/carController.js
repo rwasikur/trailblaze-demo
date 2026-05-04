@@ -28,7 +28,7 @@ const createCar = async (req, res) => {
     try {
         const {
             name, brand, model_year, transmission, fuel_type, seating_capacity,
-            price, range, body_type, mileage, exterior_color, interior_color,
+            price, range, body_type, mileage, total_distance_covered, exterior_color, interior_color,
             number_of_owners, registration_city, insurance_validity, description,
             image_url, secondary_images, availability_status, condition, past_owners
         } = req.body;
@@ -72,6 +72,7 @@ const createCar = async (req, res) => {
                 range,
                 body_type,
                 mileage,
+                total_distance_covered,
                 exterior_color,
                 interior_color,
                 number_of_owners: sanitizedOwners,

@@ -802,32 +802,6 @@ const private_cars = [
         discount_percentage: 12,
         views: 800,
         range: "150"
-    },
-    {
-        name: "Meridian",
-        brand: "Jeep",
-        model: "Meridian",
-        model_year: 2025,
-        transmission: "Automatic",
-        fuel_type: "Electric",
-        seating_capacity: 6,
-        price: 234235,
-        range: "233",
-        body_type: "SUV",
-        mileage: "345",
-        exterior_color: "Rosso Corsa",
-        interior_color: "Red Racing Seats",
-        number_of_owners: 0,
-        registration_city: "dsgdhhfsh",
-        insurance_validity: "2027-04-30",
-        description: "asfsdgdfzbfdnz",
-        thumbnail_image: "/uploads/cars/car-1777534580865-629036071.jpg",
-        images: [],
-        seller_name: "System Administrator",
-        seller_email: "admin@test.com",
-        availability_status: "Available",
-        condition: "New",
-        past_owners: []
     }
 ];
 
@@ -954,6 +928,26 @@ const seedPrivate = async () => {
 
         console.log(`Private vehicle seed data loaded. Created: ${created}, Updated: ${updated}`);
 
+        // Seed Additional Admins and Users (Append)
+        const private_users = [
+            { full_name: "System Admin", email: "admin@test.com", password: "password123", role: "admin" },
+            // Additional Admins
+            { full_name: "Private Admin 1", email: "admin1@pri.com", password: "pri123", role: "admin" },
+            { full_name: "Private Admin 2", email: "admin2@pri.com", password: "pri123", role: "admin" },
+            { full_name: "Private Admin 3", email: "admin3@pri.com", password: "pri123", role: "admin" },
+            { full_name: "Private Admin 4", email: "admin4@pri.com", password: "pri123", role: "admin" },
+            { full_name: "Private Admin 5", email: "admin5@pri.com", password: "pri123", role: "admin" },
+        ];
+
+        console.log("Seeding private auxiliary accounts...");
+        for (const userData of private_users) {
+            await Admin.findOrCreate({
+                where: { email: userData.email },
+                defaults: userData,
+                individualHooks: true
+            });
+        }
+        console.log("Private auxiliary accounts seeded!");
 
         process.exit(0);
     } catch (err) {

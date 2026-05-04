@@ -86,7 +86,8 @@ A premium automotive Catalogue management platform that bridges the gap between 
 | `number_of_owners` | Integer | Count of previous owners (for Used vehicles) |
 | `registration_city` | String | City of vehicle registration |
 | `insurance_validity`| String | Expiration date of current insurance |
-| `mileage` | String | Current distance traveled (e.g., "15,000 km") |
+| `mileage` | String | Fuel efficiency (e.g., "18.5 kmpl") |
+| `total_distance_covered` | String | Total distance traveled (for Used vehicles) |
 | `range` | String | Operational range per charge/tank |
 | `body_type` | String | Body architecture (SUV/Sedan/Hatchback) |
 | `exterior_color` | String | Outer paint color |
@@ -94,6 +95,7 @@ A premium automotive Catalogue management platform that bridges the gap between 
 | `description` | Text | Detailed vehicle pitch and features |
 | `image_url` | String | Primary high-resolution vehicle image |
 | `secondary_images` | Array | List of gallery image URLs |
+| `past_owners` | JSONB | History of previous sales and ownership |
 | `seller_name` | String | Registered dealership/seller entity |
 | `seller_email` | String | Contact email for the seller |
 

@@ -75,7 +75,14 @@ const CarDetailsPage = () => {
             'Phoenix Orange': '#ff7f00',
             'Brown/Black': '#5c4033',
             'Tornado Blue': '#1f4788',
-            'Grey/Black': '#555555'
+            'Grey/Black': '#555555',
+            'Crimson Red': '#dc143c',
+            'Aurora Silver': '#c0c0c0',
+            'Crystal White': '#f8f8ff',
+            'Foliage Blue': '#223a5e',
+            'Beige': '#f5f5dc',
+            'Black and White': '#ffffff',
+            'Black Leather': '#1a1a1a'
         };
         const normalized = Object.keys(colors).find(k => k.toLowerCase() === name.toLowerCase());
         return normalized ? colors[normalized] : name;
@@ -199,26 +206,27 @@ const CarDetailsPage = () => {
                             <div className="grid grid-cols-2 gap-3">
                                 {(() => {
                                     const specs = [
-                                        { l: 'Mileage', v: car.mileage || (car.condition === 'New' ? '0 km' : 'N/A') },
+                                        { l: 'mileage', v: car.mileage || 'N/A' },
                                         { l: 'Transmission', v: car.transmission }
                                     ];
 
                                     if (car.condition === 'Used') {
+                                        specs.push({ l: 'Distance Covered', v: car.total_distance_covered || 'N/A' });
                                         specs.push({ l: 'City Hub', v: car.registration_city || 'N/A' });
                                         specs.push({ l: 'Prev Owners', v: car.number_of_owners?.toString() || '1' });
+
+                                        let validityStatus = car.insurance_validity || 'Valid';
+                                        if (car.insurance_validity) {
+                                            const expiryDate = new Date(car.insurance_validity);
+                                            if (!isNaN(expiryDate) && expiryDate < new Date()) {
+                                                validityStatus = <span className="text-red-600">Expired</span>;
+                                            }
+                                        }
+                                        specs.push({ l: 'Insurance Validity', v: validityStatus });
                                     } else {
                                         specs.push({ l: 'Condition', v: 'Brand New' });
-                                        specs.push({ l: 'Registration', v: 'Pending' });
                                     }
 
-                                    let validityStatus = car.insurance_validity || 'Valid';
-                                    if (car.insurance_validity) {
-                                        const expiryDate = new Date(car.insurance_validity);
-                                        if (!isNaN(expiryDate) && expiryDate < new Date()) {
-                                            validityStatus = <span className="text-red-600">Expired</span>;
-                                        }
-                                    }
-                                    specs.push({ l: 'Insurance Validity', v: validityStatus });
                                     specs.push({ l: 'Seating', v: `${car.seating_capacity} Seats` });
 
                                     return specs.map((s, i) => (

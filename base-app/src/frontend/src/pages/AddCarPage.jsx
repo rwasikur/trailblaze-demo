@@ -16,7 +16,7 @@ const AddCarPage = () => {
 
     const [formData, setFormData] = useState({
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
-        price: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '',
+        price: '', range: '', body_type: '', mileage: '', total_distance_covered: '', exterior_color: '', interior_color: '',
         number_of_owners: 0, registration_city: '', insurance_validity: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0], description: '',
         availability_status: 'Available', image_url: '', secondary_images: [], condition: 'New', past_owners: []
     });
@@ -172,27 +172,18 @@ const AddCarPage = () => {
                     return;
                 }
             }
-            if (!formData.insurance_validity) {
-                toast.error('Insurance validity date is required');
-                return;
-            }
-            const validityDate = new Date(formData.insurance_validity);
-            validityDate.setHours(0, 0, 0, 0);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            if (formData.condition === 'Used') {
+                if (!formData.insurance_validity) {
+                    toast.error('Insurance validity date is required');
+                    return;
+                }
+                const validityDate = new Date(formData.insurance_validity);
+                validityDate.setHours(0, 0, 0, 0);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
 
-            if (validityDate < today) {
-                toast.error('Insurance has already expired');
-                return;
-            }
-
-            // Differentiation: New cars should have longer insurance
-            if (formData.condition === 'New') {
-                const oneYearFromNow = new Date();
-                oneYearFromNow.setFullYear(today.getFullYear() + 1);
-                oneYearFromNow.setHours(0, 0, 0, 0);
-                if (validityDate < oneYearFromNow) {
-                    toast.error('New vehicles must have at least 1 year of valid insurance');
+                if (validityDate < today) {
+                    toast.error('Insurance has already expired');
                     return;
                 }
             }
@@ -445,7 +436,10 @@ const AddCarPage = () => {
                                             <Input label="Seating Capacity" type="number" min="1" max="10" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
                                             <Input label="Range (e.g. 350km)" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
                                             <Input label="Body Type (e.g. SUV)" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
-                                            <Input label="Mileage (e.g. 40 km)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
+                                            <Input label="Mileage (kmpl)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} placeholder="e.g. 18.5" />
+                                            {formData.condition === 'Used' && (
+                                                <Input label="Total Distance Covered" value={formData.total_distance_covered} onChange={(e) => setFormData({ ...formData, total_distance_covered: e.target.value })} placeholder="e.g. 45,000 km" />
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -458,8 +452,12 @@ const AddCarPage = () => {
                                                 <Input id="owners-count-input" label="Number of Owners" type="number" min="0" value={formData.number_of_owners} onChange={handleOwnerCountChange} disabled={formData.condition === 'New'} className={formData.condition === 'New' ? 'opacity-50' : ''} required={formData.condition === 'Used'} />
                                             </div>
                                             <Input id="car-price-input" label="Price (₹)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
-                                            <Input id="registration-city-input" label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
-                                            <Input id="insurance-validity-input" label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
+                                            {formData.condition === 'Used' && (
+                                                <>
+                                                    <Input id="registration-city-input" label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
+                                                    <Input id="insurance-validity-input" label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
+                                                </>
+                                            )}
                                             {formData.past_owners && formData.past_owners.length > 0 && (
                                                 <div className="md:col-span-3 space-y-4 border-t border-slate-100 pt-4 mt-2">
                                                     <h4 className="text-sm font-bold text-slate-900">Past Owner History</h4>
