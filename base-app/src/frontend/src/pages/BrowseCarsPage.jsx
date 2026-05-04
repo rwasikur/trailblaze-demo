@@ -1,12 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../api';
 import CarCard from '../components/CarCard';
+import { Pagination } from '../components/ui/Pagination';
 
 const BrowseCarsPage = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [conditionFilter, setConditionFilter] = useState('All');
+    const currentPage = parseInt(searchParams.get('page') || '1');
+    const ITEMS_PER_PAGE = 9;
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -25,6 +30,7 @@ const BrowseCarsPage = () => {
         fetchCars();
     }, []);
 
+
     const filteredCars = useMemo(() => {
         return cars.filter(car => {
             const matchesSearch =
@@ -42,6 +48,11 @@ const BrowseCarsPage = () => {
             return matchesSearch && matchesCondition && isAvailable;
         });
     }, [cars, searchQuery, conditionFilter]);
+
+    const paginatedCars = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredCars.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredCars, currentPage]);
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -71,6 +82,11 @@ const BrowseCarsPage = () => {
                                                 key={opt}
                                                 onClick={() => {
                                                     setConditionFilter(opt);
+                                                    setSearchParams(prev => {
+                                                        const newParams = new URLSearchParams(prev);
+                                                        newParams.set('page', '1');
+                                                        return newParams;
+                                                    });
                                                     setIsDropdownOpen(false);
                                                 }}
                                                 className={`w-full text-left px-8 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all ${conditionFilter === opt ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-blue-600/10 hover:text-blue-600'}`}
@@ -95,7 +111,14 @@ const BrowseCarsPage = () => {
                                 type="text"
                                 placeholder="Discover..."
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setSearchParams(prev => {
+                                        const newParams = new URLSearchParams(prev);
+                                        newParams.set('page', '1');
+                                        return newParams;
+                                    });
+                                }}
                                 className="block w-full pl-10 pr-6 py-4 bg-transparent border-none text-xs font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-0"
                             />
                         </div>
@@ -123,10 +146,24 @@ const BrowseCarsPage = () => {
                 ) : (
                     <div className="space-y-12">
                         <section id="car-grid" className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                            {filteredCars.map((car) => (
+                            {paginatedCars.map((car) => (
                                 <CarCard key={car._id} car={car} />
                             ))}
                         </section>
+
+                        <Pagination
+                            totalItems={filteredCars.length}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                            currentPage={currentPage}
+                            onPageChange={(page) => {
+                                setSearchParams(prev => {
+                                    const newParams = new URLSearchParams(prev);
+                                    newParams.set('page', page.toString());
+                                    return newParams;
+                                });
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                        />
                     </div>
                 )}
             </div>
@@ -134,6 +171,6 @@ const BrowseCarsPage = () => {
     );
 };
 
-
 export default BrowseCarsPage;
+
 

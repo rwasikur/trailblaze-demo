@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
 import { Button } from '../components/ui/Button';
@@ -11,6 +11,9 @@ import { BRANDS_MODELS, EXTERIOR_COLORS, INTERIOR_COLORS } from '../constants/ca
 const EditCarPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const fromPage = searchParams.get('fromPage') || '1';
+    const source = searchParams.get('from');
     const [formData, setFormData] = useState({
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
         price: '', range: '', body_type: '', mileage: '', total_distance_covered: '', exterior_color: '', interior_color: '',
@@ -232,7 +235,12 @@ const EditCarPage = () => {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             await api.put(`/api/cars/${id}`, formData, config);
             toast.success('Vehicle updated successfully!');
-            navigate('/admin/catalogue');
+            
+            if (source === 'dashboard') {
+                navigate(`/admin/dashboard?vPage=${fromPage}`);
+            } else {
+                navigate(`/admin/catalogue?page=${fromPage}`);
+            }
         } catch (err) {
             toast.error('Error: ' + (err.response?.data?.message || err.message));
         }
@@ -252,7 +260,13 @@ const EditCarPage = () => {
                         <h1 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Edit Vehicle</h1>
                         <p className="text-slate-500 mt-2 text-base">Update vehicle metadata and availability status below.</p>
                     </div>
-                    <Button variant="outline" onClick={() => navigate('/admin/catalogue')} className="text-sm font-semibold h-11 border-slate-300">
+                    <Button variant="outline" onClick={() => {
+                        if (source === 'dashboard') {
+                            navigate(`/admin/dashboard?vPage=${fromPage}`);
+                        } else {
+                            navigate(`/admin/catalogue?page=${fromPage}`);
+                        }
+                    }} className="text-sm font-semibold h-11 border-slate-300">
                         Back to Catalogue
                     </Button>
                 </div>
