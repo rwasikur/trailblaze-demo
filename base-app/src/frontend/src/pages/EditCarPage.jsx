@@ -266,12 +266,13 @@ const EditCarPage = () => {
 
                 <Card className="flex-1 border-slate-200 shadow-sm overflow-hidden bg-white flex flex-col min-h-0">
                     <CardContent className="p-0 flex flex-col h-full">
-                        <form onSubmit={handleEditCar} className="flex flex-col h-full">
+                        <form onSubmit={handleEditCar} className="flex flex-col h-full" noValidate>
                             <div className="flex-1 overflow-y-auto p-6 md:p-8 pb-32">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Brand</label>
                                         <Select
+                                            inputId="brand-select"
                                             options={brands.map(b => ({ value: b, label: b }))}
                                             value={formData.brand ? { value: formData.brand, label: formData.brand } : null}
                                             onChange={(selected) => setFormData({ ...formData, brand: selected ? selected.value : '', name: '' })}
@@ -292,6 +293,7 @@ const EditCarPage = () => {
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Car Name</label>
                                         <Select
+                                            inputId="model-select"
                                             options={models.map(m => ({ value: m, label: m }))}
                                             value={formData.name ? { value: formData.name, label: formData.name } : null}
                                             onChange={(selected) => setFormData({ ...formData, name: selected ? selected.value : '' })}
@@ -313,6 +315,7 @@ const EditCarPage = () => {
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Model Year</label>
                                         <Select
+                                            inputId="year-select"
                                             options={yearOptions}
                                             value={formData.model_year ? { value: formData.model_year, label: formData.model_year } : null}
                                             onChange={(selected) => setFormData({ ...formData, model_year: selected ? selected.value : '' })}
@@ -330,7 +333,7 @@ const EditCarPage = () => {
                                             }}
                                         />
                                     </div>
-                                    <Input label="Price (₹)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
+                                    <Input id="car-price-input" label="Price (₹)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Vehicle Condition</label>
                                         <select
@@ -403,15 +406,16 @@ const EditCarPage = () => {
                                     {formData.condition === 'Used' && (
                                         <>
                                             <Input
+                                                id="owners-count-input"
                                                 label="Number of Owners"
                                                 type="number"
                                                 value={formData.number_of_owners}
                                                 onChange={handleOwnerCountChange}
                                             />
-                                            <Input label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
+                                            <Input id="registration-city-input" label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
                                         </>
                                     )}
-                                    <Input label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
+                                    <Input id="insurance-validity-input" label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
 
                                     <div className="md:col-span-3">
                                         {formData.condition === 'Used' && formData.past_owners && formData.past_owners.length > 0 && (
@@ -459,7 +463,7 @@ const EditCarPage = () => {
                                             </div>
 
                                             <div className="flex gap-4 items-center">
-                                                <input type="file" ref={mainFileRef} onChange={handleMainFileChange} className="hidden" accept="image/*" />
+                                                <input id="main-image-input" type="file" ref={mainFileRef} onChange={handleMainFileChange} className="hidden" accept="image/*" />
                                                 <Button type="button" variant="outline" onClick={() => mainFileRef.current.click()} disabled={mainLoading} className="h-12 border-dashed border-2 hover:border-blue-600 hover:text-blue-600 transition-all px-8 border-slate-200 uppercase text-[10px] font-black tracking-widest">
                                                     {mainLoading ? 'Uploading...' : 'Update Main File'}
                                                 </Button>
@@ -481,7 +485,7 @@ const EditCarPage = () => {
                                             </div>
 
                                             <div className="flex gap-4 items-center">
-                                                <input type="file" ref={multiFileRef} onChange={handleMultiFileChange} className="hidden" multiple accept="image/*" />
+                                                <input id="secondary-images-input" type="file" ref={multiFileRef} onChange={handleMultiFileChange} className="hidden" multiple accept="image/*" />
                                                 <Button type="button" variant="outline" onClick={() => multiFileRef.current.click()} disabled={multiLoading} className="h-12 border-dashed border-2 hover:border-slate-900 transition-all px-8 border-slate-200 uppercase text-[10px] font-black tracking-widest">
                                                     {multiLoading ? 'Processing...' : 'Add Gallery Photos'}
                                                 </Button>

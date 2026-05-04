@@ -93,11 +93,12 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                         <p className="text-slate-400 font-medium text-xs mt-1">Reserve this vehicle.</p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                         <div className="grid gap-4">
                             <div className="space-y-1">
                                 <label className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</label>
                                 <input
+                                    id="purchase-name"
                                     required
                                     type="text"
                                     value={formData.user_name}
@@ -109,6 +110,7 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                             <div className="space-y-1">
                                 <label className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Email</label>
                                 <input
+                                    id="purchase-email"
                                     required
                                     type="email"
                                     value={formData.user_email}
@@ -120,6 +122,7 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                             <div className="space-y-1">
                                 <label className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Contact</label>
                                 <input
+                                    id="purchase-contact"
                                     required
                                     type="tel"
                                     value={formData.user_contact}
@@ -132,6 +135,7 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
 
                         <div className="pt-2">
                             <button
+                                id="purchase-submit"
                                 disabled={loading}
                                 type="submit"
                                 className="w-full py-4 bg-slate-950 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-blue-600 transition-all active:scale-[0.98]"

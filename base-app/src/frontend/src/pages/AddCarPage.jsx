@@ -267,7 +267,7 @@ const AddCarPage = () => {
 
                 <Card className="border-slate-200 shadow-sm bg-white">
                     <CardContent className="p-0">
-                        <form onSubmit={handleAddCar}>
+                        <form onSubmit={handleAddCar} noValidate>
                             <div className="p-6 md:p-8 pb-10 space-y-6">
                                 {currentStep === 1 && (
                                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -299,6 +299,7 @@ const AddCarPage = () => {
                                             <div className="space-y-2">
                                                 <label className="block text-sm font-bold text-slate-700">Brand<span className="text-red-500 ml-1">*</span></label>
                                                 <Select
+                                                    inputId="brand-select"
                                                     options={brands.map(b => ({ value: b, label: b }))}
                                                     value={formData.brand ? { value: formData.brand, label: formData.brand } : null}
                                                     onChange={(selected) => setFormData({ ...formData, brand: selected ? selected.value : '', name: '' })}
@@ -332,6 +333,7 @@ const AddCarPage = () => {
                                             <div className="space-y-2">
                                                 <label className="block text-sm font-bold text-slate-700">Car Name<span className="text-red-500 ml-1">*</span></label>
                                                 <Select
+                                                    inputId="model-select"
                                                     options={models.map(m => ({ value: m, label: m }))}
                                                     value={formData.name ? { value: formData.name, label: formData.name } : null}
                                                     onChange={(selected) => setFormData({ ...formData, name: selected ? selected.value : '' })}
@@ -366,6 +368,7 @@ const AddCarPage = () => {
                                             <div className="space-y-2">
                                                 <label className="block text-sm font-bold text-slate-700">Model Year<span className="text-red-500 ml-1">*</span></label>
                                                 <Select
+                                                    inputId="year-select"
                                                     options={yearOptions}
                                                     value={formData.model_year ? { value: formData.model_year, label: formData.model_year } : null}
                                                     onChange={(selected) => setFormData({ ...formData, model_year: selected ? selected.value : '' })}
@@ -452,11 +455,11 @@ const AddCarPage = () => {
                                         <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Registration & Details</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                             <div className="md:col-span-1">
-                                                <Input label="Number of Owners" type="number" min="0" value={formData.number_of_owners} onChange={handleOwnerCountChange} disabled={formData.condition === 'New'} className={formData.condition === 'New' ? 'opacity-50' : ''} required={formData.condition === 'Used'} />
+                                                <Input id="owners-count-input" label="Number of Owners" type="number" min="0" value={formData.number_of_owners} onChange={handleOwnerCountChange} disabled={formData.condition === 'New'} className={formData.condition === 'New' ? 'opacity-50' : ''} required={formData.condition === 'Used'} />
                                             </div>
-                                            <Input label="Price (₹)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
-                                            <Input label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
-                                            <Input label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
+                                            <Input id="car-price-input" label="Price (₹)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
+                                            <Input id="registration-city-input" label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
+                                            <Input id="insurance-validity-input" label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
                                             {formData.past_owners && formData.past_owners.length > 0 && (
                                                 <div className="md:col-span-3 space-y-4 border-t border-slate-100 pt-4 mt-2">
                                                     <h4 className="text-sm font-bold text-slate-900">Past Owner History</h4>
@@ -497,7 +500,7 @@ const AddCarPage = () => {
                                                 </div>
 
                                                 <div className="flex gap-4 items-center">
-                                                    <input type="file" ref={mainFileRef} onChange={handleMainFileChange} className="hidden" accept="image/*" />
+                                                    <input id="main-image-input" type="file" ref={mainFileRef} onChange={handleMainFileChange} className="hidden" accept="image/*" />
                                                     <Button type="button" variant="outline" onClick={() => mainFileRef.current.click()} disabled={mainLoading} className="h-12 border-dashed border-2 hover:border-blue-600 hover:text-blue-600 transition-all px-8 border-slate-200 uppercase text-[10px] font-black tracking-widest">
                                                         {mainLoading ? 'Uploading...' : 'Choose Main File'}
                                                     </Button>
@@ -520,7 +523,7 @@ const AddCarPage = () => {
                                                 </div>
 
                                                 <div className="flex gap-4 items-center">
-                                                    <input type="file" ref={multiFileRef} onChange={handleMultiFileChange} className="hidden" multiple accept="image/*" />
+                                                    <input id="secondary-images-input" type="file" ref={multiFileRef} onChange={handleMultiFileChange} className="hidden" multiple accept="image/*" />
                                                     <Button type="button" variant="outline" onClick={() => multiFileRef.current.click()} disabled={multiLoading} className="h-12 border-dashed border-2 hover:border-slate-900 transition-all px-8 border-slate-200">
                                                         {multiLoading ? 'Processing Images...' : 'Add Gallery Photos'}
                                                     </Button>

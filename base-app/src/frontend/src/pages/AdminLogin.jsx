@@ -20,6 +20,20 @@ const AdminLogin = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!isLogin && !formData.full_name.trim()) {
+            return toast.error('Full Name is required.');
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            return toast.error('Please enter a valid email address.');
+        }
+
+        if (!formData.password) {
+            return toast.error('Password is required.');
+        }
+
         setLoading(true);
         try {
             if (!isLogin && formData.password.length < 6) {
@@ -73,7 +87,7 @@ const AdminLogin = () => {
                         </p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                         {!isLogin && (
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 ml-1">Full Name</label>
@@ -132,10 +146,10 @@ const AdminLogin = () => {
                         <div className="text-center pt-2">
                             <button
                                 type="button"
-                                onClick={() => setIsLogin(!isLogin)}
+                                onClick={() => navigate('/admin/signup')}
                                 className="text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors"
                             >
-                                {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
+                                Don't have an account? Sign Up
                             </button>
                         </div>
                     </form>

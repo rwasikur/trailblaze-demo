@@ -9,8 +9,6 @@ const carRoutes = require('./routes/carRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 
-connectDB();
-
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -32,5 +30,15 @@ app.get('/health', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+const startServer = async () => {
+    try {
+        await connectDB();
+        const PORT = process.env.PORT || 3000;
+        app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+};
+
+startServer();
