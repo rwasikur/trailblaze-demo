@@ -13,10 +13,11 @@ const Car = sequelize.define('Car', {
     transmission: { type: DataTypes.STRING, allowNull: false },
     fuel_type: { type: DataTypes.STRING, allowNull: false },
     seating_capacity: { type: DataTypes.INTEGER, allowNull: false },
-    price_per_day: { type: DataTypes.INTEGER, allowNull: false },
+    price: { type: DataTypes.INTEGER, allowNull: false },
     range: { type: DataTypes.STRING },
     body_type: { type: DataTypes.STRING },
     mileage: { type: DataTypes.STRING },
+    total_distance_covered: { type: DataTypes.STRING },
     exterior_color: { type: DataTypes.STRING },
     interior_color: { type: DataTypes.STRING },
     number_of_owners: { type: DataTypes.INTEGER },
@@ -33,6 +34,10 @@ const Car = sequelize.define('Car', {
     condition: {
         type: DataTypes.ENUM('New', 'Used'),
         defaultValue: 'New'
+    },
+    past_owners: {
+        type: DataTypes.JSONB,
+        defaultValue: []
     },
     availability_status: { type: DataTypes.STRING, defaultValue: 'Available' },
 }, {
