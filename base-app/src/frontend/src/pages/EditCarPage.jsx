@@ -15,7 +15,7 @@ const EditCarPage = () => {
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
         price: '', range: '', body_type: '', mileage: '', total_distance_covered: '', exterior_color: '', interior_color: '',
         number_of_owners: 0, registration_city: '', insurance_validity: '', description: '',
-        availability_status: 'Available', image_url: '', secondary_images: [], condition: 'Used', past_owners: []
+        availability_status: 'Available', image_url: '', secondary_images: [], condition: 'Used', past_owners: [], discount_percentage: 0
     });
     const [loading, setLoading] = useState(true);
     const [mainLoading, setMainLoading] = useState(false);
@@ -58,6 +58,7 @@ const EditCarPage = () => {
                     image_url: data.image_url || '',
                     condition: data.condition || 'Used',
                     total_distance_covered: data.total_distance_covered || '',
+                    discount_percentage: data.discount_percentage || 0,
                     number_of_owners: data.number_of_owners !== undefined && data.number_of_owners !== null ? data.number_of_owners : 0,
                     past_owners: data.past_owners || []
                 });
@@ -327,6 +328,7 @@ const EditCarPage = () => {
                                         />
                                     </div>
                                     <Input id="car-price-input" label="Price (₹)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
+                                    <Input id="car-discount-input" label="Discount (%)" type="number" min="0" max="100" value={formData.discount_percentage} onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })} />
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Vehicle Condition</label>
                                         <select

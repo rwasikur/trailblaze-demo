@@ -98,6 +98,10 @@ const CarDetailsPage = () => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
 
+    const discount = parseInt(car?.discount_percentage) || 0;
+    const hasDiscount = car && discount > 0 && discount < 100;
+    const discountedPrice = hasDiscount ? Math.round(car.price - (car.price * discount / 100)) : car?.price;
+
     useEffect(() => {
         const fetchCar = async () => {
             try {
@@ -170,10 +174,21 @@ const CarDetailsPage = () => {
                                     <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
                                     <span className="text-slate-900 text-sm font-bold">Varies by City</span>
                                 </div>
+                                {hasDiscount && (
+                                    <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
+                                        <span className="text-slate-500 text-sm font-bold">Special Offer Discount ({discount}%)</span>
+                                        <span className="text-red-500 text-sm font-bold">- ₹{(car.price - discountedPrice).toLocaleString()}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Current Valuation</span>
-                                    <span className="text-4xl font-black text-blue-600">₹{car.price?.toLocaleString()}</span>
+                                    <span className="text-4xl font-black text-blue-600">₹{discountedPrice?.toLocaleString()}</span>
                                 </div>
+                                {hasDiscount && (
+                                    <div className="text-right">
+                                        <span className="text-xs font-bold text-slate-400 line-through">₹{car.price?.toLocaleString()}</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     );
@@ -184,15 +199,21 @@ const CarDetailsPage = () => {
                             <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Ex-Showroom Price</span>
-                                    <span className="text-2xl font-black text-slate-900">₹{car.price?.toLocaleString()}</span>
+                                    <span className={`text-2xl font-black ${hasDiscount ? 'text-slate-400 line-through' : 'text-slate-900'}`}>₹{car.price?.toLocaleString()}</span>
                                 </div>
+                                {hasDiscount && (
+                                    <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
+                                        <span className="text-slate-500 text-sm font-bold">Festival Discount ({discount}%)</span>
+                                        <span className="text-2xl font-black text-red-600">- ₹{(car.price - discountedPrice).toLocaleString()}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
                                     <span className="text-slate-900 text-sm font-bold">Varies by City</span>
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Valuation</span>
-                                    <span className="text-4xl font-black text-blue-600">₹{car.price?.toLocaleString()}</span>
+                                    <span className="text-4xl font-black text-blue-600">₹{discountedPrice?.toLocaleString()}</span>
                                 </div>
                             </div>
                         </div>
@@ -291,6 +312,11 @@ const CarDetailsPage = () => {
                                 <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full border ${car.condition === 'New' ? 'bg-blue-600 text-white border-blue-600' : 'bg-amber-100 text-amber-800 border-amber-200'}`}>
                                     {car.condition === 'New' ? 'Brand New' : 'Certified'}
                                 </span>
+                                {hasDiscount && (
+                                    <span id={`car-details-discount-badge`} className="text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full bg-red-600 text-white border border-red-500 shadow-lg shadow-red-600/20">
+                                        {discount}% OFF
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -298,7 +324,10 @@ const CarDetailsPage = () => {
                             <div className="flex justify-between items-end relative z-10">
                                 <div>
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Acquisition</div>
-                                    <div className="text-4xl font-black tracking-tight">₹{car.price?.toLocaleString()}</div>
+                                    <div className="text-4xl font-black tracking-tight">₹{discountedPrice?.toLocaleString()}</div>
+                                    {hasDiscount && (
+                                        <div className="text-sm font-bold text-slate-400 line-through mt-1">₹{car.price?.toLocaleString()}</div>
+                                    )}
                                 </div>
                                 <div className="text-right">
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Official Seller</div>
