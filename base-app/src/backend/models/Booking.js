@@ -31,6 +31,10 @@ const Booking = sequelize.define('Booking', {
     status: {
         type: DataTypes.STRING,
         defaultValue: 'Pending'
+    },
+    final_price: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     }
 }, {
     timestamps: true,

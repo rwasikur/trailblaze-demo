@@ -50,9 +50,7 @@ const AdminLogin = () => {
             localStorage.setItem('adminToken', data.token);
             window.dispatchEvent(new Event('authChange'));
             toast.success(isLogin ? "Access Granted." : "Account Created.");
-            setTimeout(() => {
-                navigate('/admin/dashboard');
-            }, 500);
+            navigate('/admin/dashboard');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Authentication failed.');
         } finally {
@@ -62,17 +60,10 @@ const AdminLogin = () => {
 
     return (
         <div className="h-screen w-full flex items-center justify-center relative overflow-hidden px-6 text-white font-outfit bg-slate-950">
-            {/* Highly Blurred & High-Transparency Blue Background */}
-            <div className="absolute inset-0 z-0">
-                <img
-                    src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070&auto=format&fit=crop"
-                    alt="Background Fleet"
-                    className="h-full w-full object-cover opacity-60 scale-110 animate-[pulse_20s_infinite_ease-in-out] blur-[8px]"
-                />
-                {/* Deep Blue/Glass Overlay */}
-                <div className="absolute inset-0 bg-blue-900/20 backdrop-blur-[4px]"></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.25),transparent_50%)]"></div>
+            {/* Simplified Background to prevent 'load' event delays */}
+            <div className="absolute inset-0 z-0 bg-slate-950">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-slate-950 to-slate-950"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.15),transparent_50%)]"></div>
             </div>
 
             <div className="w-full max-w-md relative z-10">

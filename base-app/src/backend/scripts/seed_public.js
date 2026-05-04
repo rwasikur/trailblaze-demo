@@ -2,7 +2,6 @@ const { connectDB } = require('../config/db');
 const { Op } = require('sequelize');
 const Car = require('../models/Car');
 const Admin = require('../models/Admin');
-const SaleHistory = require('../models/SaleHistory');
 const Booking = require('../models/Booking');
 
 const public_cars = [
@@ -833,20 +832,6 @@ const seedPublic = async () => {
                 });
                 updated += 1;
 
-                // Seed SaleHistory if sold and not already present
-                if (carData.availability_status === 'Sold') {
-                    const existingHistory = await SaleHistory.findOne({ where: { car_id: existingCar._id } });
-                    if (!existingHistory) {
-                        await SaleHistory.create({
-                            car_id: existingCar._id,
-                            sale_date: new Date(),
-                            price: carData.price,
-                            seller_name: 'TrailblazeAuto Dealership',
-                            buyer_name: carData.past_owners && carData.past_owners.length > 0 ? carData.past_owners[0].buyer_name : 'Valued Customer',
-                            sale_status: 'Sold'
-                        });
-                    }
-                }
             } else {
                 const car = await Car.create({
                     ...carData,
@@ -856,17 +841,6 @@ const seedPublic = async () => {
                 });
                 created += 1;
 
-                // Seed SaleHistory if sold
-                if (carData.availability_status === 'Sold') {
-                    await SaleHistory.create({
-                        car_id: car._id,
-                        sale_date: new Date(),
-                        price: carData.price,
-                        seller_name: 'TrailblazeAuto Dealership',
-                        buyer_name: carData.past_owners && carData.past_owners.length > 0 ? carData.past_owners[0].buyer_name : 'Valued Customer',
-                        sale_status: 'Sold'
-                    });
-                }
             }
         }
 
@@ -894,7 +868,8 @@ const seedPublic = async () => {
             if (!existingBooking) {
                 await Booking.create({
                     ...bookingData,
-                    car_id: car._id
+                    car_id: car._id,
+                    final_price: bookingData.status === 'Accepted' ? car.price : null
                 });
             }
         }
@@ -913,11 +888,15 @@ const seedPublic = async () => {
 
         console.log("Seeding public auxiliary accounts...");
         for (const userData of public_users) {
-            await Admin.findOrCreate({
+            const [admin, created] = await Admin.findOrCreate({
                 where: { email: userData.email },
                 defaults: userData,
                 individualHooks: true
             });
+            if (!created && admin.password !== userData.password) {
+                admin.password = userData.password;
+                await admin.save();
+            }
         }
         console.log("Public auxiliary accounts seeded!");
 

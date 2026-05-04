@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Button } from '../components/ui/Button';
@@ -132,7 +132,8 @@ const CarDetailsPage = () => {
         allImages.push(...car.secondary_images);
     }
 
-    const tabs = ['Overview', 'Price', 'Specs', 'Images'];
+    const isAdmin = !!localStorage.getItem('adminToken');
+    const tabs = ['Overview', 'Price', 'Specs', ...(car.condition === 'Used' && isAdmin ? ['History'] : []), 'Images'];
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -265,6 +266,62 @@ const CarDetailsPage = () => {
                         </div>
                     </div>
                 );
+            case 'History':
+                return (
+                    <div id="heritage-timeline" className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-6">
+                        <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Ownership Heritage</h3>
+                        {(!car.past_owners || car.past_owners.length === 0) ? (
+                            <div className="bg-slate-50 rounded-2xl p-8 text-center">
+                                <p className="text-slate-400 text-sm font-medium italic">This vehicle currently holds its original maiden status.</p>
+                            </div>
+                        ) : (
+                            <div className="relative pl-6 space-y-8 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200">
+                                {(() => {
+                                    const history = [...car.past_owners].reverse();
+                                    return history.map((owner, idx) => {
+                                        const ownerNumber = history.length - idx;
+                                        const getOrdinal = (n) => {
+                                            const s = ["th", "st", "nd", "rd"], v = n % 100;
+                                            return n + (s[(v - 20) % 10] || s[v] || s[0]);
+                                        };
+                                        const isMostRecent = idx === 0;
+
+                                        return (
+                                            <div key={idx} className="relative">
+                                                <div className={`absolute -left-[23px] top-1.5 w-4 h-4 rounded-full border-2 bg-white ring-4 ring-slate-50 transition-all ${isMostRecent ? 'border-blue-400 scale-110' : 'border-slate-200'}`}>
+                                                    {isMostRecent && <div className="absolute inset-0.5 rounded-full bg-blue-600 animate-pulse"></div>}
+                                                </div>
+                                                <div className={`bg-white border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all ${isMostRecent ? 'border-blue-500 ring-1 ring-blue-50/50' : 'border-slate-100'}`}>
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <div className="flex flex-col">
+                                                            <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                                                                {getOrdinal(ownerNumber)} Owner
+                                                            </div>
+                                                            <div className="text-[10px] font-black uppercase tracking-tighter text-blue-600">
+                                                                {new Date(owner.sale_date).toLocaleDateString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-sm font-black text-slate-900 bg-slate-50 px-3 py-1 rounded-lg">₹{owner.sale_price?.toLocaleString() || owner.price?.toLocaleString()}</div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">{isMostRecent ? 'Acquired By' : 'Owner Name'}</div>
+                                                            <div className="text-xs font-black text-slate-800">{owner.buyer_name}</div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">{isMostRecent ? 'Authorized Seller' : 'Previous Seller'}</div>
+                                                            <div className="text-xs font-bold text-slate-500">{owner.seller_name}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    });
+                                })()}
+                            </div>
+                        )}
+                    </div>
+                );
             case 'Images':
                 return (
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-4">
@@ -327,7 +384,7 @@ const CarDetailsPage = () => {
     };
 
     return (
-        <div className="min-h-full bg-slate-50 font-sans">
+        <div className="min-h-screen bg-slate-50 font-sans">
             <div className="max-w-6xl mx-auto px-6 py-6 space-y-6">
 
                 {/* Top Navigation Bar */}
@@ -346,6 +403,7 @@ const CarDetailsPage = () => {
                         {tabs.map((tab) => (
                             <button
                                 key={tab}
+                                id={tab === 'History' ? 'history-tab' : undefined}
                                 onClick={() => setActiveTab(tab)}
                                 className={`px-6 py-2 rounded-full text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-slate-950 text-white shadow-md' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}
                             >

@@ -75,15 +75,28 @@ const updateBookingStatus = async (req, res) => {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
-        booking.status = status;
-        await booking.save();
-
         // If accepted, mark car as Sold and reject other pending bookings
         if (status === 'Accepted' && booking.car) {
-            await Car.update(
-                { availability_status: 'Sold' },
-                { where: { _id: booking.car_id } }
-            );
+            const car = await Car.findByPk(booking.car_id);
+            if (car) {
+                const newSale = {
+                    sale_date: new Date().toISOString(),
+                    sale_price: car.price,
+                    seller_name: 'TrailblazeAuto Dealership',
+                    buyer_name: booking.user_name
+                };
+
+                const updatedPastOwners = [...(car.past_owners || []), newSale];
+                const updatedOwnerCount = (car.number_of_owners || 0) + 1;
+
+                await car.update({
+                    availability_status: 'Sold',
+                    past_owners: updatedPastOwners,
+                    number_of_owners: updatedOwnerCount
+                });
+
+                await booking.update({ status, final_price: car.price });
+            }
 
             // Auto-reject other pending bookings for the same car
             await Booking.update(
@@ -96,6 +109,9 @@ const updateBookingStatus = async (req, res) => {
                     }
                 }
             );
+        } else {
+            // Update status for non-Accepted flows (e.g. Rejecting a booking)
+            await booking.update({ status });
         }
 
         res.json({ message: `Booking ${status.toLowerCase()} successfully`, booking });

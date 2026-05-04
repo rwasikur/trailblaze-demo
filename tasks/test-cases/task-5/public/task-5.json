@@ -1,0 +1,23 @@
+{
+  "tasks": [
+    {
+      "task_id": "task-5",
+      "difficulty": "Medium",
+      "description": "Integration of a comprehensive Ownership Heritage and Sales Ledger system. This features a dynamic timeline for pre-owned vehicles and an administrative sales history dashboard with automated revenue tracking and transaction highlighting.",
+      "branch": "task-5",
+      "test_case_location": "test-cases/task-5/",
+      "acceptance_criteria": [
+        "Login at '/admin-login' and navigate to a 'Used' vehicle. Verify the navigation bar contains a 'History' tab with ID 'history-tab'. Click it to reveal the 'Ownership Heritage' section with ID 'heritage-timeline'.",
+        "On the history timeline, verify that the most recent record is visually distinguished using the 'animate-pulse' and 'border-blue-400' CSS classes for clear identification.",
+        "Access a 'Used' vehicle as a guest user and verify that the element with ID 'history-tab' is NOT present, ensuring transaction data remains private to administrators.",
+        "Navigate to a 'New' vehicle as an administrator and verify that the 'History' tab is hidden, as brand-new cars have no prior ownership records.",
+        "In the Admin Dashboard, click the 'Sales History' link with ID 'sales-history-tab' and verify that the 'Sales Ledger' table with ID 'sales-ledger-table' renders all accepted transactions.",
+        "Verify that each record in the sales ledger includes a 'Condition Badge' with ID 'condition-badge' correctly identifying the vehicle as either 'Brand New' or 'Pre-Owned'.",
+        "Click the 'Accept' button with ID 'accept-booking-{id}' in the Bookings tab. Verify the UI auto-switches to Sales History and applies the 'bg-blue-50' highlight class to the new record.",
+        "Verify that the 'Net Revenue' card with ID 'net-revenue-stat' displays the correct total by summing the immutable 'final_price' field from the database.",
+        "Confirm that the vehicle's full transaction lineage is accurately populated in the UI from the 'past_owners' JSONB data structure.",
+        "Navigate to a 'Used' vehicle's details page and click the 'Price' tab. Verify that the 'Financial Breakdown' section displays the 'Owner Depreciation' calculation derived from the past ownership records."
+      ]
+    }
+  ]
+}
