@@ -77,6 +77,16 @@ const AdminProfile = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!formData.full_name.trim()) {
+            return toast.error('Full Legal Name is required.');
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            return toast.error('Please enter a valid email address.');
+        }
+
         try {
             const token = localStorage.getItem('adminToken');
             const updateData = { ...formData };
@@ -193,7 +203,7 @@ const AdminProfile = () => {
 
                     {/* Modification Form */}
                     <div className="lg:col-span-2">
-                        <form onSubmit={handleSubmit} className="space-y-10">
+                        <form onSubmit={handleSubmit} className="space-y-10" noValidate>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-3">
                                     <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Full Legal Name</label>

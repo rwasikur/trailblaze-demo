@@ -45,7 +45,7 @@ function App() {
     <Router>
       <div className="min-h-screen bg-slate-950 font-sans text-slate-100 flex flex-col">
         <Navbar />
-        <ToastContainer position="bottom-right" theme="dark" />
+        <ToastContainer position="top-right" theme="dark" />
         <main className="flex-1 w-full flex flex-col overflow-x-clip">
           <AnimatedRoutes />
         </main>
