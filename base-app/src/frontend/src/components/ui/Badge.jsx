@@ -11,6 +11,7 @@ const Badge = React.forwardRef(({ className, variant = 'default', children, ...p
     default: 'bg-slate-100 text-slate-800 border-slate-200',
     available: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     unavailable: 'bg-red-50 text-red-700 border-red-200',
+    pending: 'bg-amber-50 text-amber-700 border-amber-200',
     outline: 'text-slate-700 border-slate-300',
   };
 

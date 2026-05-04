@@ -17,6 +17,19 @@ const AdminSignup = () => {
     const handleSignup = async (e) => {
         e.preventDefault();
 
+        if (!formData.fullname.trim()) {
+            return toast.error('Full Legal Name is required.');
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            return toast.error('Please enter a valid email address.');
+        }
+
+        if (formData.password.length < 6) {
+            return toast.error('Password must be at least 6 characters.');
+        }
+
         setLoading(true);
         try {
             await api.post('/api/admin/signup', {
@@ -41,7 +54,7 @@ const AdminSignup = () => {
                     <p className="mt-2 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Secure administrative registration</p>
                 </div>
 
-                <form className="mt-8 space-y-6" onSubmit={handleSignup}>
+                <form className="mt-8 space-y-6" onSubmit={handleSignup} noValidate>
                     <div className="space-y-4">
                         <Input
                             id="admin-signup-name"

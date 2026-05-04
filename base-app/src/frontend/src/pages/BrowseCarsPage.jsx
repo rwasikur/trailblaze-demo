@@ -1,17 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import api from '../api';
 import CarCard from '../components/CarCard';
-import CatalogueHero from '../components/catalogue/CatalogueHero';
-import CatalogueHighlights from '../components/catalogue/CatalogueHighlights';
 
 const BrowseCarsPage = () => {
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
-
     const [activeFilter, setActiveFilter] = useState('All');
     const [recentCarIds, setRecentCarIds] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [conditionFilter, setConditionFilter] = useState('All');
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         const fetchCars = async () => {
             setLoading(true);
             try {
@@ -45,76 +45,121 @@ const BrowseCarsPage = () => {
     }, []);
 
     const filteredCars = useMemo(() => {
+        let result = cars;
         if (activeFilter === 'Recent') {
             const idMap = new Map(recentCarIds.map((id, i) => [id, i]));
-            return cars
+            result = cars
                 .filter(car => idMap.has(car._id))
                 .sort((a, b) => idMap.get(a._id) - idMap.get(b._id)); // Keep visit order
+        } else {
+            if (activeFilter === 'New Arrivals') result = cars.filter(c => c.condition === 'New');
+            if (activeFilter === 'Pre-Owned') result = cars.filter(c => c.condition === 'Used');
         }
-        if (activeFilter === 'All') return cars;
-        if (activeFilter === 'New Arrivals') return cars.filter(c => c.condition === 'New');
-        if (activeFilter === 'Pre-Owned') return cars.filter(c => c.condition === 'Used');
-        return cars;
+
+        return result.filter(car => {
+            const matchesSearch =
+                car.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                car.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                car.body_type?.toLowerCase().includes(searchQuery.toLowerCase());
+
+            const matchesCondition =
+                conditionFilter === 'All' ||
+                (conditionFilter === 'New' && car.condition === 'New') ||
+                (conditionFilter === 'Pre-Owned' && car.condition === 'Used');
+
+            const isAvailable = car.availability_status === 'Available';
+
+            return matchesSearch && matchesCondition && isAvailable;
+        });
+    }, [cars, activeFilter, recentCarIds, searchQuery, conditionFilter]);
+
+    const featuredCar = useMemo(() => {
+        if ((activeFilter === 'All' || activeFilter === 'Recent') && recentCarIds.length > 0) {
+            return cars.find(c => c._id === recentCarIds[0]) || null;
+        }
+        return null;
     }, [cars, activeFilter, recentCarIds]);
 
-    const featuredCar = useMemo(() => filteredCars[0], [filteredCars]);
-    const remainingCars = useMemo(() => filteredCars.slice(1), [filteredCars]);
+    const remainingCars = useMemo(() => {
+        if (!featuredCar) return filteredCars;
+        return filteredCars.filter(c => c._id !== featuredCar._id);
+    }, [filteredCars, featuredCar]);
+
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     return (
         <div className="min-h-full bg-slate-50">
-            {/* Elite Masterpiece Hero */}
-            <div className="bg-slate-950 px-6 py-24 text-center lg:py-36 relative overflow-hidden flex flex-col items-center justify-center min-h-[70vh]">
-                {/* Background Layers */}
-                <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_-20%,#1e293b,transparent)] opacity-40"></div>
-                <div className="absolute inset-0 z-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] mix-blend-overlay"></div>
+            <div className="mx-auto w-full max-w-7xl px-6 pt-4 pb-8">
+                {/* Search and Filter Section */}
+                <div className="mb-12 flex flex-col md:flex-row items-center justify-center gap-6">
+                    <div className="w-full max-w-2xl flex items-center bg-white border-2 border-slate-100 rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] p-2 focus-within:ring-8 focus-within:ring-blue-600/10 focus-within:border-blue-600/20 transition-all duration-500 relative">
+                        <div className="flex-shrink-0 relative">
+                            <button
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                className="bg-slate-50/80 border border-slate-100 rounded-[2.25rem] pl-8 pr-12 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 cursor-pointer hover:bg-white hover:border-slate-200 transition-all duration-300 min-w-[160px] flex items-center justify-between"
+                            >
+                                <span>{conditionFilter}</span>
+                                <div className="absolute inset-y-0 right-6 flex items-center pointer-events-none text-slate-400">
+                                    <svg className={`w-3.5 h-3.5 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
+                                </div>
+                            </button>
 
-                {/* Floating Orbs */}
-                <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] animate-pulse"></div>
-                <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-400/5 rounded-full blur-[120px] animate-pulse delay-700"></div>
+                            {isDropdownOpen && (
+                                <>
+                                    <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)}></div>
+                                    <div className="absolute top-full left-0 mt-3 w-full bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl border border-white/20 overflow-hidden z-20 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        {['All', 'New', 'Pre-Owned'].map((opt) => (
+                                            <button
+                                                key={opt}
+                                                onClick={() => {
+                                                    setConditionFilter(opt);
+                                                    setIsDropdownOpen(false);
+                                                }}
+                                                className={`w-full text-left px-8 py-3.5 text-[10px] font-black uppercase tracking-widest transition-all ${conditionFilter === opt ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-blue-600/10 hover:text-blue-600'}`}
+                                            >
+                                                {opt}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
 
-                <div className="relative z-10 mx-auto max-w-5xl">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-[10px] font-black uppercase tracking-[0.4em] text-blue-400 backdrop-blur-xl mb-10 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-1000">
-                        The Trailblaze Collection
-                    </div>
+                        <div className="h-8 w-px bg-slate-100 mx-3"></div>
 
-                    <h1 className="text-4xl font-black tracking-tighter text-white md:text-6xl lg:text-7xl leading-[0.95] animate-in fade-in slide-in-from-bottom-8 duration-1000">
-                        Find your next <br />
-                        <span className="relative inline-block mt-2">
-                            <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-200 to-blue-600">masterpiece</span>
-                            <span className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full"></span>
-                        </span>.
-                    </h1>
-
-                    <p className="mt-10 text-base text-slate-400 md:text-lg max-w-2xl mx-auto leading-[1.6] font-medium animate-in fade-in duration-1000 delay-300">
-                        Our most exclusive fleet is waiting for you just below. From track-ready machines to certified luxury icons, your perfect drive is <span className="text-slate-200 font-bold">one scroll away</span>.
-                    </p>
-
-                    {/* Scroll Indicator */}
-                    <div className="mt-16 animate-bounce opacity-40 hover:opacity-100 transition-opacity cursor-default hidden md:block">
-                        <div className="flex flex-col items-center gap-3">
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Explore the Fleet</span>
-                            <div className="w-[1px] h-12 bg-gradient-to-b from-blue-500/50 to-transparent"></div>
+                        <div className="relative flex-1 group">
+                            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                                <svg className="h-4 w-4 text-slate-300 group-focus-within:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Discover..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="block w-full pl-10 pr-6 py-4 bg-transparent border-none text-xs font-bold text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-0"
+                            />
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div className="mx-auto w-full max-w-7xl px-6 py-12 lg:py-20">
+                    <div className="flex items-center px-8 py-4 bg-white border border-slate-100 rounded-[2rem] shadow-sm text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+                        <span className="text-blue-600 mr-2 text-sm">{filteredCars.length}</span> Results
+                    </div>
+                </div>
+
                 {/* Filter Controls */}
                 <div className="mb-12 flex flex-col gap-8 md:flex-row md:items-center md:justify-between border-b border-slate-200 pb-8">
-                    <div className="flex bg-slate-100 p-1.5 rounded-2xl w-fit shadow-sm border border-slate-200">
+                    <div className="flex flex-wrap gap-2 bg-slate-100 p-1.5 rounded-2xl w-fit shadow-sm border border-slate-200">
                         {['All', 'Recent', 'New Arrivals', 'Pre-Owned'].map((filter) => (
                             <button
                                 key={filter}
                                 onClick={() => setActiveFilter(filter)}
-                                className={`rounded-xl px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-300 ${activeFilter === filter ? 'bg-white text-slate-900 shadow-md ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-900'}`}
+                                className={`rounded-xl px-6 py-3 md:px-8 md:py-3 text-[10px] md:text-xs font-bold uppercase tracking-widest transition-all duration-300 ${activeFilter === filter ? 'bg-white text-slate-900 shadow-md ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-900'}`}
                             >
                                 {filter}
                             </button>
                         ))}
-                    </div>
-                    <div className="text-sm font-bold text-slate-400 tracking-wide">
-                        Showing <span className="text-slate-900">{filteredCars.length}</span> luxury listings
                     </div>
                 </div>
 
@@ -127,6 +172,15 @@ const BrowseCarsPage = () => {
                     <div className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-6 py-24 text-center shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
                         <h2 className="text-3xl font-black text-slate-900">No cars found</h2>
                         <p className="mx-auto mt-3 max-w-xl text-base text-slate-500">The catalogue is empty right now.</p>
+                    </div>
+                ) : filteredCars.length === 0 ? (
+                    <div className="rounded-[2.5rem] border-2 border-dashed border-slate-200 bg-white px-6 py-32 text-center shadow-xl">
+                        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-50">
+                            <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        </div>
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">No matches found</h2>
+                        <p className="mx-auto mt-4 max-w-md text-base text-slate-500 leading-relaxed">We couldn't find any vehicles matching your search criteria.</p>
+                        <button onClick={() => { setSearchQuery(''); setConditionFilter('All'); setActiveFilter('All'); }} className="mt-10 rounded-2xl bg-slate-900 px-8 py-4 text-sm font-bold text-white shadow-xl transition-all hover:bg-blue-600 active:scale-95">Clear All Filters</button>
                     </div>
                 ) : (
                     <div className="space-y-16 lg:space-y-24">
@@ -159,26 +213,11 @@ const BrowseCarsPage = () => {
                         )}
 
                         <section className="space-y-12">
-                            {filteredCars.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center rounded-[3rem] border border-dashed border-slate-300 bg-white py-24 text-center shadow-[0_20px_50px_rgba(15,23,42,0.04)]">
-                                    <div className="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center mb-6">
-                                        <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                    </div>
-                                    <h2 className="text-3xl font-black text-slate-900">No matches found</h2>
-                                    <p className="mx-auto mt-3 max-w-sm text-base text-slate-500">
-                                        We couldn't find any vehicles matching your current selection.
-                                        Try adjusting your filters or browsing the full collection.
-                                    </p>
-                                </div>
-                            ) : (
-                                <div id="car-grid" className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                                    {((featuredCar && (activeFilter === 'All' || activeFilter === 'Recent')) ? remainingCars : filteredCars).map((car) => (
-                                        <CarCard key={car._id} car={car} />
-                                    ))}
-                                </div>
-                            )}
+                            <div id="car-grid" className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                                {((featuredCar && (activeFilter === 'All' || activeFilter === 'Recent')) ? remainingCars : filteredCars).map((car) => (
+                                    <CarCard key={car._id} car={car} />
+                                ))}
+                            </div>
                         </section>
                     </div>
                 )}

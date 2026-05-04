@@ -47,8 +47,9 @@ test.describe('Task 4: Recently Viewed - Private Validation Suite', () => {
      * Validates unauthenticated tracking history and UI reflection.
      */
     test('Visitor Role Flow: Tracking and Filtering', async ({ page, baseURL }) => {
-        const cars = await getCars(baseURL || '');
-        const targetCar = cars[0];
+        const allCars = await getCars(baseURL || '');
+        const availableCars = allCars.filter((c: any) => c.availability_status === 'Available');
+        const targetCar = availableCars[0] || allCars[0];
 
         // Step 1: Open /browse (Catalogue Page)
         await page.goto(`${baseURL || ''}/browse`);
@@ -80,8 +81,9 @@ test.describe('Task 4: Recently Viewed - Private Validation Suite', () => {
      * Validates authenticated tracking history and feature parity.
      */
     test('Admin Role Flow: Tracking and Filtering', async ({ page, baseURL }) => {
-        const cars = await getCars(baseURL || '');
-        const targetCar = cars[1];
+        const allCars = await getCars(baseURL || '');
+        const availableCars = allCars.filter((c: any) => c.availability_status === 'Available');
+        const targetCar = availableCars[1] || allCars[1];
 
         // Step 1: Login flow and access verification
         await login(page, baseURL || '', USERS.admin1);
@@ -110,7 +112,7 @@ test.describe('Task 4: Recently Viewed - Private Validation Suite', () => {
     test('Filter Persistence: Default State on Clean Navigation', async ({ page, baseURL }) => {
         await login(page, baseURL || '', USERS.admin2);
         await page.goto(`${baseURL || ''}/browse`);
-        const allFilter = page.getByRole('button', { name: /^All$/i });
+        const allFilter = page.getByRole('button', { name: /^All$/i }).nth(1);
         await expect(allFilter).toHaveClass(/bg-white text-slate-900/);
     });
 
@@ -118,7 +120,7 @@ test.describe('Task 4: Recently Viewed - Private Validation Suite', () => {
         await login(page, baseURL || '', USERS.admin3);
         await page.goto(`${baseURL || ''}/browse`);
         await page.getByRole('button', { name: /^Recent$/i }).click();
-        await page.getByRole('button', { name: /^All$/i }).click();
+        await page.getByRole('button', { name: /^All$/i }).nth(1).click();
         const cards = page.locator('article[id^="car-card-"]');
         expect(await cards.count()).toBeGreaterThan(1);
     });
@@ -158,16 +160,18 @@ test.describe('Task 4: Recently Viewed - Private Validation Suite', () => {
     });
 
     test('Resilience: Silent Suppression of Non-Existent Car IDs', async ({ page, baseURL }) => {
-        const cars = await getCars(baseURL || '');
+        const allCars = await getCars(baseURL || '');
+        const availableCars = allCars.filter((c: any) => c.availability_status === 'Available');
+        const targetCar = availableCars[0] || allCars[0];
         await page.evaluate((id) => {
             localStorage.setItem('recentCars', JSON.stringify(['ghost-id', id]));
             window.dispatchEvent(new Event('recentCarsUpdated'));
-        }, cars[0]._id);
+        }, targetCar._id);
         await page.goto(`${baseURL || ''}/browse`);
         await page.getByRole('button', { name: /^Recent$/i }).click();
         const cards = page.locator('article[id^="car-card-"]');
         await expect(cards).toHaveCount(1);
-        await expect(cards).toContainText(cars[0].name);
+        await expect(cards).toContainText(targetCar.name);
     });
 
     test('Empty State: Displaying No Matches Found for New History', async ({ page, baseURL }) => {
