@@ -1,0 +1,25 @@
+{
+    "tasks": [
+        {
+            "task_id": "task-1",
+            "difficulty": "medium",
+            "description": "Implement a comprehensive vehicle filtering system for the Trailblaze Auto catalogue, including global search and multi-dimensional filters for brand, body style, fuel type, transmission, and price range.",
+            "branch": "task-1",
+            "test_case_location": "test-cases/task-1/",
+            "acceptance_criteria": [
+                "Search input with data-testid='search-input' must be visible on the vehicle catalogue page.",
+                "Searching for a car name or brand in the search input must result in matching results being displayed (using .car-card selector).",
+                "The Condition filter using data-testid='condition-filter-[Condition]' (All, New, Pre-Owned) must correctly narrow down vehicles.",
+                "The Brand dropdown filter with data-testid='brand-filter' must correctly show only vehicles of the selected brand.",
+                "The Body Style dropdown filter with data-testid='body-type-filter' must correctly show only vehicles of the selected body type.",
+                "Fuel Type and Transmission toggle pills with data-testid='fuel-filter-[Type]' and data-testid='transmission-filter-[Type]' must correctly filter inventory.",
+                "The Budget Range filter with data-testid='price-filter-[Range]' must correctly filter vehicles within the selected price brackets.",
+                "The 'Reset' or 'Clear All Filters' button with data-testid='reset-filters' must clear all active filters and restore the full available inventory.",
+                "A 'No matches found' message (using heading role) must be displayed when no vehicles satisfy the combined filtering criteria.",
+                "Searching with non-matching strings or special characters must show the 'No matches found' state (using data-testid='search-input').",
+                "The filtering system must correctly exclude vehicles marked as 'Sold', even if they match other criteria (Negative Case).",
+                "Selecting conflicting filter combinations must show an empty results state gracefully."
+            ]
+        }
+    ]
+}
