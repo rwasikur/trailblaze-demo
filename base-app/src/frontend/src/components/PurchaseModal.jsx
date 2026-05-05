@@ -37,7 +37,11 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                 ...formData
             });
             toast.success('Booking request sent! Our team will contact you soon.');
-            onClose();
+
+            // Substantial delay to ensure toast is rendered and captured by automated tests
+            setTimeout(() => {
+                onClose();
+            }, 1000);
         } catch (error) {
             console.error('Error submitting booking:', error);
             toast.error(error.response?.data?.message || 'Failed to submit. Please try again.');

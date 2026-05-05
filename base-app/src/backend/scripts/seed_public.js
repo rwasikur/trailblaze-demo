@@ -2,7 +2,6 @@ const { connectDB } = require('../config/db');
 const { Op } = require('sequelize');
 const Car = require('../models/Car');
 const Admin = require('../models/Admin');
-const SaleHistory = require('../models/SaleHistory');
 const Booking = require('../models/Booking');
 
 const public_cars = [
@@ -833,20 +832,7 @@ const seedPublic = async () => {
                 });
                 updated += 1;
 
-                // Seed SaleHistory if sold and not already present
-                if (carData.availability_status === 'Sold') {
-                    const existingHistory = await SaleHistory.findOne({ where: { car_id: existingCar._id } });
-                    if (!existingHistory) {
-                        await SaleHistory.create({
-                            car_id: existingCar._id,
-                            sale_date: new Date(),
-                            price: carData.price,
-                            seller_name: 'TrailblazeAuto Dealership',
-                            buyer_name: carData.past_owners && carData.past_owners.length > 0 ? carData.past_owners[0].buyer_name : 'Valued Customer',
-                            sale_status: 'Sold'
-                        });
-                    }
-                }
+                updated += 1;
             } else {
                 const car = await Car.create({
                     ...carData,
@@ -856,17 +842,7 @@ const seedPublic = async () => {
                 });
                 created += 1;
 
-                // Seed SaleHistory if sold
-                if (carData.availability_status === 'Sold') {
-                    await SaleHistory.create({
-                        car_id: car._id,
-                        sale_date: new Date(),
-                        price: carData.price,
-                        seller_name: 'TrailblazeAuto Dealership',
-                        buyer_name: carData.past_owners && carData.past_owners.length > 0 ? carData.past_owners[0].buyer_name : 'Valued Customer',
-                        sale_status: 'Sold'
-                    });
-                }
+                created += 1;
             }
         }
 

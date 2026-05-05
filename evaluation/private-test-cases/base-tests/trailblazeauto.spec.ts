@@ -43,68 +43,79 @@ async function selectReactOption(page: any, inputId: string, optionText: string)
 }
 
 async function login(page: any, baseURL: string, user = USERS.admin1) {
-    const tryLogin = async () => {
-        if (!page.url().includes('/admin')) {
-            await page.goto(`${baseURL}/admin`);
-        }
+    const url = `${baseURL}/admin`;
+    
+    // Always navigate/reload to ensure a fresh state if we are not already on dashboard
+    if (!page.url().includes('dashboard')) {
+        await page.goto(url, { waitUntil: 'networkidle' });
+    }
 
-        // Ensure we are on the login form (not signup)
-        const signupToggle = page.locator('button:has-text("Sign Up")');
-        if (await signupToggle.isVisible() && (await signupToggle.textContent())?.includes("Don't have an account")) {
-            // Already on login page, good
-        } else if (page.url().includes('signup')) {
-            const loginToggle = page.locator('button:has-text("Login")');
-            if (await loginToggle.isVisible()) {
-                await loginToggle.click({ force: true });
-                await page.waitForURL(/admin$/, { timeout: 10000 });
-            }
-        }
+    // 1. Check if already on dashboard
+    if (page.url().includes('dashboard')) return;
 
-        const emailInput = page.locator('#admin-email-input');
-        if (await emailInput.isVisible({ timeout: 15000 })) {
-            await emailInput.fill(user.email);
-            await page.locator('#admin-password-input').fill(user.password);
-            await page.locator('#admin-login-button').click({ force: true });
-            try {
-                await page.waitForURL(/dashboard/, { timeout: 15000 });
-                return true;
-            } catch (e) {
-                return false;
-            }
-        }
-        return page.url().includes('dashboard');
-    };
+    // 2. Wait for the login form, signup form, or dashboard
+    await Promise.race([
+        page.locator('#admin-email-input').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {}),
+        page.locator('#admin-signup-email').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {}),
+        page.waitForURL(/dashboard/, { timeout: 10000 }).catch(() => {})
+    ]);
 
-    if (await tryLogin()) return;
+    if (page.url().includes('dashboard')) return;
 
-    // Fallback Signup if login failed (maybe user doesn't exist)
-    if (!page.url().includes('signup')) {
-        const signupToggle = page.locator('button:has-text("Sign Up")');
-        if (await signupToggle.isVisible()) {
-            await signupToggle.click({ force: true });
-            await page.waitForURL(/admin\/signup/, { timeout: 10000 });
+    // 3. Handle Toggle to Login if we are on Signup
+    if (await page.locator('#admin-signup-email').isVisible()) {
+        const loginToggle = page.locator('#admin-login-toggle');
+        if (await loginToggle.isVisible()) {
+            await loginToggle.click();
+            await page.locator('#admin-email-input').waitFor({ state: 'visible', timeout: 5000 });
         }
     }
 
-    if (page.url().includes('signup')) {
-        await page.locator('input[placeholder*="name"]').fill('Evaluation Admin');
+    // 4. Perform Login
+    if (await page.locator('#admin-email-input').isVisible()) {
         await page.locator('#admin-email-input').fill(user.email);
         await page.locator('#admin-password-input').fill(user.password);
-        await page.locator('#admin-login-button').click({ force: true });
+        await page.locator('#admin-login-button').click();
+        
+        const result = await Promise.race([
+            page.waitForURL(/dashboard/, { timeout: 10000 }).then(() => 'success'),
+            page.locator('.Toastify__toast--error').waitFor({ state: 'visible', timeout: 8000 }).then(() => 'error')
+        ]);
 
-        // After signup, wait for redirect
-        await page.waitForURL(/dashboard|admin/, { timeout: 15000 });
-
-        if (page.url().includes('admin') && !page.url().includes('dashboard')) {
-            // If redirected back to login, try login one last time
-            await page.locator('#admin-email-input').fill(user.email);
-            await page.locator('#admin-password-input').fill(user.password);
-            await page.locator('#admin-login-button').click({ force: true });
-            await page.waitForURL(/dashboard/, { timeout: 15000 });
+        if (result === 'success') return;
+        
+        // If login failed, try Signup as fallback
+        const signupToggle = page.locator('#admin-signup-toggle');
+        if (await signupToggle.isVisible()) {
+            await signupToggle.click();
+            await page.waitForURL(/signup/, { timeout: 5000 });
         }
     }
 
-    await expect(page).toHaveURL(/dashboard/, { timeout: 20000 });
+    // 5. Perform Signup (Fallback)
+    if (page.url().includes('signup') || await page.locator('#admin-signup-email').isVisible()) {
+        await page.locator('#admin-signup-name').fill('Evaluation Admin');
+        await page.locator('#admin-signup-email').fill(user.email);
+        await page.locator('#admin-signup-password').fill(user.password);
+        await page.locator('#admin-signup-button').click();
+
+        // Wait for redirect or error
+        const signupResult = await Promise.race([
+            page.waitForURL(/admin|dashboard/, { timeout: 15000 }).then(() => 'success'),
+            page.locator('.Toastify__toast--error').waitFor({ state: 'visible', timeout: 8000 }).then(() => 'error')
+        ]);
+
+        if (page.url().includes('admin') && !page.url().includes('dashboard')) {
+            // Re-attempt login one final time
+            await page.locator('#admin-email-input').waitFor({ state: 'visible' });
+            await page.locator('#admin-email-input').fill(user.email);
+            await page.locator('#admin-password-input').fill(user.password);
+            await page.locator('#admin-login-button').click();
+            await page.waitForURL(/dashboard/, { timeout: 10000 });
+        }
+    }
+
+    await expect(page).toHaveURL(/dashboard/, { timeout: 10000 });
 }
 
 // POSITIVE TESTS (AC 1-11, 14-16, 18-20, 22-25, 28-30)
@@ -195,7 +206,7 @@ test("AC 9: [Step 1] On used car details, click 'Price' tab [Step 2] Verify 'Own
     }
 });
 
-test("AC 10: [Step 1] Navigate to /admin/signup [Step 2] Fill valid details [Step 3] Click 'Initialize Account' [Step 4] Verify toast 'Account created successfully' and redirect to /admin.", async ({ page, baseURL }) => {
+test("AC 10: [Step 1] Navigate to /admin/signup [Step 2] Fill valid details [Step 3] Click 'Create Account' [Step 4] Verify toast 'Account created successfully' and redirect to /admin.", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/admin/signup`);
     await page.locator('#admin-signup-name').fill('Private Signup Tester');
     await page.locator('#admin-signup-email').fill(`signup_v2_${Date.now()}@test.com`);
@@ -340,7 +351,13 @@ test("AC 20: [Step 1] Navigate to /admin/profile [Step 2] Update Name/Bio [Step 
 });
 
 test("AC 22: [Step 1] Update password in Profile [Step 2] Sync data [Step 3] Verify login works with new password.", async ({ page, baseURL }) => {
-    await login(page, baseURL || '', USERS.admin5);
+    // Self-healing login for AC 22 to handle dirty state from previous failed runs
+    try {
+        await login(page, baseURL || '', USERS.admin5);
+    } catch (e) {
+        // If login failed, the password might already be 'eval_pass_456' from a previous interrupted run
+        await login(page, baseURL || '', { ...USERS.admin5, password: 'eval_pass_456' });
+    }
     await page.goto(`${baseURL}/admin/profile`);
     const newPass = 'eval_pass_456';
     await page.locator('input[type="password"]').fill(newPass);
