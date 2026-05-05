@@ -61,6 +61,12 @@ const AdminDashboard = () => {
         }
     };
 
+    const getDisplayPrice = (car) => {
+        const discount = parseInt(car?.discount_percentage) || 0;
+        const hasDiscount = car && discount > 0 && discount < 100;
+        return hasDiscount ? Math.round(car.price - (car.price * discount / 100)) : car?.price;
+    };
+
     return (
         <div className="min-h-full bg-slate-50 py-10 px-4 md:px-6">
             <div className="max-w-7xl mx-auto space-y-8">
@@ -129,7 +135,7 @@ const AdminDashboard = () => {
                                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{car.fuel_type} • {car.transmission}</div>
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-600 font-bold text-sm">{car.model_year}</td>
-                                                        <td className="px-6 py-5 text-slate-900 font-black text-sm">₹{car.price?.toLocaleString()}</td>
+                                                        <td className="px-6 py-5 text-slate-900 font-black text-sm">₹{getDisplayPrice(car)?.toLocaleString()}</td>
                                                         <td className="px-6 py-5">
                                                             <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'}>
                                                                 {car.availability_status}
@@ -180,7 +186,7 @@ const AdminDashboard = () => {
                                                             <div className="font-black text-slate-900 text-sm">
                                                                 {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
                                                             </div>
-                                                            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">₹{booking.car?.price?.toLocaleString()}</div>
+                                                            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">₹{getDisplayPrice(booking.car)?.toLocaleString()}</div>
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-500 text-[11px] font-black uppercase tracking-tighter">
                                                             {new Date(booking.createdAt).toLocaleDateString()}
