@@ -140,7 +140,7 @@ test("AC 3: [Step 1] Inspect car cards on /browse [Step 2] Verify Brand, Name, a
     await expect(firstCard).toBeVisible();
     await expect(page.locator(`#car-card-${car._id}-brand`)).toContainText(new RegExp(car.brand, 'i'));
     await expect(page.locator(`#car-card-${car._id}-name`)).toContainText(new RegExp(car.name, 'i'));
-    await expect(page.locator(`#car-card-${car._id}-price`)).toContainText(/₹/);
+    await expect(page.locator(`#car-card-${car._id}-price`)).toContainText(/\$/);
 });
 
 test("AC 4: [Step 1] Click any vehicle card [Step 2] Verify navigation to /car/[id] [Step 3] Verify dynamic data loads.", async ({ page, baseURL }) => {
@@ -254,8 +254,12 @@ test("AC 15: [Step 1] Open 'Add Car' [Step 2] Fill New vehicle fields [Step 3] C
     await selectReactOption(page, 'brand-select', 'Hyundai');
     await selectReactOption(page, 'model-select', 'Ioniq 5');
     await selectReactOption(page, 'year-select', '2024');
-    await page.locator('label:has-text("Exterior Color") + select').selectOption('Midnight Blue');
-    await page.locator('label:has-text("Interior Color") + select').selectOption('Grey Leather');
+    
+    // Set color count to 2
+    await page.locator('label:has-text("How many colors available?") + input').fill('2');
+    
+    await page.locator('label:has-text("Color Option 1") + select').selectOption('Midnight Blue');
+    await page.locator('label:has-text("Color Option 2") + select').selectOption('Grey Leather');
     await page.getByRole('button', { name: /Next Step/i }).click();
 
     // Step 2 - Specifications
@@ -287,8 +291,7 @@ test("AC 16: [Step 1] Open 'Add Car' [Step 2] Select 'Used' [Step 3] Fill owners
     await selectReactOption(page, 'brand-select', 'Toyota');
     await selectReactOption(page, 'model-select', 'Fortuner');
     await selectReactOption(page, 'year-select', '2021');
-    await page.locator('label:has-text("Exterior Color") + select').selectOption('White');
-    await page.locator('label:has-text("Interior Color") + select').selectOption('Beige');
+    await page.locator('label:has-text("Color Option 1") + select').selectOption('White');
     await page.getByRole('button', { name: /Next Step/i }).click();
 
     // Step 2 - Specifications
@@ -304,7 +307,7 @@ test("AC 16: [Step 1] Open 'Add Car' [Step 2] Select 'Used' [Step 3] Fill owners
     await page.locator('#car-price-input').fill('3200000');
     await page.locator('#registration-city-input').fill('Gurgaon');
     await page.locator('label:has-text("Sale Date") + input').first().fill('2021-10-10');
-    await page.locator('label:has-text("Sale Price (₹)") + input').first().fill('4200000');
+    await page.locator('label:has-text("Sale Price ($)") + input').first().fill('4200000');
     await page.locator('label:has-text("Seller Name") + input').first().fill('Toyota Trust');
     await page.locator('label:has-text("Buyer Name") + input').first().fill('Suresh Raina');
     await page.getByRole('button', { name: /Next Step/i }).click();
@@ -331,7 +334,7 @@ test("AC 18: [Step 1] Open 'Edit Car' [Step 2] Modify price [Step 3] Verify toas
     await expect(page.getByText(/Vehicle updated successfully!/i)).toBeVisible();
 
     await page.goto(`${baseURL}/car/${car._id}`);
-    await expect(page.getByText(/₹9,999,999/)).toBeVisible();
+    await expect(page.getByText(/\$9,999,999/)).toBeVisible();
 });
 
 test("AC 19: [Step 1] In Admin Dashboard, click 'Sign Out' [Step 2] Verify toast 'Logged out successfully' [Step 3] Verify redirect to home.", async ({ page, baseURL }) => {

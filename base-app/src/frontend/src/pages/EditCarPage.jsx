@@ -398,9 +398,10 @@ const EditCarPage = () => {
                                         <Input label="Total Distance Covered" value={formData.total_distance_covered} onChange={(e) => setFormData({ ...formData, total_distance_covered: e.target.value })} placeholder="e.g. 45,000 km" />
                                     )}
 
-                                    {formData.condition === 'New' && (
-                                        <>
-                                            <div className="space-y-2">
+                                    {/* Color Selection Block */}
+                                    <div className="md:col-span-2 lg:col-span-3 space-y-6">
+                                        {formData.condition === 'New' && (
+                                            <div className="space-y-2 max-w-xs">
                                                 <label className="block text-sm font-bold text-slate-700">Available Colors Count</label>
                                                 <input
                                                     type="number"
@@ -411,28 +412,28 @@ const EditCarPage = () => {
                                                     required
                                                 />
                                             </div>
+                                        )}
 
-                                            <div className="md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-6">
-                                                {formData.available_colors.map((color, idx) => (
-                                                    <div key={idx} className="space-y-2">
-                                                        <label className="block text-sm font-bold text-slate-700">
-                                                            Color Option {idx + 1}
-                                                            {idx === 0 && <span className="text-[10px] text-blue-600 ml-2">(Primary)</span>}
-                                                        </label>
-                                                        <select
-                                                            className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
-                                                            value={color}
-                                                            onChange={(e) => handleColorChange(idx, e.target.value)}
-                                                            required
-                                                        >
-                                                            <option value="">Select Color</option>
-                                                            {CAR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                                                        </select>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </>
-                                    )}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-6">
+                                            {formData.available_colors.map((color, idx) => (
+                                                <div key={idx} className="space-y-2">
+                                                    <label className="block text-sm font-bold text-slate-700">
+                                                        Color Option {idx + 1}
+                                                        {idx === 0 && <span className="text-[10px] text-blue-600 ml-2">(Primary)</span>}
+                                                    </label>
+                                                    <select
+                                                        className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                                        value={color}
+                                                        onChange={(e) => handleColorChange(idx, e.target.value)}
+                                                        required
+                                                    >
+                                                        <option value="">Select Color</option>
+                                                        {CAR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                                                    </select>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
 
                                     {formData.condition === 'Used' && (
                                         <>

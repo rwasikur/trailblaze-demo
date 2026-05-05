@@ -40,6 +40,13 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
         user_contact: '',
         selected_color: car.available_colors?.[0] || ''
     });
+
+    React.useEffect(() => {
+        if (car.available_colors?.[0]) {
+            setFormData(prev => ({ ...prev, selected_color: car.available_colors[0] }));
+        }
+    }, [car]);
+
     const [loading, setLoading] = useState(false);
 
     if (!isOpen) return null;
@@ -62,7 +69,7 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
             return toast.error('Please enter a valid phone number (min 10 digits).');
         }
 
-        if (!formData.selected_color) {
+        if (!formData.selected_color && car.available_colors && car.available_colors.length > 0) {
             return toast.error('Please select a color.');
         }
 

@@ -415,9 +415,10 @@ const AddCarPage = () => {
                                                 />
                                             </div>
 
-                                            {formData.condition === 'New' && (
-                                                <>
-                                                    <div className="space-y-2 md:col-span-1">
+                                            {/* Color Selection Block */}
+                                            <div className="md:col-span-2 space-y-6">
+                                                {formData.condition === 'New' && (
+                                                    <div className="space-y-2 max-w-xs">
                                                         <label className="block text-sm font-bold text-slate-700">How many colors available?<span className="text-red-500 ml-1">*</span></label>
                                                         <input
                                                             type="number"
@@ -428,28 +429,28 @@ const AddCarPage = () => {
                                                             required
                                                         />
                                                     </div>
+                                                )}
 
-                                                    <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        {formData.available_colors.map((color, idx) => (
-                                                            <div key={idx} className="space-y-2">
-                                                                <label className="block text-sm font-bold text-slate-700">
-                                                                    Color Option {idx + 1}
-                                                                    {idx === 0 && <span className="text-[10px] text-blue-600 ml-2">(Primary Exterior)</span>}
-                                                                </label>
-                                                                <select
-                                                                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
-                                                                    value={color}
-                                                                    onChange={(e) => handleColorChange(idx, e.target.value)}
-                                                                    required
-                                                                >
-                                                                    <option value="">Select Color</option>
-                                                                    {CAR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                                                                </select>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </>
-                                            )}
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {formData.available_colors.map((color, idx) => (
+                                                        <div key={idx} className="space-y-2">
+                                                            <label className="block text-sm font-bold text-slate-700">
+                                                                Color Option {idx + 1}
+                                                                {idx === 0 && <span className="text-[10px] text-blue-600 ml-2">(Primary Exterior)</span>}
+                                                            </label>
+                                                            <select
+                                                                className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                                                value={color}
+                                                                onChange={(e) => handleColorChange(idx, e.target.value)}
+                                                                required
+                                                            >
+                                                                <option value="">Select Color</option>
+                                                                {CAR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 )}

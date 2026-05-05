@@ -10,7 +10,7 @@ const public_cars = [
         brand: "Maruti Suzuki",
         model: "Dzire",
         model_year: 2018,
-        price: 450000,
+        price: 4699,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -34,14 +34,14 @@ const public_cars = [
             "https://i.pinimg.com/1200x/b7/f7/51/b7f7518ecd19cf75e6dc0def9060e747.jpg",
             "https://i.pinimg.com/1200x/f8/d8/4a/f8d84af03ab51178865e65365406e9ef.jpg"
         ],
-        availability_status: "Sold",
+        availability_status: "Available",
         discount_percentage: 5,
         views: 854,
         range: "160",
         past_owners: [
             {
                 sale_date: "2018-05-15",
-                sale_price: 750000,
+                sale_price: 7850,
                 seller_name: "Maruti Suzuki Arena",
                 buyer_name: "Rajesh Kumar"
             }
@@ -52,7 +52,7 @@ const public_cars = [
         brand: "Hyundai",
         model: "i20",
         model_year: 2019,
-        price: 550000,
+        price: 5750,
         currency: "USD",
         condition: "Used",
         number_of_owners: 2,
@@ -84,13 +84,13 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2019-02-10",
-                sale_price: 825000,
+                sale_price: 8650,
                 seller_name: "Hyundai Motor Plaza",
                 buyer_name: "Amit Shah"
             },
             {
                 sale_date: "2021-11-20",
-                sale_price: 680000,
+                sale_price: 7150,
                 seller_name: "Amit Shah",
                 buyer_name: "Priya Sharma"
             }
@@ -101,7 +101,7 @@ const public_cars = [
         brand: "Tata",
         model: "Nexon",
         model_year: 2020,
-        price: 950000,
+        price: 9950,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -132,7 +132,7 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2020-08-12",
-                sale_price: 1250000,
+                sale_price: 13099,
                 seller_name: "Tata Motors Dealer",
                 buyer_name: "Suresh Menon"
             }
@@ -143,7 +143,7 @@ const public_cars = [
         brand: "Mahindra",
         model: "Thar",
         model_year: 2021,
-        price: 1050000,
+        price: 10999,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -174,7 +174,7 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2021-03-22",
-                sale_price: 1250000,
+                sale_price: 13099,
                 seller_name: "Mahindra Showroom",
                 buyer_name: "Karan Johar"
             }
@@ -185,7 +185,7 @@ const public_cars = [
         brand: "Honda",
         model: "City",
         model_year: 2017,
-        price: 720000,
+        price: 7550,
         currency: "USD",
         condition: "Used",
         number_of_owners: 2,
@@ -216,13 +216,13 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2017-06-14",
-                sale_price: 1350000,
+                sale_price: 14150,
                 seller_name: "Deccan Honda",
                 buyer_name: "Vikram Singh"
             },
             {
                 sale_date: "2020-09-05",
-                sale_price: 950000,
+                sale_price: 9950,
                 seller_name: "Vikram Singh",
                 buyer_name: "Anjali Gupta"
             }
@@ -233,7 +233,7 @@ const public_cars = [
         brand: "Toyota",
         model: "Innova Crysta",
         model_year: 2018,
-        price: 1850000,
+        price: 19399,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -263,7 +263,7 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2018-11-30",
-                sale_price: 2300000,
+                sale_price: 24150,
                 seller_name: "Toyota Lanson",
                 buyer_name: "Ramesh Babu"
             }
@@ -274,7 +274,7 @@ const public_cars = [
         brand: "Kia",
         model: "Seltos",
         model_year: 2020,
-        price: 1250000,
+        price: 13099,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -305,7 +305,7 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2020-01-15",
-                sale_price: 1400000,
+                sale_price: 14699,
                 seller_name: "Kia Motors India",
                 buyer_name: "Neha Sharma"
             }
@@ -316,7 +316,7 @@ const public_cars = [
         brand: "Ford",
         model: "EcoSport",
         model_year: 2019,
-        price: 580000,
+        price: 6099,
         currency: "USD",
         condition: "Used",
         number_of_owners: 2,
@@ -347,13 +347,13 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2019-07-20",
-                sale_price: 950000,
+                sale_price: 9950,
                 seller_name: "Ganges Ford",
                 buyer_name: "Arun Bose"
             },
             {
                 sale_date: "2022-04-10",
-                sale_price: 750000,
+                sale_price: 7850,
                 seller_name: "Arun Bose",
                 buyer_name: "Meera Das"
             }
@@ -364,7 +364,7 @@ const public_cars = [
         brand: "Volkswagen",
         model: "Polo",
         model_year: 2016,
-        price: 920000,
+        price: 9650,
         currency: "USD",
         condition: "Used",
         number_of_owners: 3,
@@ -395,19 +395,19 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2016-04-12",
-                sale_price: 2850000,
+                sale_price: 29899,
                 seller_name: "VW Noida",
                 buyer_name: "Ravi Teja"
             },
             {
                 sale_date: "2019-08-25",
-                sale_price: 2050000,
+                sale_price: 21499,
                 seller_name: "Ravi Teja",
                 buyer_name: "Sanjay Dutt"
             },
             {
                 sale_date: "2022-12-05",
-                sale_price: 1550000,
+                sale_price: 16250,
                 seller_name: "Sanjay Dutt",
                 buyer_name: "Kabir Singh"
             }
@@ -418,7 +418,7 @@ const public_cars = [
         brand: "Renault",
         model: "Duster",
         model_year: 2018,
-        price: 600000,
+        price: 6299,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -448,7 +448,7 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2018-09-18",
-                sale_price: 1050000,
+                sale_price: 10999,
                 seller_name: "Renault Trivandrum",
                 buyer_name: "John Mathew"
             }
@@ -459,7 +459,7 @@ const public_cars = [
         brand: "Tata",
         model: "Safari",
         model_year: 2024,
-        price: 2549000,
+        price: 26750,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -489,7 +489,7 @@ const public_cars = [
         brand: "Mahindra",
         model: "XUV700",
         model_year: 2024,
-        price: 2499000,
+        price: 26199,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -518,7 +518,7 @@ const public_cars = [
         brand: "Hyundai",
         model: "Creta",
         model_year: 2024,
-        price: 2015000,
+        price: 21150,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -547,7 +547,7 @@ const public_cars = [
         brand: "Maruti Suzuki",
         model: "Grand Vitara",
         model_year: 2024,
-        price: 1999000,
+        price: 20999,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -577,7 +577,7 @@ const public_cars = [
         brand: "Kia",
         model: "Sonet",
         model_year: 2024,
-        price: 1499000,
+        price: 15750,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -606,7 +606,7 @@ const public_cars = [
         brand: "Toyota",
         model: "Fortuner",
         model_year: 2024,
-        price: 4366000,
+        price: 45799,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -636,7 +636,7 @@ const public_cars = [
         brand: "MG",
         model: "Hector",
         model_year: 2024,
-        price: 2199000,
+        price: 23099,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -666,7 +666,7 @@ const public_cars = [
         brand: "Skoda",
         model: "Slavia",
         model_year: 2024,
-        price: 1899000,
+        price: 19950,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -695,7 +695,7 @@ const public_cars = [
         brand: "Honda",
         model: "Elevate",
         model_year: 2024,
-        price: 1630000,
+        price: 17099,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -725,7 +725,7 @@ const public_cars = [
         brand: "Tata",
         model: "Punch",
         model_year: 2024,
-        price: 899000,
+        price: 9450,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,

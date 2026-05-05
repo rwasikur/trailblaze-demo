@@ -10,7 +10,7 @@ const private_cars = [
         brand: "Maruti Suzuki",
         model: "Swift",
         model_year: 2021,
-        price: 450000,
+        price: 4699,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -40,7 +40,7 @@ const private_cars = [
         past_owners: [
             {
                 sale_date: "2021-01-10",
-                sale_price: 630000,
+                sale_price: 6599,
                 seller_name: "Maruti Arena",
                 buyer_name: "Rahul Verma"
             }
@@ -51,7 +51,7 @@ const private_cars = [
         brand: "Maruti Suzuki",
         model: "Baleno",
         model_year: 2022,
-        price: 750000,
+        price: 7850,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -82,7 +82,7 @@ const private_cars = [
         past_owners: [
             {
                 sale_date: "2022-04-15",
-                sale_price: 980000,
+                sale_price: 10299,
                 seller_name: "Nexa Showroom",
                 buyer_name: "Sunil Narang"
             }
@@ -93,7 +93,7 @@ const private_cars = [
         brand: "Hyundai",
         model: "Venue",
         model_year: 2020,
-        price: 850000,
+        price: 8899,
         currency: "USD",
         condition: "Used",
         number_of_owners: 2,
@@ -124,13 +124,13 @@ const private_cars = [
         past_owners: [
             {
                 sale_date: "2020-02-20",
-                sale_price: 1050000,
+                sale_price: 10999,
                 seller_name: "Hyundai Dealership",
                 buyer_name: "Amit Desai"
             },
             {
                 sale_date: "2022-10-10",
-                sale_price: 880000,
+                sale_price: 9250,
                 seller_name: "Amit Desai",
                 buyer_name: "Rohan Kapoor"
             }
@@ -141,7 +141,7 @@ const private_cars = [
         brand: "Tata",
         model: "Altroz",
         model_year: 2021,
-        price: 680000,
+        price: 7150,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -172,7 +172,7 @@ const private_cars = [
         past_owners: [
             {
                 sale_date: "2021-08-05",
-                sale_price: 920000,
+                sale_price: 9650,
                 seller_name: "Tata Motors",
                 buyer_name: "Karthik R"
             }
@@ -183,7 +183,7 @@ const private_cars = [
         brand: "Tata",
         model: "Harrier",
         model_year: 2022,
-        price: 1650000,
+        price: 17299,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -213,7 +213,7 @@ const private_cars = [
         past_owners: [
             {
                 sale_date: "2022-06-12",
-                sale_price: 2200000,
+                sale_price: 23099,
                 seller_name: "Tata Dealership",
                 buyer_name: "Srinivas Rao"
             }
@@ -224,7 +224,7 @@ const private_cars = [
         brand: "Mahindra",
         model: "Scorpio",
         model_year: 2023,
-        price: 1950000,
+        price: 20450,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -255,7 +255,7 @@ const private_cars = [
         past_owners: [
             {
                 sale_date: "2023-01-25",
-                sale_price: 2350000,
+                sale_price: 24650,
                 seller_name: "Mahindra Showroom",
                 buyer_name: "Anil Sharma"
             }
@@ -266,7 +266,7 @@ const private_cars = [
         brand: "Kia",
         model: "Carens",
         model_year: 2022,
-        price: 1450000,
+        price: 15199,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -296,7 +296,7 @@ const private_cars = [
         past_owners: [
             {
                 sale_date: "2022-09-18",
-                sale_price: 1850000,
+                sale_price: 19399,
                 seller_name: "Kia Dealership",
                 buyer_name: "Vikram Patel"
             }
@@ -307,7 +307,7 @@ const private_cars = [
         brand: "Renault",
         model: "Kiger",
         model_year: 2021,
-        price: 650000,
+        price: 6799,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -337,7 +337,7 @@ const private_cars = [
         past_owners: [
             {
                 sale_date: "2021-11-30",
-                sale_price: 850000,
+                sale_price: 8899,
                 seller_name: "Renault Dealer",
                 buyer_name: "Joseph Matthew"
             }
@@ -348,7 +348,7 @@ const private_cars = [
         brand: "Nissan",
         model: "Magnite",
         model_year: 2022,
-        price: 720000,
+        price: 7550,
         currency: "USD",
         condition: "Used",
         number_of_owners: 1,
@@ -376,7 +376,7 @@ const private_cars = [
         past_owners: [
             {
                 sale_date: "2022-03-05",
-                sale_price: 900000,
+                sale_price: 9450,
                 seller_name: "Nissan Showroom",
                 buyer_name: "Rajendra Singh"
             }
@@ -387,7 +387,7 @@ const private_cars = [
         brand: "Honda",
         model: "Amaze",
         model_year: 2020,
-        price: 620000,
+        price: 6499,
         currency: "USD",
         condition: "Used",
         number_of_owners: 2,
@@ -417,13 +417,13 @@ const private_cars = [
         past_owners: [
             {
                 sale_date: "2020-07-22",
-                sale_price: 850000,
+                sale_price: 8899,
                 seller_name: "Honda Dealer",
                 buyer_name: "Suman Das"
             },
             {
                 sale_date: "2023-02-14",
-                sale_price: 680000,
+                sale_price: 7150,
                 seller_name: "Suman Das",
                 buyer_name: "Ravi Shankar"
             }
@@ -434,7 +434,7 @@ const private_cars = [
         brand: "Skoda",
         model: "Kushaq",
         model_year: 2024,
-        price: 1850000,
+        price: 19399,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -465,7 +465,7 @@ const private_cars = [
         brand: "Volkswagen",
         model: "Taigun",
         model_year: 2024,
-        price: 1900000,
+        price: 19950,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -495,7 +495,7 @@ const private_cars = [
         brand: "Maruti Suzuki",
         model: "Fronx",
         model_year: 2024,
-        price: 1100000,
+        price: 11550,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -525,7 +525,7 @@ const private_cars = [
         brand: "Hyundai",
         model: "Verna",
         model_year: 2024,
-        price: 1750000,
+        price: 18350,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -555,7 +555,7 @@ const private_cars = [
         brand: "Hyundai",
         model: "Aura",
         model_year: 2024,
-        price: 900000,
+        price: 9450,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -586,7 +586,7 @@ const private_cars = [
         brand: "Tata",
         model: "Tiago",
         model_year: 2024,
-        price: 750000,
+        price: 7850,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -616,7 +616,7 @@ const private_cars = [
         brand: "Mahindra",
         model: "Bolero",
         model_year: 2024,
-        price: 1250000,
+        price: 13099,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -646,7 +646,7 @@ const private_cars = [
         brand: "Renault",
         model: "Triber",
         model_year: 2024,
-        price: 880000,
+        price: 9250,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -676,7 +676,7 @@ const private_cars = [
         brand: "Toyota",
         model: "Glanza",
         model_year: 2024,
-        price: 950000,
+        price: 9950,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
@@ -706,7 +706,7 @@ const private_cars = [
         brand: "Toyota",
         model: "Urban Cruiser",
         model_year: 2024,
-        price: 2000000,
+        price: 20999,
         currency: "USD",
         condition: "New",
         number_of_owners: 0,
