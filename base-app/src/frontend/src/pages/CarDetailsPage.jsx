@@ -97,6 +97,44 @@ const CarDetailsPage = () => {
     const [fullScreenImage, setFullScreenImage] = useState(null);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+    const [selectedCars, setSelectedCars] = useState(() => {
+        const saved = localStorage.getItem('trailblaze_compare_list');
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    useEffect(() => {
+        localStorage.setItem('trailblaze_compare_list', JSON.stringify(selectedCars));
+    }, [selectedCars]);
+
+    const toggleCompare = () => {
+        const isSelected = selectedCars.includes(id);
+
+        if (!isSelected && selectedCars.length >= 4) {
+            import('react-toastify').then(({ toast }) => {
+                toast.warning('Maximum 4 vehicles can be compared at once', {
+                    position: "bottom-right",
+                    theme: "dark"
+                });
+            });
+            return;
+        }
+
+        if (!isSelected) {
+            import('react-toastify').then(({ toast }) => {
+                toast.success(`${car.name} added to comparison`, {
+                    position: "bottom-right",
+                    autoClose: 2000,
+                    theme: "dark"
+                });
+            });
+        }
+
+        setSelectedCars(prev =>
+            prev.includes(id)
+                ? prev.filter(cid => cid !== id)
+                : [...prev, id]
+        );
+    };
 
     useEffect(() => {
         const fetchCar = async () => {
@@ -291,6 +329,15 @@ const CarDetailsPage = () => {
                                 <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full border ${car.condition === 'New' ? 'bg-blue-600 text-white border-blue-600' : 'bg-amber-100 text-amber-800 border-amber-200'}`}>
                                     {car.condition === 'New' ? 'Brand New' : 'Certified'}
                                 </span>
+                                <button
+                                    id="detail-compare-btn"
+                                    onClick={toggleCompare}
+                                    className={`text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full border transition-all ${selectedCars.includes(id)
+                                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/20'
+                                        : 'bg-white text-slate-600 border-slate-200 hover:border-blue-600 hover:text-blue-600'}`}
+                                >
+                                    {selectedCars.includes(id) ? '✓ In Comparison' : '+ Compare'}
+                                </button>
                             </div>
                         </div>
 
