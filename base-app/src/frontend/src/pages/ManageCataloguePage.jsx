@@ -101,7 +101,7 @@ const ManageCataloguePage = () => {
                                                 <td className="px-6 py-4 text-slate-400 font-mono text-xs">...{car._id.substring(car._id.length - 6)}</td>
                                                 <td className="px-6 py-4 font-bold text-slate-900">{car.name}</td>
                                                 <td className="px-6 py-4 text-slate-600 font-medium">{car.brand}</td>
-                                                <td className="px-6 py-4 text-slate-600 font-medium">₹{car.price}</td>
+                                                <td className="px-6 py-4 text-slate-600 font-medium">${car.price}</td>
                                                 <td className="px-6 py-4">
                                                     <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'}>
                                                         {car.availability_status}
