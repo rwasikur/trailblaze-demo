@@ -18,8 +18,10 @@ const Car = sequelize.define('Car', {
     body_type: { type: DataTypes.STRING },
     mileage: { type: DataTypes.STRING },
     total_distance_covered: { type: DataTypes.STRING },
-    exterior_color: { type: DataTypes.STRING },
-    interior_color: { type: DataTypes.STRING },
+    available_colors: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: []
+    },
     number_of_owners: { type: DataTypes.INTEGER },
     registration_city: { type: DataTypes.STRING },
     insurance_validity: { type: DataTypes.STRING },
