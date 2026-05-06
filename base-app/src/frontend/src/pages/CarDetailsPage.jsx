@@ -164,11 +164,11 @@ const CarDetailsPage = () => {
                             <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Original Ex-Showroom</span>
-                                    <span className="text-lg font-bold text-slate-400 line-through">₹{originalPrice.toLocaleString()}</span>
+                                    <span className="text-lg font-bold text-slate-400 line-through">${originalPrice.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Owner Depreciation ({car.number_of_owners} Owners)</span>
-                                    <span className="text-red-500 text-sm font-bold">- ₹{depreciationAmount.toLocaleString()}</span>
+                                    <span className="text-red-500 text-sm font-bold">- ${depreciationAmount.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
@@ -177,16 +177,16 @@ const CarDetailsPage = () => {
                                 {hasDiscount && (
                                     <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                         <span className="text-slate-500 text-sm font-bold">Special Offer Discount ({discount}%)</span>
-                                        <span className="text-red-500 text-sm font-bold">- ₹{(car.price - discountedPrice).toLocaleString()}</span>
+                                        <span className="text-red-500 text-sm font-bold">- ${(car.price - discountedPrice).toLocaleString()}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Current Valuation</span>
-                                    <span className="text-4xl font-black text-blue-600">₹{discountedPrice?.toLocaleString()}</span>
+                                    <span className="text-4xl font-black text-blue-600">${discountedPrice?.toLocaleString()}</span>
                                 </div>
                                 {hasDiscount && (
                                     <div className="text-right">
-                                        <span className="text-xs font-bold text-slate-400 line-through">₹{car.price?.toLocaleString()}</span>
+                                        <span className="text-xs font-bold text-slate-400 line-through">${car.price?.toLocaleString()}</span>
                                     </div>
                                 )}
                             </div>
@@ -199,12 +199,12 @@ const CarDetailsPage = () => {
                             <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Ex-Showroom Price</span>
-                                    <span className={`text-2xl font-black ${hasDiscount ? 'text-slate-400 line-through' : 'text-slate-900'}`}>₹{car.price?.toLocaleString()}</span>
+                                    <span className={`text-2xl font-black ${hasDiscount ? 'text-slate-400 line-through' : 'text-slate-900'}`}>${car.price?.toLocaleString()}</span>
                                 </div>
                                 {hasDiscount && (
                                     <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                         <span className="text-slate-500 text-sm font-bold">Festival Discount ({discount}%)</span>
-                                        <span className="text-2xl font-black text-red-600">- ₹{(car.price - discountedPrice).toLocaleString()}</span>
+                                        <span className="text-2xl font-black text-red-600">- ${(car.price - discountedPrice).toLocaleString()}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
@@ -213,7 +213,7 @@ const CarDetailsPage = () => {
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Valuation</span>
-                                    <span className="text-4xl font-black text-blue-600">₹{discountedPrice?.toLocaleString()}</span>
+                                    <span className="text-4xl font-black text-blue-600">${discountedPrice?.toLocaleString()}</span>
                                 </div>
                             </div>
                         </div>
@@ -260,25 +260,22 @@ const CarDetailsPage = () => {
                             </div>
                         </div>
 
-                        <div className="pt-2">
-                            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4">Aesthetic Profiles</h3>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div className="w-10 h-10 rounded-lg shadow-inner border-2 border-white" style={{ backgroundColor: getColorCode(car.exterior_color) }}></div>
-                                    <div>
-                                        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Exterior</div>
-                                        <div className="text-sm font-black text-slate-900 truncate max-w-[100px]">{car.exterior_color || 'Standard'}</div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div className="w-10 h-10 rounded-lg shadow-inner border-2 border-white" style={{ backgroundColor: getColorCode(car.interior_color) }}></div>
-                                    <div>
-                                        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Interior</div>
-                                        <div className="text-sm font-black text-slate-900 truncate max-w-[100px]">{car.interior_color || 'Standard'}</div>
-                                    </div>
+                        {car.condition === 'New' && (
+                            <div className="pt-2">
+                                <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4">Available Palettes</h3>
+                                <div className="flex flex-wrap gap-4">
+                                    {car.available_colors && car.available_colors.map((color, idx) => (
+                                        <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 min-w-[140px]">
+                                            <div className="w-8 h-8 rounded-lg shadow-inner border-2 border-white" style={{ backgroundColor: getColorCode(color) }}></div>
+                                            <div>
+                                                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Color Option</div>
+                                                <div className="text-sm font-black text-slate-900">{color}</div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        </div>
+                        )}
 
                         <div className="pt-2">
                             <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2">Description</h3>
@@ -324,9 +321,9 @@ const CarDetailsPage = () => {
                             <div className="flex justify-between items-end relative z-10">
                                 <div>
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Acquisition</div>
-                                    <div className="text-4xl font-black tracking-tight">₹{discountedPrice?.toLocaleString()}</div>
+                                    <div className="text-4xl font-black tracking-tight">${discountedPrice?.toLocaleString()}</div>
                                     {hasDiscount && (
-                                        <div className="text-sm font-bold text-slate-400 line-through mt-1">₹{car.price?.toLocaleString()}</div>
+                                        <div className="text-sm font-bold text-slate-400 line-through mt-1">${car.price?.toLocaleString()}</div>
                                     )}
                                 </div>
                                 <div className="text-right">
@@ -409,6 +406,17 @@ const CarDetailsPage = () => {
                             className={`w-full h-full object-cover transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                         />
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.1),transparent)] pointer-events-none"></div>
+
+                        {/* Condition Badge Overlay */}
+                        <div className="absolute top-8 left-8 z-20">
+                            <div className={`px-5 py-2.5 rounded-2xl backdrop-blur-xl shadow-2xl border border-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3 ${car.condition === 'New'
+                                    ? 'bg-indigo-600/90 text-white'
+                                    : 'bg-slate-800/90 text-white'
+                                }`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${car.condition === 'New' ? 'bg-white animate-pulse' : 'bg-amber-400'}`}></span>
+                                {car.condition === 'New' ? 'Brand New' : 'Pre-Owned'}
+                            </div>
+                        </div>
 
                         {/* Thumbnail Bar */}
                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-white/30 backdrop-blur-lg rounded-xl border border-white/20 shadow-xl">

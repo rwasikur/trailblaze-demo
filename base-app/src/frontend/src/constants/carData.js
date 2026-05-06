@@ -15,12 +15,12 @@ export const BRANDS_MODELS = {
     "Citroen": ["C3", "eC3", "C3 Aircross", "C5 Aircross"]
 };
 
-export const EXTERIOR_COLORS = [
-    "Black", "White", "Silver", "Grey", "Blue", "Red", "Green", "Yellow", "Orange", "Brown", "Pearl White", "Midnight Blue", "Rosso Corsa", "Brooklyn Grey", "Carmine Red", "Jet Black Metallic", "Obsidian Black",
-    "Crimson Red", "Aurora Silver", "Crystal White", "Foliage Blue", "Red Rage", "Super White", "Glacier White Pearl", "Diamond White", "blue & black", "Cosmic Gold", "Midnight Black", "Abyss Black", "Nexa Blue", "Pearl White with Black Roof", "Crystal Blue", "Tornado Blue"
-];
-
-export const INTERIOR_COLORS = [
-    "Black", "White", "Beige", "Brown", "Grey", "Tan", "Red", "Cognac", "Black Merino Leather", "Grey Leather", "Red Racing Seats", "Red Nappa", "Black Alcantara", "Light Oyster", "Luxor Beige", "Toasted Caramel",
-    "Black and White", "Black Leather", "Camel Brown Leather", "Black and Grey", "Bordeaux and Black", "Black & Maroon", "Oak White and Black", "Grey/Black"
+export const CAR_COLORS = [
+    "Black", "White", "Silver", "Grey", "Gray", "Blue", "Red", "Green", "Yellow", "Orange", "Brown", "Pearl White", "Midnight Blue", "Rosso Corsa", "Brooklyn Grey", "Carmine Red", "Jet Black Metallic", "Obsidian Black",
+    "Crimson Red", "Aurora Silver", "Crystal White", "Foliage Blue", "Red Rage", "Super White", "Glacier White Pearl", "Diamond White", "blue & black", "Cosmic Gold", "Midnight Black", "Abyss Black", "Nexa Blue", "Pearl White with Black Roof", "Crystal Blue", "Tornado Blue",
+    "Autumn Orange", "Polar White", "Phantom Black", "Starry Night", "Titan Grey", "Typhoon Silver", "Fiery Red", "Atlas White", "Orcus White", "Rocky Beige", "Calamine Red", "Deep Ocean Blue", "Highland Grey", "Ethereal Blue", "Grassland Beige", "Starlight Blue", "Pebble Grey",
+    "Moonlight Silver", "Stealth Black", "Flame Red", "Daytona Grey", "Oberon Black", "Tropical Mist", "Orcus White with Black Roof", "Grassland Beige with Black Roof", "Starlight Blue with Black Roof",
+    "Beige", "Tan", "Cognac", "Black Merino Leather", "Grey Leather", "Red Racing Seats", "Red Nappa", "Black Alcantara", "Light Oyster", "Luxor Beige", "Toasted Caramel",
+    "Black and White", "Black Leather", "Camel Brown Leather", "Black and Grey", "Bordeaux and Black", "Black & Maroon", "Oak White and Black", "Grey/Black",
+    "Nexa Blue", "Silver", "Gray", "Autumn Orange", "Typhoon Silver", "Metallic Red", "Oberon Black", "Imperial Blue", "Flare Garnet Red", "Honey Orange", "Persimmon Red", "Titan Grey", "Flame Red", "Olive Green Metallic", "Metal Mustard", "Sportin Red"
 ];
