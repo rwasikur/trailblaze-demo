@@ -9,7 +9,7 @@
       "acceptance_criteria": [
         "Navigate to the landing page ('/'). Verify that the hero section contains the branding text 'Elegance for'. Verify that the navigation bar contains a 'Catalogue' link with ID 'browse-link'.",
         "Click the 'Catalogue' link in the navigation bar. Verify that the application redirects to the browse page ('/browse') and that the vehicle inventory grid with ID 'car-grid' is successfully rendered.",
-        "Inspect the car cards on the '/browse' page. Verify that each vehicle's 'Brand', 'Name', and 'Price' (e.g., '₹1,20,00,000') are correctly displayed using the specific ID selectors car-card-{id}-brand, car-card-{id}-name, and car-card-{id}-price.",
+        "Inspect the car cards on the '/browse' page. Verify that each vehicle's 'Brand', 'Name', and 'Price' (e.g., '$1,20,00,000') are correctly displayed using the specific ID selectors car-card-{id}-brand, car-card-{id}-name, and car-card-{id}-price.",
         "Click on any vehicle card within the grid. Verify that the browser navigates to the car details page at '/car/[id]' and that the dynamic vehicle data is correctly populated from the API.",
         "On the Car Details page, click the 'Specs' tab. Verify that the technical specifications section renders 'Transmission' and 'System' (Fuel Type) information that matches the vehicle's record.",
         "On the '/browse' page, click the 'New' filter option in the condition dropdown. Verify that only vehicles with the 'Brand New' status badge are visible in the inventory grid.",
@@ -24,7 +24,7 @@
         "Open the 'Add Car' page. Fill all mandatory fields for a 'New' vehicle across all steps (Brand, Name, Price, Transmission, Fuel, Insurance Validity, and Main Image). Click 'Save Vehicle'. Verify the 'Vehicle added successfully!' toast and redirection to the dashboard.",
         "In the 'Add Car' wizard, select 'Used' condition. Verify that the form now requires 'Number of Owners' and 'Registration City'. Complete the entry with valid 'Past Owner History' records and verify that the data persists in the database.",
         "On the 'Add Car' page, leave the 'Car Name' (Model) field empty and attempt to proceed to the next step. Verify that the application displays a toast message 'Please fill in all basic information' and blocks navigation to the next step.",
-        "Access the 'Edit Car' page for an existing vehicle. Modify the 'Price (₹)' value and click 'Save Changes'. Verify the 'Vehicle updated successfully!' toast and ensure the new price is reflected on the public Car Details page.",
+        "Access the 'Edit Car' page for an existing vehicle. Modify the 'Price ($)' value and click 'Save Changes'. Verify the 'Vehicle updated successfully!' toast and ensure the new price is reflected on the public Car Details page.",
         "In the Admin Dashboard, click the 'Sign Out' button in the navigation bar. Verify that the 'adminToken' is removed from localStorage, a toast 'Logged out successfully' appears, and the user is redirected to the home page.",
         "Navigate to the 'Admin Profile' page ('/admin/profile'). Update the 'Full Legal Name' and 'Professional Bio' fields and click 'Synchronize Profile Data'. Verify that the success toast 'Profile updated successfully!' is displayed.",
         "On the 'Admin Profile' page, clear the mandatory 'Full Legal Name' field and click 'Synchronize Profile Data'. Verify that the browser's native HTML5 validation (required attribute) blocks the submission.",

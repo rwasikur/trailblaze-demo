@@ -3,7 +3,7 @@ const Car = require('../models/Car');
 
 const createBooking = async (req, res) => {
     try {
-        const { car_id, user_name, user_email, user_contact } = req.body;
+        const { car_id, user_name, user_email, user_contact, selected_color } = req.body;
 
         if (!car_id || !user_name || !user_email || !user_contact) {
             return res.status(400).json({ message: 'All fields are required' });
@@ -41,7 +41,8 @@ const createBooking = async (req, res) => {
             car_id,
             user_name,
             user_email,
-            user_contact
+            user_contact,
+            selected_color
         });
 
         res.status(201).json({ message: 'Booking submitted successfully', booking });

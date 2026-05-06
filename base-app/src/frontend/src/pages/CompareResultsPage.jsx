@@ -67,7 +67,7 @@ const CompareResultsPage = () => {
         { label: 'Model', key: 'name' },
         { label: 'Year', key: 'model_year' },
         { label: 'Condition', key: 'condition' },
-        { label: 'Price', key: 'price', format: (v) => v ? `₹${v.toLocaleString()}` : '—' },
+        { label: 'Price', key: 'price', format: (v) => v ? `$${v.toLocaleString()}` : '—' },
         { label: 'Fuel Type', key: 'fuel_type' },
         { label: 'Transmission', key: 'transmission' },
         { label: 'Body Type', key: 'body_type', format: (v) => v || 'Curated' },
