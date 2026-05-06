@@ -20,7 +20,7 @@ const STATUS_COLORS = {
 
 const EMPTY_FILTERS = { status: '', brand: '', fuelType: '', bodyType: '', condition: '', city: '' };
 
-const formatCurrency = (value) => `Rs. ${(Number(value) || 0).toLocaleString()}`;
+const formatCurrency = (value) => `$${(Number(value) || 0).toLocaleString()}`;
 const formatNumber = (value) => (Number(value) || 0).toLocaleString();
 
 const statusVariant = (status) => {
