@@ -7,7 +7,7 @@ import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
 import Select from 'react-select';
 
-import { BRANDS_MODELS, EXTERIOR_COLORS, INTERIOR_COLORS } from '../constants/carData';
+import { BRANDS_MODELS, CAR_COLORS } from '../constants/carData';
 
 const AddCarPage = () => {
     const navigate = useNavigate();
@@ -16,10 +16,12 @@ const AddCarPage = () => {
 
     const [formData, setFormData] = useState({
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
-        price: '', range: '', body_type: '', mileage: '', total_distance_covered: '', exterior_color: '', interior_color: '',
+        price: '', range: '', body_type: '', mileage: '', total_distance_covered: '', available_colors: [''],
         number_of_owners: 0, registration_city: '', insurance_validity: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0], description: '',
         availability_status: 'Available', image_url: '', secondary_images: [], condition: 'New', past_owners: []
     });
+
+    const [colorCount, setColorCount] = useState(1);
 
     const [uploadMethod] = useState('local'); // Locked to 'local' upload
     const [mainLoading, setMainLoading] = useState(false);
@@ -120,6 +122,24 @@ const AddCarPage = () => {
         setFormData({ ...formData, past_owners: newPastOwners });
     };
 
+    const handleColorCountChange = (e) => {
+        const count = Math.max(1, parseInt(e.target.value) || 1);
+        setColorCount(count);
+        const newColors = [...formData.available_colors];
+        if (count > newColors.length) {
+            for (let i = newColors.length; i < count; i++) newColors.push('');
+        } else {
+            newColors.length = count;
+        }
+        setFormData({ ...formData, available_colors: newColors });
+    };
+
+    const handleColorChange = (index, value) => {
+        const newColors = [...formData.available_colors];
+        newColors[index] = value;
+        setFormData({ ...formData, available_colors: newColors });
+    };
+
     const nextStep = (e) => {
         if (e) e.preventDefault();
 
@@ -127,6 +147,10 @@ const AddCarPage = () => {
         if (currentStep === 1) {
             if (!formData.brand || !formData.name || !formData.model_year) {
                 toast.error('Please fill in all basic information');
+                return;
+            }
+            if (formData.condition === 'New' && (!formData.available_colors || formData.available_colors.some(c => !c))) {
+                toast.error('Please select all available colors');
                 return;
             }
             const year = parseInt(formData.model_year);
@@ -168,7 +192,7 @@ const AddCarPage = () => {
                 const lastOwner = formData.past_owners[formData.past_owners.length - 1];
                 const lastPrice = parseInt(lastOwner.sale_price);
                 if (!isNaN(lastPrice) && parseInt(formData.price) >= lastPrice) {
-                    toast.error(`Price must be less than the last sale price (₹${lastPrice.toLocaleString()})`);
+                    toast.error(`Price must be less than the last sale price ($${lastPrice.toLocaleString()})`);
                     return;
                 }
             }
@@ -391,19 +415,41 @@ const AddCarPage = () => {
                                                 />
                                             </div>
 
-                                            <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Exterior Color<span className="text-red-500 ml-1">*</span></label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })} required>
-                                                    <option value="">Select Color</option>
-                                                    {EXTERIOR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                                                </select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Interior Color<span className="text-red-500 ml-1">*</span></label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })} required>
-                                                    <option value="">Select Interior</option>
-                                                    {INTERIOR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                                                </select>
+                                            {/* Color Selection Block */}
+                                            <div className="md:col-span-2 space-y-6">
+                                                {formData.condition === 'New' && (
+                                                    <div className="space-y-2 max-w-xs">
+                                                        <label className="block text-sm font-bold text-slate-700">How many colors available?<span className="text-red-500 ml-1">*</span></label>
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                                            value={colorCount}
+                                                            onChange={handleColorCountChange}
+                                                            required
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {formData.available_colors.map((color, idx) => (
+                                                        <div key={idx} className="space-y-2">
+                                                            <label className="block text-sm font-bold text-slate-700">
+                                                                Color Option {idx + 1}
+                                                                {idx === 0 && <span className="text-[10px] text-blue-600 ml-2">(Primary Exterior)</span>}
+                                                            </label>
+                                                            <select
+                                                                className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                                                value={color}
+                                                                onChange={(e) => handleColorChange(idx, e.target.value)}
+                                                                required
+                                                            >
+                                                                <option value="">Select Color</option>
+                                                                {CAR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -451,7 +497,7 @@ const AddCarPage = () => {
                                             <div className="md:col-span-1">
                                                 <Input id="owners-count-input" label="Number of Owners" type="number" min="0" value={formData.number_of_owners} onChange={handleOwnerCountChange} disabled={formData.condition === 'New'} className={formData.condition === 'New' ? 'opacity-50' : ''} required={formData.condition === 'Used'} />
                                             </div>
-                                            <Input id="car-price-input" label="Price (₹)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
+                                            <Input id="car-price-input" label="Price ($)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
                                             {formData.condition === 'Used' && (
                                                 <>
                                                     <Input id="registration-city-input" label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
@@ -466,7 +512,7 @@ const AddCarPage = () => {
                                                             <div className="absolute top-0 right-0 bg-slate-900 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl rounded-tr-xl">OWNER {index + 1}</div>
                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                                                                 <Input label="Sale Date" type="date" value={owner.sale_date || ''} onChange={(e) => handlePastOwnerChange(index, 'sale_date', e.target.value)} required />
-                                                                <Input label="Sale Price (₹)" type="number" min="0" value={owner.sale_price || ''} onChange={(e) => handlePastOwnerChange(index, 'sale_price', e.target.value)} required />
+                                                                <Input label="Sale Price ($)" type="number" min="0" value={owner.sale_price || ''} onChange={(e) => handlePastOwnerChange(index, 'sale_price', e.target.value)} required />
                                                                 <Input label="Seller Name" value={owner.seller_name || ''} onChange={(e) => handlePastOwnerChange(index, 'seller_name', e.target.value)} required />
                                                                 <Input label="Buyer Name" value={owner.buyer_name || ''} onChange={(e) => handlePastOwnerChange(index, 'buyer_name', e.target.value)} required />
                                                             </div>
