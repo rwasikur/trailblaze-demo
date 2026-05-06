@@ -822,6 +822,30 @@ const sample_bookings = [
         user_email: "bob.wilson@outlook.com",
         user_contact: "3456789012",
         status: "Rejected"
+    },
+    {
+        user_name: "Alice Cooper",
+        user_email: "alice.c@example.com",
+        user_contact: "1122334455",
+        status: "Accepted"
+    },
+    {
+        user_name: "Bob Marley",
+        user_email: "bob.m@gmail.com",
+        user_contact: "2233445566",
+        status: "Accepted"
+    },
+    {
+        user_name: "Charlie Brown",
+        user_email: "charlie.b@outlook.com",
+        user_contact: "3344556677",
+        status: "Accepted"
+    },
+    {
+        user_name: "Diana Ross",
+        user_email: "diana.r@yahoo.com",
+        user_contact: "4455667788",
+        status: "Rejected"
     }
 ];
 

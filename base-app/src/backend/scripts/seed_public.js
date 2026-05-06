@@ -798,6 +798,30 @@ const sample_bookings = [
         user_email: "pooja.reddy@yahoo.com",
         user_contact: "9988776655",
         status: "Pending"
+    },
+    {
+        user_name: "Vikram Malhotra",
+        user_email: "vikram.m@example.com",
+        user_contact: "9123456789",
+        status: "Accepted"
+    },
+    {
+        user_name: "Sneha Kapoor",
+        user_email: "sneha.k@gmail.com",
+        user_contact: "8234567890",
+        status: "Accepted"
+    },
+    {
+        user_name: "Arjun Singh",
+        user_email: "arjun.s@yahoo.com",
+        user_contact: "7345678901",
+        status: "Accepted"
+    },
+    {
+        user_name: "Meera Nair",
+        user_email: "meera.nair@gmail.com",
+        user_contact: "9812345678",
+        status: "Pending"
     }
 ];
 
