@@ -1,38 +1,10 @@
 import React, { useState } from 'react';
 import api from '../api';
 import { toast } from 'react-toastify';
+import { getColorCode } from '../constants/colorMapping';
 
 const PurchaseModal = ({ car, isOpen, onClose }) => {
-    const getColorCode = (name) => {
-        const colors = {
-            'Black': '#000000',
-            'White': '#ffffff',
-            'Silver': '#c0c0c0',
-            'Grey': '#808080',
-            'Gray': '#808080',
-            'Blue': '#0000ff',
-            'Red': '#ff0000',
-            'Nexa Blue': '#003366',
-            'Crimson Red': '#dc143c',
-            'Aurora Silver': '#c0c0c0',
-            'Crystal White': '#f8f8ff',
-            'Typhoon Silver': '#c0c0c0',
-            'Autumn Orange': '#ff8c00',
-            'Metallic Red': '#b22222',
-            'Oberon Black': '#000000',
-            'Imperial Blue': '#002366',
-            'Flare Garnet Red': '#7e191b',
-            'Honey Orange': '#ffbd33',
-            'Persimmon Red': '#ec5800',
-            'Titan Grey': '#565e60',
-            'Flame Red': '#e25822',
-            'Olive Green Metallic': '#3d5229',
-            'Metal Mustard': '#daa520',
-            'Sportin Red': '#ff0000'
-        };
-        const normalized = Object.keys(colors).find(k => k.toLowerCase() === name.toLowerCase());
-        return normalized ? colors[normalized] : name;
-    };
+
 
     const [formData, setFormData] = useState({
         user_name: '',
@@ -143,7 +115,7 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                     <form onSubmit={handleSubmit} className="space-y-3" noValidate>
                         <div className="grid gap-3">
                             <div className="space-y-1">
-                                <label className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</label>
+                                <label htmlFor="purchase-name" className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</label>
                                 <input
                                     id="purchase-name"
                                     required
@@ -155,7 +127,7 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Email</label>
+                                <label htmlFor="purchase-email" className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Email</label>
                                 <input
                                     id="purchase-email"
                                     required
@@ -167,7 +139,7 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Contact</label>
+                                <label htmlFor="purchase-contact" className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Contact</label>
                                 <input
                                     id="purchase-contact"
                                     required
@@ -178,7 +150,7 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                                     placeholder="Phone Number"
                                 />
                             </div>
-                            {car.condition === 'New' && (
+                            {(car.available_colors && car.available_colors.length > 0) && (
                                 <div className="space-y-2">
                                     <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Preferred Color</label>
                                     <div className="flex flex-wrap gap-3 pt-1">
