@@ -1,6 +1,5 @@
 const Car = require('../models/Car');
 const Booking = require('../models/Booking');
-const SaleHistory = require('../models/SaleHistory');
 
 const getAllCars = async (req, res) => {
     try {
@@ -76,15 +75,11 @@ const updateCar = async (req, res) => {
 
 const getFleetAnalytics = async (req, res) => {
     try {
-        const [cars, bookings, saleHistory] = await Promise.all([
+        const [cars, bookings] = await Promise.all([
             Car.findAll({ raw: true }),
             Booking.findAll({
                 include: [{ model: Car, as: 'car' }],
                 order: [['createdAt', 'DESC']]
-            }),
-            SaleHistory.findAll({
-                include: [{ model: Car, as: 'car' }],
-                order: [['sale_date', 'DESC']]
             })
         ]);
 
@@ -176,22 +171,24 @@ const getFleetAnalytics = async (req, res) => {
         };
 
         const getCarFromBooking = (booking) => booking.car ? booking.car.get({ plain: true }) : null;
-        const getCarFromSale = (sale) => sale.car ? sale.car.get({ plain: true }) : null;
+        const getSaleDate = (booking) => booking.updatedAt || booking.createdAt;
 
         const filteredCars = cars.filter(matchesFilter);
         const filteredBookings = bookings
             .filter(booking => inPeriod(booking.createdAt))
             .filter(booking => matchesFilter(getCarFromBooking(booking)));
-        const filteredSales = saleHistory
-            .filter(sale => inPeriod(sale.sale_date))
-            .filter(sale => matchesFilter(getCarFromSale(sale)));
+        const filteredSales = bookings
+            .filter(booking => booking.status === 'Accepted')
+            .filter(booking => inPeriod(getSaleDate(booking)))
+            .filter(booking => matchesFilter(getCarFromBooking(booking)));
 
         const previousBookings = bookings
             .filter(booking => inPeriod(booking.createdAt, previousPeriod))
             .filter(booking => matchesFilter(getCarFromBooking(booking)));
-        const previousSales = saleHistory
-            .filter(sale => inPeriod(sale.sale_date, previousPeriod))
-            .filter(sale => matchesFilter(getCarFromSale(sale)));
+        const previousSales = bookings
+            .filter(booking => booking.status === 'Accepted')
+            .filter(booking => inPeriod(getSaleDate(booking), previousPeriod))
+            .filter(booking => matchesFilter(getCarFromBooking(booking)));
 
         const totalFleet = filteredCars.length;
         const availableCars = filteredCars.filter(car => car.availability_status === 'Available');
@@ -232,16 +229,16 @@ const getFleetAnalytics = async (req, res) => {
             };
         });
 
-        const saleRows = filteredSales.map(sale => {
-            const car = getCarFromSale(sale);
+        const saleRows = filteredSales.map(booking => {
+            const car = getCarFromBooking(booking);
             return {
-                saleId: sale._id,
+                saleId: booking._id,
                 vehicle: vehicleName(car),
-                buyer: sale.buyer_name,
-                seller: sale.seller_name,
-                status: sale.sale_status,
-                price: money(sale.price),
-                saleDate: sale.sale_date
+                buyer: booking.user_name,
+                seller: car?.seller_name || 'TrailblazeAuto Dealership',
+                status: 'Sold',
+                price: money(car?.price),
+                saleDate: getSaleDate(booking)
             };
         });
 
@@ -268,8 +265,8 @@ const getFleetAnalytics = async (req, res) => {
         const pendingPipelineValue = sumBy(pendingBookings, booking => getCarFromBooking(booking)?.price);
         const acceptedBookingValue = sumBy(acceptedBookings, booking => getCarFromBooking(booking)?.price);
 
-        const totalSalesRevenue = sumBy(filteredSales, sale => sale.price) || sumBy(soldCars, car => car.price);
-        const previousSalesRevenue = sumBy(previousSales, sale => sale.price);
+        const totalSalesRevenue = sumBy(filteredSales, booking => getCarFromBooking(booking)?.price) || sumBy(soldCars, car => car.price);
+        const previousSalesRevenue = sumBy(previousSales, booking => getCarFromBooking(booking)?.price);
         const previousBookingCount = previousBookings.length;
 
         const change = (current, previous) => ({
@@ -328,15 +325,15 @@ const getFleetAnalytics = async (req, res) => {
             })
             .sort((a, b) => b.ageDays - a.ageDays);
 
-        const salesByPeriod = filteredSales.reduce((acc, sale) => {
-            const key = bucketKey(sale.sale_date);
+        const salesByPeriod = filteredSales.reduce((acc, booking) => {
+            const key = bucketKey(getSaleDate(booking));
             if (!key) return acc;
 
             if (!acc[key]) {
                 acc[key] = { period: key, month: key, revenue: 0, vehiclesSold: 0 };
             }
 
-            acc[key].revenue += money(sale.price);
+            acc[key].revenue += money(getCarFromBooking(booking)?.price);
             acc[key].vehiclesSold += 1;
             return acc;
         }, {});
