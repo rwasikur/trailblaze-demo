@@ -20,7 +20,7 @@ const CarCard = ({ car, featured = false }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const imageUrl = car.image_url || 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=800';
     const isAvailable = !car.availability_status || car.availability_status === 'Available';
-    const priceLabel = car.price ? `₹${car.price.toLocaleString()}` : 'Price on request';
+    const priceLabel = car.price ? `$${car.price.toLocaleString()}` : 'Price on request';
     const summary = car.description
         ? car.description.replace(/<[^>]*>/g, '').slice(0, featured ? 220 : 120)
         : 'A premium Trailblazer listing with complete detail panels and image-led browsing.';
