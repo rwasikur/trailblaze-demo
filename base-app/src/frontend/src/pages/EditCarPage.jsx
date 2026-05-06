@@ -6,7 +6,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
 import Select from 'react-select';
-import { BRANDS_MODELS, EXTERIOR_COLORS, INTERIOR_COLORS } from '../constants/carData';
+import { BRANDS_MODELS, CAR_COLORS } from '../constants/carData';
 
 const EditCarPage = () => {
     const { id } = useParams();
@@ -16,10 +16,11 @@ const EditCarPage = () => {
     const source = searchParams.get('from');
     const [formData, setFormData] = useState({
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
-        price: '', range: '', body_type: '', mileage: '', total_distance_covered: '', exterior_color: '', interior_color: '',
+        price: '', range: '', body_type: '', mileage: '', total_distance_covered: '', available_colors: [],
         number_of_owners: 0, registration_city: '', insurance_validity: '', description: '',
         availability_status: 'Available', image_url: '', secondary_images: [], condition: 'Used', past_owners: []
     });
+    const [colorCount, setColorCount] = useState(1);
     const [loading, setLoading] = useState(true);
     const [mainLoading, setMainLoading] = useState(false);
     const [multiLoading, setMultiLoading] = useState(false);
@@ -51,8 +52,7 @@ const EditCarPage = () => {
                     range: data.range || '',
                     body_type: data.body_type || '',
                     mileage: data.mileage || '',
-                    exterior_color: data.exterior_color || '',
-                    interior_color: data.interior_color || '',
+                    available_colors: data.available_colors || [''],
                     registration_city: data.registration_city || '',
                     insurance_validity: data.insurance_validity ? new Date(data.insurance_validity).toISOString().split('T')[0] : '',
                     description: data.description || '',
@@ -64,6 +64,7 @@ const EditCarPage = () => {
                     number_of_owners: data.number_of_owners !== undefined && data.number_of_owners !== null ? data.number_of_owners : 0,
                     past_owners: data.past_owners || []
                 });
+                setColorCount(data.available_colors?.length || 1);
                 setUsedDataCache({
                     owners: data.number_of_owners !== undefined && data.number_of_owners !== null ? data.number_of_owners : 0,
                     history: data.past_owners || []
@@ -159,6 +160,24 @@ const EditCarPage = () => {
         setUsedDataCache(prev => ({ ...prev, history: newPastOwners }));
     };
 
+    const handleColorCountChange = (e) => {
+        const count = Math.max(1, parseInt(e.target.value) || 1);
+        setColorCount(count);
+        const newColors = [...(formData.available_colors || [])];
+        if (count > newColors.length) {
+            for (let i = newColors.length; i < count; i++) newColors.push('');
+        } else {
+            newColors.length = count;
+        }
+        setFormData({ ...formData, available_colors: newColors });
+    };
+
+    const handleColorChange = (index, value) => {
+        const newColors = [...(formData.available_colors || [])];
+        newColors[index] = value;
+        setFormData({ ...formData, available_colors: newColors });
+    };
+
     const handleEditCar = async (e) => {
         e.preventDefault();
 
@@ -193,7 +212,7 @@ const EditCarPage = () => {
             const lastOwner = formData.past_owners[formData.past_owners.length - 1];
             const lastPrice = parseInt(lastOwner.sale_price);
             if (!isNaN(lastPrice) && parseInt(formData.price) >= lastPrice) {
-                toast.error(`Price must be less than the last sale price (₹${lastPrice.toLocaleString()})`);
+                toast.error(`Price must be less than the last sale price ($${lastPrice.toLocaleString()})`);
                 return;
             }
         }
@@ -215,13 +234,8 @@ const EditCarPage = () => {
             }
         }
 
-        if (!formData.exterior_color) {
-            toast.error('Exterior color is required');
-            return;
-        }
-
-        if (!formData.interior_color) {
-            toast.error('Interior color is required');
+        if (formData.condition === 'New' && (!formData.available_colors || formData.available_colors.some(c => !c))) {
+            toast.error('Please specify all available colors');
             return;
         }
 
@@ -340,7 +354,7 @@ const EditCarPage = () => {
                                             }}
                                         />
                                     </div>
-                                    <Input id="car-price-input" label="Price (₹)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
+                                    <Input id="car-price-input" label="Price ($)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-slate-700">Vehicle Condition</label>
                                         <select
@@ -398,19 +412,41 @@ const EditCarPage = () => {
                                         <Input label="Total Distance Covered" value={formData.total_distance_covered} onChange={(e) => setFormData({ ...formData, total_distance_covered: e.target.value })} placeholder="e.g. 45,000 km" />
                                     )}
 
-                                    <div className="space-y-2">
-                                        <label className="block text-sm font-bold text-slate-700">Exterior Color</label>
-                                        <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })}>
-                                            <option value="">Select</option>
-                                            {EXTERIOR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="block text-sm font-bold text-slate-700">Interior Color</label>
-                                        <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })}>
-                                            <option value="">Select</option>
-                                            {INTERIOR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                                        </select>
+                                    {/* Color Selection Block */}
+                                    <div className="md:col-span-2 lg:col-span-3 space-y-6">
+                                        {formData.condition === 'New' && (
+                                            <div className="space-y-2 max-w-xs">
+                                                <label className="block text-sm font-bold text-slate-700">Available Colors Count</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                                    value={colorCount}
+                                                    onChange={handleColorCountChange}
+                                                    required
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-6">
+                                            {formData.available_colors.map((color, idx) => (
+                                                <div key={idx} className="space-y-2">
+                                                    <label className="block text-sm font-bold text-slate-700">
+                                                        Color Option {idx + 1}
+                                                        {idx === 0 && <span className="text-[10px] text-blue-600 ml-2">(Primary)</span>}
+                                                    </label>
+                                                    <select
+                                                        className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                                        value={color}
+                                                        onChange={(e) => handleColorChange(idx, e.target.value)}
+                                                        required
+                                                    >
+                                                        <option value="">Select Color</option>
+                                                        {CAR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                                                    </select>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
 
                                     {formData.condition === 'Used' && (
@@ -437,7 +473,7 @@ const EditCarPage = () => {
                                                             <div className="absolute top-0 right-0 bg-slate-900 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl rounded-tr-xl">OWNER {index + 1}</div>
                                                             <div className="grid grid-cols-1 gap-4 pt-2">
                                                                 <Input label="Sale Date" type="date" value={owner.sale_date ? new Date(owner.sale_date).toISOString().split('T')[0] : ''} onChange={(e) => handlePastOwnerChange(index, 'sale_date', e.target.value)} required />
-                                                                <Input label="Sale Price (₹)" type="number" min="0" value={owner.sale_price || ''} onChange={(e) => handlePastOwnerChange(index, 'sale_price', e.target.value)} required />
+                                                                <Input label="Sale Price ($)" type="number" min="0" value={owner.sale_price || ''} onChange={(e) => handlePastOwnerChange(index, 'sale_price', e.target.value)} required />
                                                                 <Input label="Seller Name" value={owner.seller_name || ''} onChange={(e) => handlePastOwnerChange(index, 'seller_name', e.target.value)} required />
                                                                 <Input label="Buyer Name" value={owner.buyer_name || ''} onChange={(e) => handlePastOwnerChange(index, 'buyer_name', e.target.value)} required />
                                                             </div>
