@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 const Car = require('./Car');
 
-const SaleHistory = sequelize.define('SaleHistory', {
+const Booking = sequelize.define('Booking', {
     _id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
@@ -16,32 +16,32 @@ const SaleHistory = sequelize.define('SaleHistory', {
             key: '_id'
         }
     },
-    sale_date: {
-        type: DataTypes.DATE,
-        allowNull: false
-    },
-    price: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    seller_name: {
+    user_name: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    buyer_name: {
+    user_email: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    sale_status: {
+    user_contact: {
         type: DataTypes.STRING,
-        defaultValue: 'Sold'
+        allowNull: false
+    },
+    status: {
+        type: DataTypes.STRING,
+        defaultValue: 'Pending'
+    },
+    selected_color: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     timestamps: true,
 });
 
 // Associations
-Car.hasMany(SaleHistory, { foreignKey: 'car_id', as: 'saleHistory' });
-SaleHistory.belongsTo(Car, { foreignKey: 'car_id', as: 'car' });
+Car.hasMany(Booking, { foreignKey: 'car_id', as: 'bookings' });
+Booking.belongsTo(Car, { foreignKey: 'car_id', as: 'car' });
 
-module.exports = SaleHistory;
+module.exports = Booking;

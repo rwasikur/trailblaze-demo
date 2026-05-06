@@ -9,6 +9,7 @@ import BrowseCarsPage from './pages/BrowseCarsPage';
 import CarDetailsPage from './pages/CarDetailsPage';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminAnalyticsDashboard from './pages/AdminAnalyticsDashboard';
 import AddCarPage from './pages/AddCarPage';
 import EditCarPage from './pages/EditCarPage';
 import ManageCataloguePage from './pages/ManageCataloguePage';
@@ -29,6 +30,7 @@ function AnimatedRoutes() {
         <Route path="/admin" element={<PageTransition><AdminLogin /></PageTransition>} />
         <Route path="/admin/signup" element={<PageTransition><AdminSignup /></PageTransition>} />
         <Route path="/admin/dashboard" element={<PageTransition><AdminDashboard /></PageTransition>} />
+        <Route path="/admin/analytics" element={<PageTransition><AdminAnalyticsDashboard /></PageTransition>} />
         <Route path="/admin/catalogue" element={<PageTransition><ManageCataloguePage /></PageTransition>} />
         <Route path="/admin/add-car" element={<PageTransition><AddCarPage /></PageTransition>} />
         <Route path="/admin/edit-car/:id" element={<PageTransition><EditCarPage /></PageTransition>} />
@@ -43,7 +45,7 @@ function App() {
     <Router>
       <div className="min-h-screen bg-slate-950 font-sans text-slate-100 flex flex-col">
         <Navbar />
-        <ToastContainer position="bottom-right" theme="dark" />
+        <ToastContainer position="top-right" theme="dark" />
         <main className="flex-1 w-full flex flex-col overflow-x-clip">
           <AnimatedRoutes />
         </main>

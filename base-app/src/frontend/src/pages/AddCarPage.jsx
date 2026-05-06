@@ -5,8 +5,9 @@ import { toast } from 'react-toastify';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
+import Select from 'react-select';
 
-import { BRANDS_MODELS, EXTERIOR_COLORS, INTERIOR_COLORS } from '../constants/carData';
+import { BRANDS_MODELS, CAR_COLORS } from '../constants/carData';
 
 const AddCarPage = () => {
     const navigate = useNavigate();
@@ -15,10 +16,12 @@ const AddCarPage = () => {
 
     const [formData, setFormData] = useState({
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
-        price_per_day: '', range: '', body_type: '', mileage: '', exterior_color: '', interior_color: '',
+        price: '', range: '', body_type: '', mileage: '', total_distance_covered: '', available_colors: [''],
         number_of_owners: 0, registration_city: '', insurance_validity: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0], description: '',
-        availability_status: 'Available', image_url: '', secondary_images: [], condition: 'New'
+        availability_status: 'Available', image_url: '', secondary_images: [], condition: 'New', past_owners: []
     });
+
+    const [colorCount, setColorCount] = useState(1);
 
     const [uploadMethod] = useState('local'); // Locked to 'local' upload
     const [mainLoading, setMainLoading] = useState(false);
@@ -29,6 +32,12 @@ const AddCarPage = () => {
 
     const brands = Object.keys(BRANDS_MODELS).sort();
     const models = formData.brand ? BRANDS_MODELS[formData.brand] : [];
+
+    const currentYear = new Date().getFullYear();
+    const yearOptions = Array.from({ length: currentYear - 1970 + 1 }, (_, i) => {
+        const year = (currentYear - i).toString();
+        return { value: year, label: year };
+    });
 
     const handleMainFileChange = async (e) => {
         const file = e.target.files[0];
@@ -90,22 +99,58 @@ const AddCarPage = () => {
         }));
     };
 
+    const handleOwnerCountChange = (e) => {
+        const val = e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0);
+        const targetLength = val === '' ? 0 : val;
+        let updatedPastOwners = [...(formData.past_owners || [])];
+
+        if (targetLength > updatedPastOwners.length) {
+            const diff = targetLength - updatedPastOwners.length;
+            for (let i = 0; i < diff; i++) {
+                updatedPastOwners.push({ sale_date: '', sale_price: '', seller_name: '', buyer_name: '' });
+            }
+        } else if (targetLength < updatedPastOwners.length) {
+            updatedPastOwners = updatedPastOwners.slice(0, targetLength);
+        }
+
+        setFormData({ ...formData, number_of_owners: val, past_owners: updatedPastOwners });
+    };
+
+    const handlePastOwnerChange = (index, field, value) => {
+        const newPastOwners = [...(formData.past_owners || [])];
+        newPastOwners[index] = { ...newPastOwners[index], [field]: value };
+        setFormData({ ...formData, past_owners: newPastOwners });
+    };
+
+    const handleColorCountChange = (e) => {
+        const count = Math.max(1, parseInt(e.target.value) || 1);
+        setColorCount(count);
+        const newColors = [...formData.available_colors];
+        if (count > newColors.length) {
+            for (let i = newColors.length; i < count; i++) newColors.push('');
+        } else {
+            newColors.length = count;
+        }
+        setFormData({ ...formData, available_colors: newColors });
+    };
+
+    const handleColorChange = (index, value) => {
+        const newColors = [...formData.available_colors];
+        newColors[index] = value;
+        setFormData({ ...formData, available_colors: newColors });
+    };
+
     const nextStep = (e) => {
         if (e) e.preventDefault();
 
         // Step 1 Validation
         if (currentStep === 1) {
-            const price = parseInt(formData.price_per_day);
-            if (isNaN(price) || price < 100) {
-                toast.error('Price must be at least $100');
-                return;
-            }
-            if (price > 10000000) { // $10M max for ultra-luxury
-                toast.error('Price exceeds maximum allowed limit ($10,000,000)');
-                return;
-            }
             if (!formData.brand || !formData.name || !formData.model_year) {
                 toast.error('Please fill in all basic information');
+                return;
+            }
+            if (formData.condition === 'New' && (!formData.available_colors || formData.available_colors.some(c => !c))) {
+                toast.error('Please select all available colors');
                 return;
             }
             const year = parseInt(formData.model_year);
@@ -129,31 +174,40 @@ const AddCarPage = () => {
 
         // Step 3 Validation
         if (currentStep === 3) {
-            if (formData.condition === 'Used' && parseInt(formData.number_of_owners) <= 0) {
+            const price = parseInt(formData.price);
+            if (isNaN(price) || price < 100) {
+                toast.error('Price must be at least $100');
+                return;
+            }
+            if (price > 10000000) { // $10M max for ultra-luxury
+                toast.error('Price exceeds maximum allowed limit ($10,000,000)');
+                return;
+            }
+            const numOwners = parseInt(formData.number_of_owners);
+            if (formData.condition === 'Used' && (isNaN(numOwners) || numOwners <= 0)) {
                 toast.error('Pre-owned vehicles must have at least 1 previous owner');
                 return;
             }
-            if (!formData.insurance_validity) {
-                toast.error('Insurance validity date is required');
-                return;
+            if (formData.condition === 'Used' && formData.past_owners && formData.past_owners.length > 0) {
+                const lastOwner = formData.past_owners[formData.past_owners.length - 1];
+                const lastPrice = parseInt(lastOwner.sale_price);
+                if (!isNaN(lastPrice) && parseInt(formData.price) >= lastPrice) {
+                    toast.error(`Price must be less than the last sale price ($${lastPrice.toLocaleString()})`);
+                    return;
+                }
             }
-            const validityDate = new Date(formData.insurance_validity);
-            validityDate.setHours(0, 0, 0, 0);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            if (formData.condition === 'Used') {
+                if (!formData.insurance_validity) {
+                    toast.error('Insurance validity date is required');
+                    return;
+                }
+                const validityDate = new Date(formData.insurance_validity);
+                validityDate.setHours(0, 0, 0, 0);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
 
-            if (validityDate < today) {
-                toast.error('Insurance has already expired');
-                return;
-            }
-
-            // Differentiation: New cars should have longer insurance
-            if (formData.condition === 'New') {
-                const oneYearFromNow = new Date();
-                oneYearFromNow.setFullYear(today.getFullYear() + 1);
-                oneYearFromNow.setHours(0, 0, 0, 0);
-                if (validityDate < oneYearFromNow) {
-                    toast.error('New vehicles must have at least 1 year of valid insurance');
+                if (validityDate < today) {
+                    toast.error('Insurance has already expired');
                     return;
                 }
             }
@@ -174,6 +228,12 @@ const AddCarPage = () => {
             return nextStep();
         }
 
+        // Image Validation
+        if (!formData.image_url) {
+            toast.error('A main profile image is required for every vehicle entry.');
+            return;
+        }
+
         // Final validation is now handled per-step in nextStep
         try {
             const token = localStorage.getItem('adminToken');
@@ -187,8 +247,8 @@ const AddCarPage = () => {
     };
 
     return (
-        <div className="min-h-full bg-slate-50 py-10 px-6 font-sans text-slate-800">
-            <div className="max-w-4xl mx-auto space-y-8 flex flex-col h-full">
+        <div className="min-h-screen bg-slate-50 py-10 px-6 font-sans text-slate-800">
+            <div className="max-w-4xl mx-auto space-y-8 flex flex-col">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 shrink-0">
                     <div>
                         <h1 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Add New Vehicle</h1>
@@ -220,16 +280,16 @@ const AddCarPage = () => {
                     </div>
                 </div>
 
-                <Card className="flex-1 border-slate-200 shadow-sm overflow-hidden bg-white flex flex-col min-h-0">
-                    <CardContent className="p-0 flex flex-col h-full">
-                        <form onSubmit={handleAddCar} className="flex flex-col h-full">
-                            <div className="flex-1 overflow-y-auto p-6 md:p-8 pb-32 space-y-6">
+                <Card className="border-slate-200 shadow-sm bg-white">
+                    <CardContent className="p-0">
+                        <form onSubmit={handleAddCar} noValidate>
+                            <div className="p-6 md:p-8 pb-10 space-y-6">
                                 {currentStep === 1 && (
                                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                                         <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Basic Information</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2 md:col-span-2">
-                                                <label className="block text-sm font-bold text-slate-700">Vehicle Condition</label>
+                                                <label className="block text-sm font-bold text-slate-700">Vehicle Condition<span className="text-red-500 ml-1">*</span></label>
                                                 <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 outline-none transition-all" value={formData.condition} onChange={(e) => {
                                                     const isNew = e.target.value === 'New';
                                                     let insuranceVal = formData.insurance_validity;
@@ -241,7 +301,8 @@ const AddCarPage = () => {
                                                     setFormData({
                                                         ...formData,
                                                         condition: e.target.value,
-                                                        number_of_owners: isNew ? 0 : formData.number_of_owners,
+                                                        number_of_owners: isNew ? 0 : (formData.number_of_owners === 0 ? '' : formData.number_of_owners),
+                                                        past_owners: isNew ? [] : (formData.past_owners || []),
                                                         insurance_validity: insuranceVal
                                                     });
                                                 }} required>
@@ -249,36 +310,146 @@ const AddCarPage = () => {
                                                     <option value="Used">Pre-Owned (Secondary Market)</option>
                                                 </select>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Brand</label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value, name: '' })} required>
-                                                    <option value="">Select Brand</option>
-                                                    {brands.map(b => <option key={b} value={b}>{b}</option>)}
-                                                </select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Car Name</label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} disabled={!formData.brand} required>
-                                                    <option value="">Select Model</option>
-                                                    {models.map(m => <option key={m} value={m}>{m}</option>)}
-                                                </select>
-                                            </div>
-                                            <Input label="Model Year" type="number" min="1970" max={new Date().getFullYear() + 1} value={formData.model_year} onChange={(e) => setFormData({ ...formData, model_year: e.target.value })} required />
-                                            <Input label="Price ($)" type="number" min="1" value={formData.price_per_day} onChange={(e) => setFormData({ ...formData, price_per_day: e.target.value })} required />
 
                                             <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Exterior Color</label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })} required>
-                                                    <option value="">Select Color</option>
-                                                    {EXTERIOR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                                                </select>
+                                                <label className="block text-sm font-bold text-slate-700">Brand<span className="text-red-500 ml-1">*</span></label>
+                                                <Select
+                                                    inputId="brand-select"
+                                                    options={brands.map(b => ({ value: b, label: b }))}
+                                                    value={formData.brand ? { value: formData.brand, label: formData.brand } : null}
+                                                    onChange={(selected) => setFormData({ ...formData, brand: selected ? selected.value : '', name: '' })}
+                                                    placeholder="Select Brand"
+                                                    isSearchable
+                                                    menuPlacement="bottom"
+                                                    menuPortalTarget={document.body}
+                                                    styles={{
+                                                        control: (base, state) => ({
+                                                            ...base,
+                                                            minHeight: '48px',
+                                                            backgroundColor: state.isFocused ? 'white' : '#f8fafc',
+                                                            borderColor: state.isFocused ? '#0f172a' : '#e2e8f0',
+                                                            borderRadius: '0.5rem',
+                                                            boxShadow: state.isFocused ? '0 0 0 2px rgba(15, 23, 42, 0.1)' : 'none',
+                                                            '&:hover': { borderColor: state.isFocused ? '#0f172a' : '#cbd5e1' }
+                                                        }),
+                                                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                                        menu: (base) => ({ ...base, zIndex: 50 }),
+                                                        option: (base, state) => ({
+                                                            ...base,
+                                                            backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#f1f5f9' : 'white',
+                                                            color: state.isSelected ? 'white' : '#0f172a',
+                                                            cursor: 'pointer',
+                                                            '&:active': { backgroundColor: '#3b82f6', color: 'white' }
+                                                        }),
+                                                        singleValue: (base) => ({ ...base, color: '#0f172a' })
+                                                    }}
+                                                />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Interior Color</label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })} required>
-                                                    <option value="">Select Interior</option>
-                                                    {INTERIOR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                                                </select>
+                                                <label className="block text-sm font-bold text-slate-700">Car Name<span className="text-red-500 ml-1">*</span></label>
+                                                <Select
+                                                    inputId="model-select"
+                                                    options={models.map(m => ({ value: m, label: m }))}
+                                                    value={formData.name ? { value: formData.name, label: formData.name } : null}
+                                                    onChange={(selected) => setFormData({ ...formData, name: selected ? selected.value : '' })}
+                                                    placeholder="Select Model"
+                                                    isSearchable
+                                                    isDisabled={!formData.brand}
+                                                    menuPlacement="bottom"
+                                                    menuPortalTarget={document.body}
+                                                    styles={{
+                                                        control: (base, state) => ({
+                                                            ...base,
+                                                            minHeight: '48px',
+                                                            backgroundColor: state.isFocused ? 'white' : '#f8fafc',
+                                                            borderColor: state.isFocused ? '#0f172a' : '#e2e8f0',
+                                                            borderRadius: '0.5rem',
+                                                            boxShadow: state.isFocused ? '0 0 0 2px rgba(15, 23, 42, 0.1)' : 'none',
+                                                            '&:hover': { borderColor: state.isFocused ? '#0f172a' : '#cbd5e1' }
+                                                        }),
+                                                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                                        menu: (base) => ({ ...base, zIndex: 50 }),
+                                                        option: (base, state) => ({
+                                                            ...base,
+                                                            backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#f1f5f9' : 'white',
+                                                            color: state.isSelected ? 'white' : '#0f172a',
+                                                            cursor: 'pointer',
+                                                            '&:active': { backgroundColor: '#3b82f6', color: 'white' }
+                                                        }),
+                                                        singleValue: (base) => ({ ...base, color: '#0f172a' })
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="block text-sm font-bold text-slate-700">Model Year<span className="text-red-500 ml-1">*</span></label>
+                                                <Select
+                                                    inputId="year-select"
+                                                    options={yearOptions}
+                                                    value={formData.model_year ? { value: formData.model_year, label: formData.model_year } : null}
+                                                    onChange={(selected) => setFormData({ ...formData, model_year: selected ? selected.value : '' })}
+                                                    placeholder="Select Year"
+                                                    isSearchable
+                                                    menuPlacement="bottom"
+                                                    menuPortalTarget={document.body}
+                                                    styles={{
+                                                        control: (base, state) => ({
+                                                            ...base,
+                                                            minHeight: '48px',
+                                                            backgroundColor: state.isFocused ? 'white' : '#f8fafc',
+                                                            borderColor: state.isFocused ? '#0f172a' : '#e2e8f0',
+                                                            borderRadius: '0.5rem',
+                                                            boxShadow: state.isFocused ? '0 0 0 2px rgba(15, 23, 42, 0.1)' : 'none',
+                                                            '&:hover': { borderColor: state.isFocused ? '#0f172a' : '#cbd5e1' }
+                                                        }),
+                                                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                                        menu: (base) => ({ ...base, zIndex: 50 }),
+                                                        option: (base, state) => ({
+                                                            ...base,
+                                                            backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#f1f5f9' : 'white',
+                                                            color: state.isSelected ? 'white' : '#0f172a',
+                                                            cursor: 'pointer',
+                                                            '&:active': { backgroundColor: '#3b82f6', color: 'white' }
+                                                        }),
+                                                        singleValue: (base) => ({ ...base, color: '#0f172a' })
+                                                    }}
+                                                />
+                                            </div>
+
+                                            {/* Color Selection Block */}
+                                            <div className="md:col-span-2 space-y-6">
+                                                {formData.condition === 'New' && (
+                                                    <div className="space-y-2 max-w-xs">
+                                                        <label className="block text-sm font-bold text-slate-700">How many colors available?<span className="text-red-500 ml-1">*</span></label>
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                                            value={colorCount}
+                                                            onChange={handleColorCountChange}
+                                                            required
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {formData.available_colors.map((color, idx) => (
+                                                        <div key={idx} className="space-y-2">
+                                                            <label className="block text-sm font-bold text-slate-700">
+                                                                Color Option {idx + 1}
+                                                                {idx === 0 && <span className="text-[10px] text-blue-600 ml-2">(Primary Exterior)</span>}
+                                                            </label>
+                                                            <select
+                                                                className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                                                value={color}
+                                                                onChange={(e) => handleColorChange(idx, e.target.value)}
+                                                                required
+                                                            >
+                                                                <option value="">Select Color</option>
+                                                                {CAR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -289,7 +460,7 @@ const AddCarPage = () => {
                                         <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Specifications</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                             <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Transmission</label>
+                                                <label className="block text-sm font-bold text-slate-700">Transmission<span className="text-red-500 ml-1">*</span></label>
                                                 <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required>
                                                     <option value="">Select</option>
                                                     <option value="Automatic">Automatic</option>
@@ -297,7 +468,7 @@ const AddCarPage = () => {
                                                 </select>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Fuel Type</label>
+                                                <label className="block text-sm font-bold text-slate-700">Fuel Type<span className="text-red-500 ml-1">*</span></label>
                                                 <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required>
                                                     <option value="">Select Fuel</option>
                                                     <option value="Petrol">Petrol</option>
@@ -308,10 +479,13 @@ const AddCarPage = () => {
                                                     <option value="CNG">CNG</option>
                                                 </select>
                                             </div>
-                                            <Input label="Seating Capacity" type="number" min="1" max="60" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
+                                            <Input label="Seating Capacity" type="number" min="1" max="10" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
                                             <Input label="Range (e.g. 350km)" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
                                             <Input label="Body Type (e.g. SUV)" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
-                                            <Input label="Mileage (e.g. 40 km)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} />
+                                            <Input label="Mileage (kmpl)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} placeholder="e.g. 18.5" />
+                                            {formData.condition === 'Used' && (
+                                                <Input label="Total Distance Covered" value={formData.total_distance_covered} onChange={(e) => setFormData({ ...formData, total_distance_covered: e.target.value })} placeholder="e.g. 45,000 km" />
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -321,17 +495,31 @@ const AddCarPage = () => {
                                         <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Registration & Details</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                             <div className="md:col-span-1">
-                                                <Input label="Number of Owners" type="number" min="0" value={formData.number_of_owners} onChange={(e) => setFormData({ ...formData, number_of_owners: Math.max(0, parseInt(e.target.value) || 0) })} disabled={formData.condition === 'New'} className={formData.condition === 'New' ? 'opacity-50' : ''} />
+                                                <Input id="owners-count-input" label="Number of Owners" type="number" min="0" value={formData.number_of_owners} onChange={handleOwnerCountChange} disabled={formData.condition === 'New'} className={formData.condition === 'New' ? 'opacity-50' : ''} required={formData.condition === 'Used'} />
                                             </div>
-                                            <Input label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
-                                            <Input label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
-                                            <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Availability</label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.availability_status} onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}>
-                                                    <option value="Available">Available</option>
-                                                    <option value="Unavailable">Unavailable</option>
-                                                </select>
-                                            </div>
+                                            <Input id="car-price-input" label="Price ($)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
+                                            {formData.condition === 'Used' && (
+                                                <>
+                                                    <Input id="registration-city-input" label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
+                                                    <Input id="insurance-validity-input" label="Insurance Validity" type="date" value={formData.insurance_validity} onChange={(e) => setFormData({ ...formData, insurance_validity: e.target.value })} required />
+                                                </>
+                                            )}
+                                            {formData.past_owners && formData.past_owners.length > 0 && (
+                                                <div className="md:col-span-3 space-y-4 border-t border-slate-100 pt-4 mt-2">
+                                                    <h4 className="text-sm font-bold text-slate-900">Past Owner History</h4>
+                                                    {formData.past_owners.map((owner, index) => (
+                                                        <div key={index} className="bg-slate-50 rounded-xl border border-slate-200 p-4 relative space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                                                            <div className="absolute top-0 right-0 bg-slate-900 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl rounded-tr-xl">OWNER {index + 1}</div>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                                                <Input label="Sale Date" type="date" value={owner.sale_date || ''} onChange={(e) => handlePastOwnerChange(index, 'sale_date', e.target.value)} required />
+                                                                <Input label="Sale Price ($)" type="number" min="0" value={owner.sale_price || ''} onChange={(e) => handlePastOwnerChange(index, 'sale_price', e.target.value)} required />
+                                                                <Input label="Seller Name" value={owner.seller_name || ''} onChange={(e) => handlePastOwnerChange(index, 'seller_name', e.target.value)} required />
+                                                                <Input label="Buyer Name" value={owner.buyer_name || ''} onChange={(e) => handlePastOwnerChange(index, 'buyer_name', e.target.value)} required />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                             <div className="md:col-span-3 space-y-2">
                                                 <label className="block text-sm font-bold text-slate-700">Description</label>
                                                 <textarea className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all resize-y min-h-[120px]" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="3" />
@@ -352,11 +540,11 @@ const AddCarPage = () => {
                                             <div className="space-y-4">
                                                 <div className="flex items-center gap-2">
                                                     <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs">01</span>
-                                                    <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Main Profile Image</h4>
+                                                    <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Main Profile Image<span className="text-red-500 ml-1">*</span></h4>
                                                 </div>
 
                                                 <div className="flex gap-4 items-center">
-                                                    <input type="file" ref={mainFileRef} onChange={handleMainFileChange} className="hidden" accept="image/*" />
+                                                    <input id="main-image-input" type="file" ref={mainFileRef} onChange={handleMainFileChange} className="hidden" accept="image/*" />
                                                     <Button type="button" variant="outline" onClick={() => mainFileRef.current.click()} disabled={mainLoading} className="h-12 border-dashed border-2 hover:border-blue-600 hover:text-blue-600 transition-all px-8 border-slate-200 uppercase text-[10px] font-black tracking-widest">
                                                         {mainLoading ? 'Uploading...' : 'Choose Main File'}
                                                     </Button>
@@ -379,7 +567,7 @@ const AddCarPage = () => {
                                                 </div>
 
                                                 <div className="flex gap-4 items-center">
-                                                    <input type="file" ref={multiFileRef} onChange={handleMultiFileChange} className="hidden" multiple accept="image/*" />
+                                                    <input id="secondary-images-input" type="file" ref={multiFileRef} onChange={handleMultiFileChange} className="hidden" multiple accept="image/*" />
                                                     <Button type="button" variant="outline" onClick={() => multiFileRef.current.click()} disabled={multiLoading} className="h-12 border-dashed border-2 hover:border-slate-900 transition-all px-8 border-slate-200">
                                                         {multiLoading ? 'Processing Images...' : 'Add Gallery Photos'}
                                                     </Button>

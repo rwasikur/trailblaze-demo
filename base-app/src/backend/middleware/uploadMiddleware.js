@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         // Default to profiles if not specified or for backward compatibility
         let subFolder = 'profiles';
-        
+
         // Determine subfolder based on fieldname or custom header/param if needed
         if (file.fieldname === 'car_image' || file.fieldname === 'secondary_images') {
             subFolder = 'cars';
@@ -27,8 +27,8 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const prefix = file.fieldname === 'car_image' ? 'car' : 
-                      file.fieldname === 'secondary_images' ? 'gallery' : 'profile';
+        const prefix = file.fieldname === 'car_image' ? 'car' :
+            file.fieldname === 'secondary_images' ? 'gallery' : 'profile';
         cb(null, `${prefix}-${uniqueSuffix}${path.extname(file.originalname).toLowerCase()}`);
     }
 });
@@ -48,7 +48,7 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for car high-res images
+    limits: { fileSize: 20 * 1024 * 1024 }, // 20MB limit for car high-res images
     fileFilter: fileFilter
 });
 

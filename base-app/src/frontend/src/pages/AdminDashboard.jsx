@@ -1,198 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import api from '../api';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 
-const CHART_COLORS = ['#2563eb', '#16a34a', '#f97316', '#dc2626', '#7c3aed', '#0891b2'];
-
-const FleetStatusPieChart = ({ data }) => {
-    const segments = useMemo(() => {
-        const total = data.reduce((sum, item) => sum + item.count, 0);
-        let offset = 0;
-
-        return data.map((item, index) => {
-            const value = total === 0 ? 0 : (item.count / total) * 100;
-            const segment = `${CHART_COLORS[index % CHART_COLORS.length]} ${offset}% ${offset + value}%`;
-            offset += value;
-            return segment;
-        });
-    }, [data]);
-
-    if (!data.length) {
-        return (
-            <div id="fleet-status-empty" className="h-64 flex items-center justify-center text-slate-500">
-                No fleet status data available.
-            </div>
-        );
-    }
-
-    return (
-        <div id="fleet-status-chart" className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-10 items-center">
-            <div
-                role="img"
-                aria-label="Fleet status distribution pie chart"
-                className="w-56 h-56 rounded-full mx-auto border border-slate-200"
-                style={{ background: `conic-gradient(${segments.join(', ')})` }}
-            />
-
-            <div className="space-y-3 max-w-sm">
-                {data.map((item, index) => (
-                    <div key={item.status} className="grid grid-cols-[1fr_auto] items-center gap-6">
-                        <div className="flex items-center gap-3 min-w-0">
-                            <span
-                                className="w-3 h-3 rounded-full shrink-0"
-                                style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
-                            />
-                            <span className="text-sm font-semibold text-slate-700 truncate">
-                                {item.status}
-                            </span>
-                        </div>
-                        <span className="text-sm text-slate-500 whitespace-nowrap">
-                            {item.count} vehicles - {item.percentage}%
-                        </span>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
-
-const FUEL_COLORS = {
-    Electric: '#2563eb',
-    Petrol:   '#dc2626',
-    Diesel:   '#92400e',
-    Hybrid:   '#16a34a',
-};
-
-const FuelTypeBreakdown = ({ data }) => {
-    if (!data || !data.length) {
-        return (
-            <div id="fuel-type-empty" className="h-24 flex items-center justify-center text-slate-500 text-sm">
-                No fuel type data available.
-            </div>
-        );
-    }
-    return (
-        <div id="fuel-type-breakdown" className="space-y-4">
-            {data.map((item) => (
-                <div key={item.fuelType}>
-                    <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm font-semibold text-slate-700">{item.fuelType}</span>
-                        <span className="text-sm text-slate-500">{item.count} vehicles - {item.percentage}%</span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2">
-                        <div
-                            className="h-2 rounded-full transition-all duration-500"
-                            style={{
-                                width: `${item.percentage}%`,
-                                backgroundColor: FUEL_COLORS[item.fuelType] || '#7c3aed'
-                            }}
-                        />
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-};
-
-const BODY_COLORS = {
-    Sedan:     '#2563eb',
-    SUV:       '#16a34a',
-    Coupe:     '#f97316',
-    Hatchback: '#7c3aed',
-    Truck:     '#0891b2',
-};
-
-const BodyTypeBreakdown = ({ data }) => {
-    if (!data || !data.length) {
-        return (
-            <div id="body-type-empty" className="h-24 flex items-center justify-center text-slate-500 text-sm">
-                No body type data available.
-            </div>
-        );
-    }
-    return (
-        <div id="body-type-breakdown" className="space-y-4">
-            {data.map((item) => (
-                <div key={item.bodyType}>
-                    <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm font-semibold text-slate-700">{item.bodyType}</span>
-                        <span className="text-sm text-slate-500">{item.count} vehicles - {item.percentage}%</span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2">
-                        <div
-                            className="h-2 rounded-full transition-all duration-500"
-                            style={{
-                                width: `${item.percentage}%`,
-                                backgroundColor: BODY_COLORS[item.bodyType] || '#dc2626'
-                            }}
-                        />
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-};
-
-const MetricCard = ({ id, label, value, subtext }) => (
-    <Card className="border-slate-200 shadow-sm bg-white">
-        <CardContent className="p-5">
-            <p className="text-xs font-semibold uppercase text-slate-500">{label}</p>
-            <p id={id} className="text-3xl font-extrabold text-slate-900 mt-2">
-                {value}
-            </p>
-            {subtext && (
-                <p className="text-xs font-semibold text-slate-400 mt-1">
-                    {subtext}
-                </p>
-            )}
-        </CardContent>
-    </Card>
-);
-
-const DistributionBars = ({ data, labelKey, emptyLabel = 'No data available.' }) => {
-    if (!data || !data.length) {
-        return (
-            <div className="h-24 flex items-center justify-center text-slate-500 text-sm">
-                {emptyLabel}
-            </div>
-        );
-    }
-
-    return (
-        <div className="space-y-4">
-            {data.map((item, index) => (
-                <div key={item[labelKey]}>
-                    <div className="flex justify-between items-center gap-4 mb-1">
-                        <span className="text-sm font-semibold text-slate-700 truncate">{item[labelKey]}</span>
-                        <span className="text-sm text-slate-500 whitespace-nowrap">
-                            {item.count} vehicles - {item.percentage}%
-                        </span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2">
-                        <div
-                            className="h-2 rounded-full transition-all duration-500"
-                            style={{
-                                width: `${item.percentage}%`,
-                                backgroundColor: CHART_COLORS[index % CHART_COLORS.length]
-                            }}
-                        />
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-};
-
-const formatCurrency = (value) => `$${(value ?? 0).toLocaleString()}`;
-
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [cars, setCars] = useState([]);
-    const [analytics, setAnalytics] = useState(null);
-    const [analyticsError, setAnalyticsError] = useState('');
+    const [bookings, setBookings] = useState([]);
+    const [activeTab, setActiveTab] = useState('vehicles');
+    const [editingBookingId, setEditingBookingId] = useState(null);
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
@@ -203,7 +22,7 @@ const AdminDashboard = () => {
         }
 
         fetchCars(token);
-        fetchAnalytics();
+        fetchBookings(token);
     }, [navigate]);
 
     const fetchCars = async (token) => {
@@ -218,36 +37,34 @@ const AdminDashboard = () => {
         }
     };
 
-    const fetchAnalytics = async (token) => {
+    const fetchBookings = async (token) => {
         try {
-            setAnalyticsError('');
-            const { data } = await api.get('/api/cars/analytics/summary');
-            setAnalytics(data);
+            const { data } = await api.get('/api/bookings/admin/all', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setBookings(data || []);
         } catch (err) {
-            console.error('Failed to fetch fleet analytics:', err);
-            setAnalytics(null);
-            setAnalyticsError('Unable to load fleet analytics. Select Retry to request the latest data.');
+            console.error('Failed to fetch bookings:', err);
+            setBookings([]);
         }
     };
 
-    const retryAnalytics = () => {
-        const token = localStorage.getItem('adminToken');
-        if (token) fetchAnalytics();
+    const handleBookingStatus = async (bookingId, status) => {
+        try {
+            const token = localStorage.getItem('adminToken');
+            await api.put(`/api/bookings/admin/${bookingId}/status`, { status }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success(`Booking ${status.toLowerCase()}!`);
+            await Promise.all([fetchBookings(token), fetchCars(token)]);
+        } catch (err) {
+            toast.error('Failed to update booking status');
+            console.error(err);
+        }
     };
 
-    const newCondition = analytics?.conditionDistribution?.find(item => item.condition === 'New');
-    const usedCondition = analytics?.conditionDistribution?.find(item => item.condition === 'Used');
-
-    const newCount = newCondition?.count ?? 0;
-    const usedCount = usedCondition?.count ?? 0;
-    const newPercentage = newCondition?.percentage ?? 0;
-    const usedPercentage = usedCondition?.percentage ?? 0;
-    const modelYearRange = analytics?.oldestModelYear && analytics?.newestModelYear
-        ? `${analytics.oldestModelYear} - ${analytics.newestModelYear}`
-        : '';
-
     return (
-        <div className="min-h-full bg-slate-50 py-10 px-6">
+        <div className="min-h-full bg-slate-50 py-10 px-4 md:px-6">
             <div className="max-w-7xl mx-auto space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
@@ -255,11 +72,19 @@ const AdminDashboard = () => {
                             Admin Dashboard
                         </h1>
                         <p className="text-slate-500 mt-2 text-base">
-                            Manage your vehicle Catalogue and system operations.
+                            Manage your vehicle Catalogue, purchase bookings, and system operations.
                         </p>
                     </div>
 
-                    <div className="flex gap-4">
+                    <div className="flex flex-wrap gap-4">
+                        <Button
+                            id="analytics-dashboard-button"
+                            variant="outline"
+                            onClick={() => navigate('/admin/analytics')}
+                            className="text-sm font-semibold h-11 border-slate-300"
+                        >
+                            View Analytics
+                        </Button>
                         <Button
                             variant="outline"
                             onClick={() => navigate('/admin/catalogue')}
@@ -278,204 +103,184 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <MetricCard
-                        id="metric-total-fleet"
-                        label="Total Fleet"
-                        value={analytics?.totalFleet ?? 0}
-                    />
-                    <MetricCard
-                        id="metric-available-count"
-                        label="Available"
-                        value={analytics?.availableCount ?? 0}
-                    />
-                    <MetricCard
-                        id="metric-unavailable-count"
-                        label="Unavailable"
-                        value={analytics?.unavailableCount ?? 0}
-                    />
-                    <MetricCard
-                        id="metric-availability-rate"
-                        label="Availability Rate"
-                        value={`${analytics?.availabilityRate ?? 0}%`}
-                    />
-                    <MetricCard
-                        id="metric-average-daily-rate"
-                        label="Avg Daily Rate"
-                        value={formatCurrency(analytics?.averageDailyRate)}
-                    />
-                    <MetricCard
-                        id="metric-available-daily-rate"
-                        label="Available Daily Capacity"
-                        value={formatCurrency(analytics?.availableDailyRate)}
-                    />
-                    <MetricCard
-                        id="metric-average-fleet-age"
-                        label="Avg Fleet Age"
-                        value={`${analytics?.averageFleetAge ?? 0} yrs`}
-                        subtext={modelYearRange}
-                    />
-                    <MetricCard
-                        id="metric-new-count"
-                        label="Brand New"
-                        value={newCount}
-                        subtext={`${newPercentage}% of fleet`}
-                    />
-                    <MetricCard
-                        id="metric-used-count"
-                        label="Pre-Owned"
-                        value={usedCount}
-                        subtext={`${usedPercentage}% of fleet`}
-                    />
-                    <MetricCard
-                        id="metric-expired-insurance"
-                        label="Expired Insurance"
-                        value={analytics?.expiredInsuranceCount ?? 0}
-                    />
-                    <MetricCard
-                        id="metric-expiring-insurance"
-                        label="Expiring Soon"
-                        value={analytics?.insuranceExpiringSoonCount ?? 0}
-                        subtext="Next 30 days"
-                    />
-                    <MetricCard
-                        id="metric-total-sales-revenue"
-                        label="Total Sales Revenue"
-                        value={formatCurrency(analytics?.totalSalesRevenue)}
-                        subtext={`${analytics?.totalVehiclesSold ?? 0} vehicles sold`}
-                    />
-                </div>
-
-                <Card className="border-slate-200 shadow-sm bg-white">
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-between gap-4 mb-6">
-                            <h2 className="text-lg font-bold text-slate-900 m-0">
-                                Fleet Status Distribution
-                            </h2>
-
-                            {analyticsError && (
-                                <Button
-                                    id="analytics-retry-button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={retryAnalytics}
-                                >
-                                    Retry
-                                </Button>
-                            )}
-                        </div>
-
-                        {analyticsError ? (
-                            <p id="analytics-error-message" className="text-sm text-red-600">
-                                {analyticsError}
-                            </p>
-                        ) : (
-                            <FleetStatusPieChart data={analytics?.statusDistribution || []} />
-                        )}
-                    </CardContent>
-                </Card>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <Card className="border-slate-200 shadow-sm bg-white">
-                        <CardContent className="p-6">
-                            <h2 className="text-lg font-bold text-slate-900 mb-5">Fuel Type Breakdown</h2>
-                            <FuelTypeBreakdown data={analytics?.fuelTypeDistribution || []} />
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-slate-200 shadow-sm bg-white">
-                        <CardContent className="p-6">
-                            <h2 className="text-lg font-bold text-slate-900 mb-5">Body Type Distribution</h2>
-                            <BodyTypeBreakdown data={analytics?.bodyTypeDistribution || []} />
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <Card className="border-slate-200 shadow-sm bg-white">
-                        <CardContent className="p-6">
-                            <h2 className="text-lg font-bold text-slate-900 mb-5">Top Brands</h2>
-                            <DistributionBars data={analytics?.brandDistribution || []} labelKey="brand" />
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-slate-200 shadow-sm bg-white">
-                        <CardContent className="p-6">
-                            <h2 className="text-lg font-bold text-slate-900 mb-5">Transmission Mix</h2>
-                            <DistributionBars data={analytics?.transmissionDistribution || []} labelKey="transmission" />
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-slate-200 shadow-sm bg-white">
-                        <CardContent className="p-6">
-                            <h2 className="text-lg font-bold text-slate-900 mb-5">Registration Cities</h2>
-                            <DistributionBars data={analytics?.registrationCityDistribution || []} labelKey="city" />
-                        </CardContent>
-                    </Card>
+                <div className="flex gap-2 p-1.5 bg-slate-200/50 rounded-2xl w-fit">
+                    <button
+                        onClick={() => setActiveTab('vehicles')}
+                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'vehicles' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        Vehicles ({cars.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('bookings')}
+                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'bookings' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        Bookings ({bookings.length})
+                    </button>
                 </div>
 
                 <Card className="border-slate-200 shadow-sm overflow-hidden bg-white">
                     <CardContent className="p-0">
-                        <div className="bg-white px-6 py-5 border-b border-slate-100 flex justify-between items-center">
-                            <h2 className="text-lg font-bold text-slate-900 m-0">
-                                All Vehicles
-                            </h2>
-                        </div>
+                        {activeTab === 'vehicles' ? (
+                            <>
+                                <div className="bg-white px-6 py-5 border-b border-slate-100">
+                                    <h2 className="text-base font-black uppercase tracking-widest text-slate-400">Inventory Overview</h2>
+                                </div>
 
-                        {cars.length === 0 ? (
-                            <div className="p-10 text-center">
-                                <p className="text-slate-500">No vehicles in Catalogue.</p>
-                            </div>
+                                {cars.length === 0 ? (
+                                    <div className="p-20 text-center">
+                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No vehicles found.</p>
+                                    </div>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead className="text-[10px] text-slate-400 bg-slate-50/50 uppercase tracking-[0.2em] border-b border-slate-100">
+                                                <tr>
+                                                    <th className="px-6 py-4 font-black">Vehicle Details</th>
+                                                    <th className="px-6 py-4 font-black">Model Year</th>
+                                                    <th className="px-6 py-4 font-black">Price Point</th>
+                                                    <th className="px-6 py-4 font-black">Status</th>
+                                                    <th className="px-6 py-4 text-right font-black">Operations</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="dashboard-car-list" className="divide-y divide-slate-50">
+                                                {cars.map(car => (
+                                                    <tr id={`car-row-${car._id}`} key={car._id} className="hover:bg-slate-50/30 transition-colors group">
+                                                        <td className="px-6 py-5">
+                                                            <div className="font-black text-slate-900 text-sm">
+                                                                {car.name?.toLowerCase().startsWith(car.brand?.toLowerCase()) ? car.name : `${car.brand} ${car.name}`}
+                                                            </div>
+                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{car.fuel_type} - {car.transmission}</div>
+                                                        </td>
+                                                        <td className="px-6 py-5 text-slate-600 font-bold text-sm">{car.model_year}</td>
+                                                        <td className="px-6 py-5 text-slate-900 font-black text-sm">${car.price?.toLocaleString()}</td>
+                                                        <td className="px-6 py-5">
+                                                            <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'}>
+                                                                {car.availability_status}
+                                                            </Badge>
+                                                        </td>
+                                                        <td className="px-6 py-5 text-right">
+                                                            <Button id={`car-row-${car._id}-edit`} variant="outline" size="sm" onClick={() => navigate(`/admin/edit-car/${car._id}`)} className="h-8 px-4 text-[10px] font-black uppercase tracking-widest border-slate-200 hover:border-slate-900 transition-all">Edit</Button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="text-xs text-slate-500 bg-slate-50/50 uppercase border-b border-slate-200">
-                                        <tr>
-                                            <th className="px-6 py-4 font-semibold">Vehicle</th>
-                                            <th className="px-6 py-4 font-semibold">Year</th>
-                                            <th className="px-6 py-4 font-semibold">Price</th>
-                                            <th className="px-6 py-4 font-semibold">Status</th>
-                                            <th className="px-6 py-4 text-right font-semibold">Actions</th>
-                                        </tr>
-                                    </thead>
+                            <>
+                                <div className="bg-white px-6 py-5 border-b border-slate-100">
+                                    <h2 className="text-base font-black uppercase tracking-widest text-slate-400">Incoming Requests</h2>
+                                </div>
 
-                                    <tbody id="dashboard-car-list" className="divide-y divide-slate-100">
-                                        {cars.map(car => (
-                                            <tr
-                                                id={`car-row-${car._id}`}
-                                                key={car._id}
-                                                className="hover:bg-slate-50/50 transition-colors"
-                                            >
-                                                <td className="px-6 py-4 font-bold text-slate-900">
-                                                    {car.brand} {car.name}
-                                                </td>
-                                                <td className="px-6 py-4 text-slate-600 font-medium">
-                                                    {car.model_year}
-                                                </td>
-                                                <td className="px-6 py-4 text-slate-600 font-medium">
-                                                    ${car.price_per_day?.toLocaleString()}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'}>
-                                                        {car.availability_status}
-                                                    </Badge>
-                                                </td>
-                                                <td className="px-6 py-4 flex justify-end gap-3">
-                                                    <Button
-                                                        id={`car-row-${car._id}-edit`}
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => navigate(`/admin/edit-car/${car._id}`)}
-                                                        className="h-8 px-3 text-xs"
-                                                    >
-                                                        Edit
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                {bookings.length === 0 ? (
+                                    <div className="p-20 text-center">
+                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No active bookings.</p>
+                                    </div>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead className="text-[10px] text-slate-400 bg-slate-50/50 uppercase tracking-[0.2em] border-b border-slate-100">
+                                                <tr>
+                                                    <th className="px-6 py-4 font-black">Customer Profile</th>
+                                                    <th className="px-6 py-4 font-black">Contact Info</th>
+                                                    <th className="px-6 py-4 font-black">Vehicle Choice</th>
+                                                    <th className="px-6 py-4 font-black">Timestamp</th>
+                                                    <th className="px-6 py-4 font-black">Current Status</th>
+                                                    <th className="px-6 py-4 text-right font-black">Action Panel</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50">
+                                                {bookings.map(booking => (
+                                                    <tr key={booking._id} className="hover:bg-slate-50/30 transition-colors">
+                                                        <td className="px-6 py-5">
+                                                            <div className="font-black text-slate-900 text-sm">{booking.user_name}</div>
+                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_email}</div>
+                                                        </td>
+                                                        <td className="px-6 py-5 text-slate-600 font-bold text-sm tracking-tight">{booking.user_contact}</td>
+                                                        <td className="px-6 py-5">
+                                                            <div className="font-black text-slate-900 text-sm">
+                                                                {booking.car?.name?.toLowerCase().startsWith(booking.car?.brand?.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
+                                                            </div>
+                                                            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">
+                                                                ${booking.car?.price?.toLocaleString()}
+                                                                {booking.car?.condition === 'New' && ` • ${booking.selected_color || 'N/A'}`}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-5 text-slate-500 text-[11px] font-black uppercase tracking-tighter">
+                                                            {new Date(booking.createdAt).toLocaleDateString()}
+                                                        </td>
+                                                        <td className="px-6 py-5">
+                                                            <Badge variant={booking.status === 'Accepted' ? 'available' : booking.status === 'Pending' ? 'pending' : 'unavailable'}>
+                                                                {booking.status}
+                                                            </Badge>
+                                                        </td>
+                                                        <td className="px-6 py-5 text-right">
+                                                            <div className="flex justify-end gap-2">
+                                                                {editingBookingId === booking._id ? (
+                                                                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-300">
+                                                                        <select
+                                                                            className="h-8 px-2 text-[9px] font-black uppercase tracking-widest bg-slate-100 border border-slate-200 rounded-lg outline-none focus:border-slate-900 transition-all"
+                                                                            value={booking.status}
+                                                                            onChange={(e) => {
+                                                                                handleBookingStatus(booking._id, e.target.value);
+                                                                                setEditingBookingId(null);
+                                                                            }}
+                                                                        >
+                                                                            <option value="Pending">Pending</option>
+                                                                            <option value="Accepted">Accepted</option>
+                                                                            <option value="Rejected">Rejected</option>
+                                                                        </select>
+                                                                        <button
+                                                                            onClick={() => setEditingBookingId(null)}
+                                                                            className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 px-2"
+                                                                        >
+                                                                            Cancel
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        {booking.status === 'Pending' ? (
+                                                                            <div className="flex justify-end gap-2">
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="slate"
+                                                                                    className="h-8 px-4 text-[9px] bg-emerald-600 hover:bg-emerald-700 border-none font-black uppercase tracking-widest shadow-md shadow-emerald-600/10"
+                                                                                    onClick={() => handleBookingStatus(booking._id, 'Accepted')}
+                                                                                >
+                                                                                    Accept
+                                                                                </Button>
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="outline"
+                                                                                    className="h-8 px-4 text-[9px] text-red-600 border-red-100 hover:bg-red-50 font-black uppercase tracking-widest"
+                                                                                    onClick={() => handleBookingStatus(booking._id, 'Rejected')}
+                                                                                >
+                                                                                    Reject
+                                                                                </Button>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                className="h-8 px-4 text-[9px] font-black uppercase tracking-widest border-slate-200 hover:border-slate-900 transition-all"
+                                                                                onClick={() => setEditingBookingId(booking._id)}
+                                                                            >
+                                                                                Edit Status
+                                                                            </Button>
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </CardContent>
                 </Card>

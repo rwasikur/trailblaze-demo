@@ -59,7 +59,7 @@ const Navbar = () => {
                             to="/admin"
                             className="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-900/20 hover:bg-blue-500 transition-all active:scale-95"
                         >
-                            Admin Access
+                            Admin Login
                         </Link>
                     )}
                 </div>
