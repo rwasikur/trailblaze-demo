@@ -99,7 +99,7 @@ const AdminDashboard = () => {
                         <CardContent className="p-6">
                             <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Net Revenue</div>
                             <div id="net-revenue-stat" className="text-3xl font-black text-blue-600 mt-2">
-                                ₹{bookings.filter(b => b.status === 'Accepted').reduce((acc, b) => acc + (b.final_price || b.car?.price || 0), 0).toLocaleString()}
+                                ${bookings.filter(b => b.status === 'Accepted').reduce((acc, b) => acc + (b.final_price || 0), 0).toLocaleString()}
                             </div>
                         </CardContent>
                     </Card>
@@ -168,7 +168,7 @@ const AdminDashboard = () => {
                                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{car.fuel_type} • {car.transmission}</div>
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-600 font-bold text-sm">{car.model_year}</td>
-                                                        <td className="px-6 py-5 text-slate-900 font-black text-sm">₹{car.price?.toLocaleString()}</td>
+                                                        <td className="px-6 py-5 text-slate-900 font-black text-sm">${car.price?.toLocaleString()}</td>
                                                         <td className="px-6 py-5">
                                                             <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'}>
                                                                 {car.availability_status}
@@ -219,7 +219,10 @@ const AdminDashboard = () => {
                                                             <div className="font-black text-slate-900 text-sm">
                                                                 {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
                                                             </div>
-                                                            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">₹{booking.car?.price?.toLocaleString()}</div>
+                                                            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">
+                                                                ${booking.car?.price?.toLocaleString()}
+                                                                {booking.car?.condition === 'New' && ` • ${booking.selected_color || 'N/A'}`}
+                                                            </div>
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-500 text-[11px] font-black uppercase tracking-tighter">
                                                             {new Date(booking.createdAt).toLocaleDateString()}
@@ -340,7 +343,7 @@ const AdminDashboard = () => {
                                                             {new Date(booking.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                         </td>
                                                         <td className="px-6 py-5 text-right font-black text-slate-900">
-                                                            ₹{(booking.final_price || booking.car?.price || 0).toLocaleString()}
+                                                            ${(booking.final_price || booking.car?.price || 0).toLocaleString()}
                                                         </td>
                                                     </tr>
                                                 ))}

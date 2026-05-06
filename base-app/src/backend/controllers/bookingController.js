@@ -75,8 +75,28 @@ const updateBookingStatus = async (req, res) => {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
-        // If accepted, mark car as Sold and reject other pending bookings
-        if (status === 'Accepted' && booking.car) {
+        const oldStatus = booking.status;
+
+        // Transitioning FROM Accepted back to Pending/Rejected
+        if (oldStatus === 'Accepted' && status !== 'Accepted' && booking.car) {
+            const car = await Car.findByPk(booking.car_id);
+            if (car) {
+                // Remove the last owner record (added when accepted)
+                const updatedPastOwners = [...(car.past_owners || [])];
+                updatedPastOwners.pop();
+                const updatedOwnerCount = Math.max(0, (car.number_of_owners || 0) - 1);
+
+                await car.update({
+                    availability_status: 'Available',
+                    past_owners: updatedPastOwners,
+                    number_of_owners: updatedOwnerCount
+                });
+
+                await booking.update({ status, final_price: null });
+            }
+        }
+        // Transitioning TO Accepted
+        else if (status === 'Accepted' && booking.car) {
             const car = await Car.findByPk(booking.car_id);
             if (car) {
                 const newSale = {
@@ -110,7 +130,7 @@ const updateBookingStatus = async (req, res) => {
                 }
             );
         } else {
-            // Update status for non-Accepted flows (e.g. Rejecting a booking)
+            // Standard status update
             await booking.update({ status });
         }
 

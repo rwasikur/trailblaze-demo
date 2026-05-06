@@ -10,8 +10,8 @@ const public_cars = [
         brand: "Maruti Suzuki",
         model: "Dzire",
         model_year: 2018,
-        price: 450000,
-        currency: "INR",
+        price: 4699,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 1,
         transmission: "Manual",
@@ -20,8 +20,7 @@ const public_cars = [
         total_distance_covered: "45,000 km",
         body_type: "Hatchback",
         seating_capacity: 5,
-        exterior_color: "White",
-        interior_color: "Black",
+        available_colors: ["White"],
         registration_number: "MH02AB1234",
         registration_city: "Mumbai",
         registration_state: "Maharashtra",
@@ -35,14 +34,14 @@ const public_cars = [
             "https://i.pinimg.com/1200x/b7/f7/51/b7f7518ecd19cf75e6dc0def9060e747.jpg",
             "https://i.pinimg.com/1200x/f8/d8/4a/f8d84af03ab51178865e65365406e9ef.jpg"
         ],
-        availability_status: "Sold",
+        availability_status: "Available",
         discount_percentage: 5,
         views: 854,
         range: "160",
         past_owners: [
             {
                 sale_date: "2018-05-15",
-                sale_price: 750000,
+                sale_price: 7850,
                 seller_name: "Maruti Suzuki Arena",
                 buyer_name: "Rajesh Kumar"
             }
@@ -53,8 +52,8 @@ const public_cars = [
         brand: "Hyundai",
         model: "i20",
         model_year: 2019,
-        price: 550000,
-        currency: "INR",
+        price: 5750,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 2,
         transmission: "Manual",
@@ -63,8 +62,7 @@ const public_cars = [
         total_distance_covered: "32,000 km",
         body_type: "Hatchback",
         seating_capacity: 5,
-        exterior_color: "Polar White",
-        interior_color: "Beige",
+        available_colors: ["Polar White"],
         registration_number: "DL01CD5678",
         registration_city: "New Delhi",
         registration_state: "Delhi",
@@ -86,13 +84,13 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2019-02-10",
-                sale_price: 825000,
+                sale_price: 8650,
                 seller_name: "Hyundai Motor Plaza",
                 buyer_name: "Amit Shah"
             },
             {
                 sale_date: "2021-11-20",
-                sale_price: 680000,
+                sale_price: 7150,
                 seller_name: "Amit Shah",
                 buyer_name: "Priya Sharma"
             }
@@ -103,8 +101,8 @@ const public_cars = [
         brand: "Tata",
         model: "Nexon",
         model_year: 2020,
-        price: 950000,
-        currency: "INR",
+        price: 9950,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 1,
         transmission: "Automatic",
@@ -113,8 +111,7 @@ const public_cars = [
         total_distance_covered: "28,000 km",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "Foliage Blue",
-        interior_color: "Black and White",
+        available_colors: ["Foliage Blue"],
         registration_number: "KA03EF9012",
         registration_city: "Bengaluru",
         registration_state: "Karnataka",
@@ -135,7 +132,7 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2020-08-12",
-                sale_price: 1250000,
+                sale_price: 13099,
                 seller_name: "Tata Motors Dealer",
                 buyer_name: "Suresh Menon"
             }
@@ -146,8 +143,8 @@ const public_cars = [
         brand: "Mahindra",
         model: "Thar",
         model_year: 2021,
-        price: 1050000,
-        currency: "INR",
+        price: 10999,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 1,
         transmission: "Automatic",
@@ -156,8 +153,7 @@ const public_cars = [
         total_distance_covered: "15,000 km",
         body_type: "SUV",
         seating_capacity: 4,
-        exterior_color: "Red Rage",
-        interior_color: "Black",
+        available_colors: ["Red Rage"],
         registration_number: "TS09GH3456",
         registration_city: "Hyderabad",
         registration_state: "Telangana",
@@ -178,7 +174,7 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2021-03-22",
-                sale_price: 1250000,
+                sale_price: 13099,
                 seller_name: "Mahindra Showroom",
                 buyer_name: "Karan Johar"
             }
@@ -189,8 +185,8 @@ const public_cars = [
         brand: "Honda",
         model: "City",
         model_year: 2017,
-        price: 720000,
-        currency: "INR",
+        price: 7550,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 2,
         transmission: "Automatic",
@@ -199,8 +195,7 @@ const public_cars = [
         total_distance_covered: "55,000 km",
         body_type: "Sedan",
         seating_capacity: 5,
-        exterior_color: "White",
-        interior_color: "Black Leather",
+        available_colors: ["White"],
         registration_number: "GJ01IJ7890",
         registration_city: "Ahmedabad",
         registration_state: "Gujarat",
@@ -221,13 +216,13 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2017-06-14",
-                sale_price: 1350000,
+                sale_price: 14150,
                 seller_name: "Deccan Honda",
                 buyer_name: "Vikram Singh"
             },
             {
                 sale_date: "2020-09-05",
-                sale_price: 950000,
+                sale_price: 9950,
                 seller_name: "Vikram Singh",
                 buyer_name: "Anjali Gupta"
             }
@@ -238,8 +233,8 @@ const public_cars = [
         brand: "Toyota",
         model: "Innova Crysta",
         model_year: 2018,
-        price: 1850000,
-        currency: "INR",
+        price: 19399,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 1,
         transmission: "Automatic",
@@ -248,8 +243,7 @@ const public_cars = [
         total_distance_covered: "85,000 km",
         body_type: "MUV",
         seating_capacity: 7,
-        exterior_color: "Super White",
-        interior_color: "Camel Brown Leather",
+        available_colors: ["Super White"],
         registration_number: "TN09KL1234",
         registration_city: "Chennai",
         registration_state: "Tamil Nadu",
@@ -269,7 +263,7 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2018-11-30",
-                sale_price: 2300000,
+                sale_price: 24150,
                 seller_name: "Toyota Lanson",
                 buyer_name: "Ramesh Babu"
             }
@@ -280,8 +274,8 @@ const public_cars = [
         brand: "Kia",
         model: "Seltos",
         model_year: 2020,
-        price: 1250000,
-        currency: "INR",
+        price: 13099,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 1,
         transmission: "Manual",
@@ -290,8 +284,7 @@ const public_cars = [
         total_distance_covered: "22,000 km",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "Glacier White Pearl",
-        interior_color: "Black",
+        available_colors: ["Glacier White Pearl"],
         registration_number: "HR26MN5678",
         registration_city: "Gurgaon",
         registration_state: "Haryana",
@@ -312,7 +305,7 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2020-01-15",
-                sale_price: 1400000,
+                sale_price: 14699,
                 seller_name: "Kia Motors India",
                 buyer_name: "Neha Sharma"
             }
@@ -323,8 +316,8 @@ const public_cars = [
         brand: "Ford",
         model: "EcoSport",
         model_year: 2019,
-        price: 580000,
-        currency: "INR",
+        price: 6099,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 2,
         transmission: "Manual",
@@ -333,8 +326,7 @@ const public_cars = [
         total_distance_covered: "48,000 km",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "Diamond White",
-        interior_color: "Black",
+        available_colors: ["Diamond White"],
         registration_number: "WB02OP9012",
         registration_city: "Kolkata",
         registration_state: "West Bengal",
@@ -355,13 +347,13 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2019-07-20",
-                sale_price: 950000,
+                sale_price: 9950,
                 seller_name: "Ganges Ford",
                 buyer_name: "Arun Bose"
             },
             {
                 sale_date: "2022-04-10",
-                sale_price: 750000,
+                sale_price: 7850,
                 seller_name: "Arun Bose",
                 buyer_name: "Meera Das"
             }
@@ -372,8 +364,8 @@ const public_cars = [
         brand: "Volkswagen",
         model: "Polo",
         model_year: 2016,
-        price: 920000,
-        currency: "INR",
+        price: 9650,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 3,
         transmission: "Automatic",
@@ -382,8 +374,7 @@ const public_cars = [
         total_distance_covered: "60,000 km",
         body_type: "Hatchback",
         seating_capacity: 5,
-        exterior_color: "White",
-        interior_color: "Black and Grey",
+        available_colors: ["White"],
         registration_number: "UP16QR3456",
         registration_city: "Noida",
         registration_state: "Uttar Pradesh",
@@ -404,19 +395,19 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2016-04-12",
-                sale_price: 2850000,
+                sale_price: 29899,
                 seller_name: "VW Noida",
                 buyer_name: "Ravi Teja"
             },
             {
                 sale_date: "2019-08-25",
-                sale_price: 2050000,
+                sale_price: 21499,
                 seller_name: "Ravi Teja",
                 buyer_name: "Sanjay Dutt"
             },
             {
                 sale_date: "2022-12-05",
-                sale_price: 1550000,
+                sale_price: 16250,
                 seller_name: "Sanjay Dutt",
                 buyer_name: "Kabir Singh"
             }
@@ -427,8 +418,8 @@ const public_cars = [
         brand: "Renault",
         model: "Duster",
         model_year: 2018,
-        price: 600000,
-        currency: "INR",
+        price: 6299,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 1,
         transmission: "Manual",
@@ -437,8 +428,7 @@ const public_cars = [
         total_distance_covered: "72,000 km",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "blue & black",
-        interior_color: "Black",
+        available_colors: ["blue & black"],
         registration_number: "KL01ST7890",
         registration_city: "Trivandrum",
         registration_state: "Kerala",
@@ -458,7 +448,7 @@ const public_cars = [
         past_owners: [
             {
                 sale_date: "2018-09-18",
-                sale_price: 1050000,
+                sale_price: 10999,
                 seller_name: "Renault Trivandrum",
                 buyer_name: "John Mathew"
             }
@@ -469,8 +459,8 @@ const public_cars = [
         brand: "Tata",
         model: "Safari",
         model_year: 2024,
-        price: 2549000,
-        currency: "INR",
+        price: 26750,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Automatic",
@@ -478,8 +468,7 @@ const public_cars = [
         mileage: "14.5 kmpl",
         body_type: "SUV",
         seating_capacity: 7,
-        exterior_color: "Cosmic Gold",
-        interior_color: "Black",
+        available_colors: ["Cosmic Gold", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Jan 2027",
         insurance_type: "Comprehensive",
@@ -500,8 +489,8 @@ const public_cars = [
         brand: "Mahindra",
         model: "XUV700",
         model_year: 2024,
-        price: 2499000,
-        currency: "INR",
+        price: 26199,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Automatic",
@@ -509,8 +498,7 @@ const public_cars = [
         mileage: "13 kmpl",
         body_type: "SUV",
         seating_capacity: 7,
-        exterior_color: "Midnight Black",
-        interior_color: "Black",
+        available_colors: ["Midnight Black", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Jan 2027",
         insurance_type: "Comprehensive",
@@ -530,8 +518,8 @@ const public_cars = [
         brand: "Hyundai",
         model: "Creta",
         model_year: 2024,
-        price: 2015000,
-        currency: "INR",
+        price: 21150,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Automatic",
@@ -539,8 +527,7 @@ const public_cars = [
         mileage: "18.4 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "Abyss Black",
-        interior_color: "Beige",
+        available_colors: ["Abyss Black", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Feb 2027",
         insurance_type: "Comprehensive",
@@ -560,8 +547,8 @@ const public_cars = [
         brand: "Maruti Suzuki",
         model: "Grand Vitara",
         model_year: 2024,
-        price: 1999000,
-        currency: "INR",
+        price: 20999,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Automatic",
@@ -569,8 +556,7 @@ const public_cars = [
         mileage: "27.97 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "Nexa Blue",
-        interior_color: "Bordeaux and Black",
+        available_colors: ["Nexa Blue", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Mar 2027",
         insurance_type: "Comprehensive",
@@ -591,8 +577,8 @@ const public_cars = [
         brand: "Kia",
         model: "Sonet",
         model_year: 2024,
-        price: 1499000,
-        currency: "INR",
+        price: 15750,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Automatic",
@@ -600,8 +586,7 @@ const public_cars = [
         mileage: "19.0 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "White",
-        interior_color: "Black",
+        available_colors: ["White", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Apr 2027",
         insurance_type: "Comprehensive",
@@ -621,8 +606,8 @@ const public_cars = [
         brand: "Toyota",
         model: "Fortuner",
         model_year: 2024,
-        price: 4366000,
-        currency: "INR",
+        price: 45799,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Automatic",
@@ -630,8 +615,7 @@ const public_cars = [
         mileage: "14.4 kmpl",
         body_type: "SUV",
         seating_capacity: 7,
-        exterior_color: "Pearl White with Black Roof",
-        interior_color: "Black & Maroon",
+        available_colors: ["Pearl White with Black Roof", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Jan 2027",
         insurance_type: "Comprehensive",
@@ -652,8 +636,8 @@ const public_cars = [
         brand: "MG",
         model: "Hector",
         model_year: 2024,
-        price: 2199000,
-        currency: "INR",
+        price: 23099,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Automatic",
@@ -661,8 +645,7 @@ const public_cars = [
         mileage: "13.5 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "Aurora Silver",
-        interior_color: "Oak White and Black",
+        available_colors: ["Aurora Silver", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "May 2027",
         insurance_type: "Comprehensive",
@@ -683,8 +666,8 @@ const public_cars = [
         brand: "Skoda",
         model: "Slavia",
         model_year: 2024,
-        price: 1899000,
-        currency: "INR",
+        price: 19950,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Automatic",
@@ -692,8 +675,7 @@ const public_cars = [
         mileage: "18.73 kmpl",
         body_type: "Sedan",
         seating_capacity: 5,
-        exterior_color: "Crystal White",
-        interior_color: "Black",
+        available_colors: ["Crystal White", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Feb 2027",
         insurance_type: "Comprehensive",
@@ -713,8 +695,8 @@ const public_cars = [
         brand: "Honda",
         model: "Elevate",
         model_year: 2024,
-        price: 1630000,
-        currency: "INR",
+        price: 17099,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Automatic",
@@ -722,8 +704,7 @@ const public_cars = [
         mileage: "16.92 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "Crimson Red",
-        interior_color: "Black",
+        available_colors: ["Crimson Red", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Mar 2027",
         insurance_type: "Comprehensive",
@@ -744,8 +725,8 @@ const public_cars = [
         brand: "Tata",
         model: "Punch",
         model_year: 2024,
-        price: 899000,
-        currency: "INR",
+        price: 9450,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Manual",
@@ -753,8 +734,7 @@ const public_cars = [
         mileage: "20.09 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "Tornado Blue",
-        interior_color: "Grey/Black",
+        available_colors: ["Tornado Blue", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "May 2027",
         insurance_type: "Comprehensive",
@@ -871,21 +851,30 @@ const seedPublic = async () => {
         // Seed some sample bookings
         console.log("Seeding sample bookings...");
         const allCars = await Car.findAll();
+        const soldCars = allCars.filter(c => c.availability_status === 'Sold');
+        const availableCars = allCars.filter(c => c.availability_status === 'Available');
+
+        let soldIdx = 0;
+        let availIdx = 0;
+
         for (let i = 0; i < sample_bookings.length; i++) {
             const bookingData = sample_bookings[i];
-            // Assign to different cars
-            const car = allCars[i % allCars.length];
+            let car;
 
-            // For 'Accepted' booking, ensure car is 'Sold'
-            if (bookingData.status === 'Accepted' && car.availability_status !== 'Sold') {
-                await car.update({ availability_status: 'Sold' });
+            if (bookingData.status === 'Accepted') {
+                car = soldCars[soldIdx % soldCars.length];
+                soldIdx++;
+            } else {
+                car = availableCars[availIdx % availableCars.length];
+                availIdx++;
             }
 
             // Check if booking already exists for this user and car
             const existingBooking = await Booking.findOne({
                 where: {
                     user_email: bookingData.user_email,
-                    car_id: car._id
+                    car_id: car._id,
+                    final_price: bookingData.status === 'Accepted' ? car.price : null
                 }
             });
 
@@ -897,7 +886,6 @@ const seedPublic = async () => {
                 });
             }
         }
-
         console.log(`Public car sync complete. Created: ${created}, Updated: ${updated}`);
 
         // Seed Additional Admins and Users (Append)
