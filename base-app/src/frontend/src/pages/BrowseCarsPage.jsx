@@ -8,8 +8,7 @@ import {
     Settings2, 
     CircleDollarSign,
     Zap,
-    History,
-    Gauge
+    History
 } from 'lucide-react';
 import api from '../api';
 import CarCard from '../components/CarCard';
@@ -102,10 +101,8 @@ const BrowseCarsPage = () => {
 
     return (
         <div className="min-h-full bg-slate-50">
-            {/* Main Content Area */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 
-                {/* Header Section */}
                 <div className="mb-12">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="h-px w-8 bg-blue-600"></div>
@@ -123,13 +120,13 @@ const BrowseCarsPage = () => {
                     </div>
                 </div>
 
-                {/* Filter Toolbar */}
                 <div className="mb-8 p-3 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/40 flex flex-col sm:flex-row items-center gap-4">
                     <div className="flex gap-2 p-1.5 bg-slate-200/50 rounded-2xl w-fit">
                         {['All', 'New', 'Pre-Owned'].map((opt) => (
                             <button
                                 key={opt}
                                 id={`filter-${opt.toLowerCase().replace(' ', '-')}`}
+                                data-testid={`condition-filter-${opt}`}
                                 onClick={() => setConditionFilter(opt)}
                                 className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${conditionFilter === opt ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
@@ -143,6 +140,7 @@ const BrowseCarsPage = () => {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setShowFilters(!showFilters)}
+                            data-testid="filter-toggle"
                             id="filter-toggle"
                             className={`flex items-center px-6 py-4 rounded-[2rem] border-2 transition-all duration-500 text-[10px] font-black uppercase tracking-widest ${showFilters ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border-slate-100 text-slate-600 hover:border-blue-600/30'}`}
                         >
@@ -156,7 +154,6 @@ const BrowseCarsPage = () => {
                     </div>
                 </div>
 
-                {/* Expanded Filters */}
                 <AnimatePresence>
                     {showFilters && (
                         <motion.div
@@ -167,7 +164,6 @@ const BrowseCarsPage = () => {
                         >
                             <div className="p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)]">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {/* Brand & Body Type Group */}
                                     <div className="space-y-6">
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
@@ -180,6 +176,7 @@ const BrowseCarsPage = () => {
                                             <div className="relative group">
                                                 <select
                                                     value={brandFilter}
+                                                    data-testid="brand-filter"
                                                     id="brand-filter"
                                                     onChange={(e) => setBrandFilter(e.target.value)}
                                                     className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-3.5 text-xs font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all appearance-none cursor-pointer"
@@ -193,6 +190,7 @@ const BrowseCarsPage = () => {
                                             <div className="relative group">
                                                 <select
                                                     value={bodyTypeFilter}
+                                                    data-testid="body-type-filter"
                                                     id="body-type-filter"
                                                     onChange={(e) => setBodyTypeFilter(e.target.value)}
                                                     className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-3.5 text-xs font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all appearance-none cursor-pointer"
@@ -205,7 +203,6 @@ const BrowseCarsPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Specifications Group */}
                                     <div className="space-y-6">
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="p-2 bg-orange-50 rounded-lg text-orange-600">
@@ -222,7 +219,7 @@ const BrowseCarsPage = () => {
                                                     return (
                                                         <button
                                                             key={type}
-                                                            id={`transmission-filter-${type.toLowerCase().replace(' ', '-')}`}
+                                                            data-testid={`transmission-filter-${type}`}
                                                             onClick={() => setTransmissionFilter(type)}
                                                             className={`px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 ${isActive ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
                                                         >
@@ -239,7 +236,7 @@ const BrowseCarsPage = () => {
                                                     return (
                                                         <button
                                                             key={type}
-                                                            id={`fuel-filter-${type.toLowerCase().replace(' ', '-')}`}
+                                                            data-testid={`fuel-filter-${type}`}
                                                             onClick={() => setFuelTypeFilter(type)}
                                                             className={`px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all duration-300 ${isActive ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
                                                         >
@@ -252,7 +249,6 @@ const BrowseCarsPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Price & Budget Group */}
                                     <div className="space-y-6">
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
@@ -267,7 +263,7 @@ const BrowseCarsPage = () => {
                                                 return (
                                                     <button
                                                         key={range}
-                                                        id={`price-filter-${range.toLowerCase().replace(' ', '-')}`}
+                                                        data-testid={`price-filter-${range}`}
                                                         onClick={() => setPriceFilter(range)}
                                                         className={`px-4 py-3 rounded-2xl text-[10px] font-bold transition-all duration-300 border-2 ${isActive ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-600 hover:border-emerald-100 hover:bg-emerald-50/30'}`}
                                                     >
@@ -296,6 +292,7 @@ const BrowseCarsPage = () => {
 
                                     <button
                                         onClick={resetFilters}
+                                        data-testid="reset-filters"
                                         id="reset-filters"
                                         className="flex items-center gap-2 text-[10px] font-black text-rose-500 uppercase tracking-widest hover:text-rose-600 transition-colors group"
                                     >
@@ -322,10 +319,10 @@ const BrowseCarsPage = () => {
                 ) : filteredCars.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-32 text-center bg-white border border-slate-100 rounded-[3rem] shadow-xl shadow-slate-200/20">
                         <div className="h-24 w-24 bg-slate-50 rounded-full flex items-center justify-center mb-8">
-                            <Search className="text-slate-300" size={40} />
+                            <X className="text-slate-300" size={40} />
                         </div>
                         <h2 className="text-3xl font-black text-slate-900 tracking-tight">No matches found</h2>
-                        <p className="mx-auto mt-4 max-w-md text-base text-slate-500 leading-relaxed">We couldn't find any vehicles matching your search criteria.</p>
+                        <p className="mx-auto mt-4 max-w-md text-base text-slate-500 leading-relaxed">We couldn't find any vehicles matching your filter criteria.</p>
                         <button onClick={resetFilters} className="mt-10 rounded-2xl bg-slate-900 px-8 py-4 text-sm font-bold text-white shadow-xl transition-all hover:bg-blue-600 active:scale-95">Clear All Filters</button>
                     </div>
                 ) : (

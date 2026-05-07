@@ -92,7 +92,7 @@ const CarCard = ({ car, featured = false }) => {
                             <div className={`grid ${car.condition === 'New' ? 'grid-cols-2' : 'grid-cols-3'} gap-2 pb-6 border-b border-slate-100`}>
                                 <div className="text-center">
                                     <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">Drive</div>
-                                    <div className="text-xs font-bold text-slate-900">{car.transmission?.slice(0, 4) || 'N/A'}</div>
+                                    <div className="text-xs font-bold text-slate-900">{car.transmission || 'N/A'}</div>
                                 </div>
                                 <div className={`text-center ${car.condition !== 'New' ? 'border-x border-slate-100' : ''}`}>
                                     <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">Seats</div>
