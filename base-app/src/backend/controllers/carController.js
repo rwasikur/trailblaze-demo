@@ -1,11 +1,36 @@
 const Car = require('../models/Car.js');
+const Offer = require('../models/Offer.js');
+const { isActiveOffer, offerMatchesCar } = require('./offerController.js');
+
+const attachActiveOffers = async (cars) => {
+    const activeOffers = (await Offer.findAll({ order: [['activation_date', 'ASC']] }))
+        .filter((offer) => isActiveOffer(offer));
+
+    return cars.map((car) => {
+        const serializedCar = car.toJSON ? car.toJSON() : car;
+        return {
+            ...serializedCar,
+            activeOffers: activeOffers
+                .filter((offer) => offerMatchesCar(offer, serializedCar))
+                .map((offer) => {
+                    const serializedOffer = offer.toJSON ? offer.toJSON() : offer;
+                    const savingsAmount = Number(serializedOffer.savings_amount) || 0;
+                    return {
+                        ...serializedOffer,
+                        discounted_price: Math.max((Number(serializedCar.price) || 0) - savingsAmount, 0),
+                    };
+                }),
+        };
+    });
+};
 
 const getCars = async (req, res) => {
     try {
         const cars = await Car.findAll({
             order: [['createdAt', 'DESC']]
         });
-        res.json({ cars, total: cars.length });
+        const carsWithOffers = await attachActiveOffers(cars);
+        res.json({ cars: carsWithOffers, total: cars.length });
     } catch (err) {
         res.status(500).json({ message: 'Server error: ' + err.message });
     }
@@ -15,7 +40,8 @@ const getCarById = async (req, res) => {
     try {
         const car = await Car.findByPk(req.params.id);
         if (car) {
-            res.json(car);
+            const [carWithOffers] = await attachActiveOffers([car]);
+            res.json(carWithOffers);
         } else {
             res.status(404).json({ message: 'Car not found' });
         }
@@ -123,4 +149,4 @@ const uploadMultipleImages = async (req, res) => {
     }
 };
 
-module.exports = { getCars, getCarById, createCar, uploadCarImage, uploadMultipleImages };
+module.exports = { attachActiveOffers, getCars, getCarById, createCar, uploadCarImage, uploadMultipleImages };
