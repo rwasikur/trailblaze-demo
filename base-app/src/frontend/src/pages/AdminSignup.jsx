@@ -64,7 +64,7 @@ const AdminSignup = () => {
 
                     <form onSubmit={handleSignup} className="space-y-5" noValidate>
                         <div className="space-y-2">
-                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Full Legal Name</label>
+                            <label htmlFor="admin-signup-name" className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Full Legal Name</label>
                             <input 
                                 id="admin-signup-name"
                                 type="text" 
@@ -77,7 +77,7 @@ const AdminSignup = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Email Address</label>
+                            <label htmlFor="admin-signup-email" className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Email Address</label>
                             <input 
                                 id="admin-signup-email"
                                 type="email" 
@@ -90,7 +90,7 @@ const AdminSignup = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Secure Password</label>
+                            <label htmlFor="admin-signup-password" className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Secure Password</label>
                             <input 
                                 id="admin-signup-password"
                                 type="password" 
