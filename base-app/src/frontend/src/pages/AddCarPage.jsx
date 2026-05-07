@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
 import { Button } from '../components/ui/Button';
@@ -7,19 +7,61 @@ import { Input } from '../components/ui/Input';
 import { Card, CardContent } from '../components/ui/Card';
 import Select from 'react-select';
 
-import { BRANDS_MODELS, EXTERIOR_COLORS, INTERIOR_COLORS } from '../constants/carData';
+import { BRANDS_MODELS, CAR_COLORS } from '../constants/carData';
 
 const AddCarPage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const mainFileRef = useRef(null);
     const multiFileRef = useRef(null);
 
     const [formData, setFormData] = useState({
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
-        price: '', range: '', body_type: '', mileage: '', total_distance_covered: '', exterior_color: '', interior_color: '',
+        price: '', range: '', body_type: '', mileage: '', total_distance_covered: '', available_colors: [''],
         number_of_owners: 0, registration_city: '', insurance_validity: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0], description: '',
         availability_status: 'Available', image_url: '', secondary_images: [], condition: 'New', past_owners: []
     });
+
+    const [colorCount, setColorCount] = useState(1);
+    const [isCopy, setIsCopy] = useState(false);
+
+    useEffect(() => {
+        const token = localStorage.getItem('adminToken');
+        if (!token) navigate('/admin');
+    }, [navigate]);
+
+    useEffect(() => {
+        if (location.state && location.state.copyFrom) {
+            const car = location.state.copyFrom;
+            setIsCopy(true);
+            setFormData({
+                name: car.name || '',
+                brand: car.brand || '',
+                model_year: car.model_year?.toString() || '',
+                transmission: car.transmission || '',
+                fuel_type: car.fuel_type || '',
+                seating_capacity: car.seating_capacity || '',
+                price: car.price || '',
+                range: car.range || '',
+                body_type: car.body_type || '',
+                mileage: car.mileage || '',
+                total_distance_covered: car.total_distance_covered || '',
+                available_colors: car.available_colors || [''],
+                number_of_owners: car.number_of_owners || 0,
+                registration_city: car.registration_city || '',
+                insurance_validity: car.insurance_validity ? new Date(car.insurance_validity).toISOString().split('T')[0] : '',
+                description: car.description || '',
+                availability_status: 'Available', // Force Available on copy
+                image_url: car.image_url || '',
+                secondary_images: car.secondary_images || [],
+                condition: car.condition || 'New',
+                past_owners: car.past_owners || []
+            });
+            if (car.available_colors) {
+                setColorCount(car.available_colors.length);
+            }
+        }
+    }, [location.state]);
 
     const [uploadMethod] = useState('local'); // Locked to 'local' upload
     const [mainLoading, setMainLoading] = useState(false);
@@ -120,6 +162,24 @@ const AddCarPage = () => {
         setFormData({ ...formData, past_owners: newPastOwners });
     };
 
+    const handleColorCountChange = (e) => {
+        const count = Math.max(1, parseInt(e.target.value) || 1);
+        setColorCount(count);
+        const newColors = [...formData.available_colors];
+        if (count > newColors.length) {
+            for (let i = newColors.length; i < count; i++) newColors.push('');
+        } else {
+            newColors.length = count;
+        }
+        setFormData({ ...formData, available_colors: newColors });
+    };
+
+    const handleColorChange = (index, value) => {
+        const newColors = [...formData.available_colors];
+        newColors[index] = value;
+        setFormData({ ...formData, available_colors: newColors });
+    };
+
     const nextStep = (e) => {
         if (e) e.preventDefault();
 
@@ -127,6 +187,10 @@ const AddCarPage = () => {
         if (currentStep === 1) {
             if (!formData.brand || !formData.name || !formData.model_year) {
                 toast.error('Please fill in all basic information');
+                return;
+            }
+            if (formData.condition === 'New' && (!formData.available_colors || formData.available_colors.some(c => !c))) {
+                toast.error('Please select all available colors');
                 return;
             }
             const year = parseInt(formData.model_year);
@@ -168,7 +232,7 @@ const AddCarPage = () => {
                 const lastOwner = formData.past_owners[formData.past_owners.length - 1];
                 const lastPrice = parseInt(lastOwner.sale_price);
                 if (!isNaN(lastPrice) && parseInt(formData.price) >= lastPrice) {
-                    toast.error(`Price must be less than the last sale price (₹${lastPrice.toLocaleString()})`);
+                    toast.error(`Price must be less than the last sale price ($${lastPrice.toLocaleString()})`);
                     return;
                 }
             }
@@ -391,19 +455,43 @@ const AddCarPage = () => {
                                                 />
                                             </div>
 
-                                            <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Exterior Color<span className="text-red-500 ml-1">*</span></label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.exterior_color} onChange={(e) => setFormData({ ...formData, exterior_color: e.target.value })} required>
-                                                    <option value="">Select Color</option>
-                                                    {EXTERIOR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                                                </select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Interior Color<span className="text-red-500 ml-1">*</span></label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.interior_color} onChange={(e) => setFormData({ ...formData, interior_color: e.target.value })} required>
-                                                    <option value="">Select Interior</option>
-                                                    {INTERIOR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                                                </select>
+                                            {/* Color Selection Block */}
+                                            <div className="md:col-span-2 space-y-6">
+                                                {formData.condition === 'New' && (
+                                                    <div className="space-y-2 max-w-xs">
+                                                        <label htmlFor="color-count-input" className="block text-sm font-bold text-slate-700">How many colors available?<span className="text-red-500 ml-1">*</span></label>
+                                                        <input
+                                                            id="color-count-input"
+                                                            type="number"
+                                                            min="1"
+                                                            className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                                            value={colorCount}
+                                                            onChange={handleColorCountChange}
+                                                            required
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {formData.available_colors.map((color, idx) => (
+                                                        <div key={idx} className="space-y-2">
+                                                            <label htmlFor={`color-select-${idx}`} className="block text-sm font-bold text-slate-700">
+                                                                Color Option {idx + 1}
+                                                                {idx === 0 && <span className="text-[10px] text-blue-600 ml-2">(Primary Exterior)</span>}
+                                                            </label>
+                                                            <select
+                                                                id={`color-select-${idx}`}
+                                                                className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                                                value={color}
+                                                                onChange={(e) => handleColorChange(idx, e.target.value)}
+                                                                required
+                                                            >
+                                                                <option value="">Select Color</option>
+                                                                {CAR_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -414,16 +502,16 @@ const AddCarPage = () => {
                                         <h3 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3">Specifications</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                             <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Transmission<span className="text-red-500 ml-1">*</span></label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required>
+                                                <label htmlFor="transmission-select" className="block text-sm font-bold text-slate-700">Transmission<span className="text-red-500 ml-1">*</span></label>
+                                                <select id="transmission-select" className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required>
                                                     <option value="">Select</option>
                                                     <option value="Automatic">Automatic</option>
                                                     <option value="Manual">Manual</option>
                                                 </select>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="block text-sm font-bold text-slate-700">Fuel Type<span className="text-red-500 ml-1">*</span></label>
-                                                <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required>
+                                                <label htmlFor="fuel-type-select" className="block text-sm font-bold text-slate-700">Fuel Type<span className="text-red-500 ml-1">*</span></label>
+                                                <select id="fuel-type-select" className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required>
                                                     <option value="">Select Fuel</option>
                                                     <option value="Petrol">Petrol</option>
                                                     <option value="Diesel">Diesel</option>
@@ -433,12 +521,12 @@ const AddCarPage = () => {
                                                     <option value="CNG">CNG</option>
                                                 </select>
                                             </div>
-                                            <Input label="Seating Capacity" type="number" min="1" max="10" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
-                                            <Input label="Range (e.g. 350km)" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
-                                            <Input label="Body Type (e.g. SUV)" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
-                                            <Input label="Mileage (kmpl)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} placeholder="e.g. 18.5" />
+                                            <Input id="seating-capacity-input" label="Seating Capacity" type="number" min="1" max="10" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
+                                            <Input id="range-input" label="Range (e.g. 350km)" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
+                                            <Input id="body-type-input" label="Body Type (e.g. SUV)" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
+                                            <Input id="mileage-input" label="Mileage (kmpl)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} placeholder="e.g. 18.5" />
                                             {formData.condition === 'Used' && (
-                                                <Input label="Total Distance Covered" value={formData.total_distance_covered} onChange={(e) => setFormData({ ...formData, total_distance_covered: e.target.value })} placeholder="e.g. 45,000 km" />
+                                                <Input id="distance-input" label="Total Distance Covered" value={formData.total_distance_covered} onChange={(e) => setFormData({ ...formData, total_distance_covered: e.target.value })} placeholder="e.g. 45,000 km" />
                                             )}
                                         </div>
                                     </div>
@@ -451,7 +539,7 @@ const AddCarPage = () => {
                                             <div className="md:col-span-1">
                                                 <Input id="owners-count-input" label="Number of Owners" type="number" min="0" value={formData.number_of_owners} onChange={handleOwnerCountChange} disabled={formData.condition === 'New'} className={formData.condition === 'New' ? 'opacity-50' : ''} required={formData.condition === 'Used'} />
                                             </div>
-                                            <Input id="car-price-input" label="Price (₹)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
+                                            <Input id="car-price-input" label="Price ($)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
                                             {formData.condition === 'Used' && (
                                                 <>
                                                     <Input id="registration-city-input" label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
@@ -465,10 +553,10 @@ const AddCarPage = () => {
                                                         <div key={index} className="bg-slate-50 rounded-xl border border-slate-200 p-4 relative space-y-4 animate-in fade-in zoom-in-95 duration-200">
                                                             <div className="absolute top-0 right-0 bg-slate-900 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl rounded-tr-xl">OWNER {index + 1}</div>
                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                                                <Input label="Sale Date" type="date" value={owner.sale_date || ''} onChange={(e) => handlePastOwnerChange(index, 'sale_date', e.target.value)} required />
-                                                                <Input label="Sale Price (₹)" type="number" min="0" value={owner.sale_price || ''} onChange={(e) => handlePastOwnerChange(index, 'sale_price', e.target.value)} required />
-                                                                <Input label="Seller Name" value={owner.seller_name || ''} onChange={(e) => handlePastOwnerChange(index, 'seller_name', e.target.value)} required />
-                                                                <Input label="Buyer Name" value={owner.buyer_name || ''} onChange={(e) => handlePastOwnerChange(index, 'buyer_name', e.target.value)} required />
+                                                                <Input id={`sale-date-${index}`} label="Sale Date" type="date" value={owner.sale_date || ''} onChange={(e) => handlePastOwnerChange(index, 'sale_date', e.target.value)} required />
+                                                                <Input id={`sale-price-${index}`} label="Sale Price ($)" type="number" min="0" value={owner.sale_price || ''} onChange={(e) => handlePastOwnerChange(index, 'sale_price', e.target.value)} required />
+                                                                <Input id={`seller-name-${index}`} label="Seller Name" value={owner.seller_name || ''} onChange={(e) => handlePastOwnerChange(index, 'seller_name', e.target.value)} required />
+                                                                <Input id={`buyer-name-${index}`} label="Buyer Name" value={owner.buyer_name || ''} onChange={(e) => handlePastOwnerChange(index, 'buyer_name', e.target.value)} required />
                                                             </div>
                                                         </div>
                                                     ))}
@@ -477,6 +565,21 @@ const AddCarPage = () => {
                                             <div className="md:col-span-3 space-y-2">
                                                 <label className="block text-sm font-bold text-slate-700">Description</label>
                                                 <textarea className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all resize-y min-h-[120px]" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="3" />
+                                            </div>
+
+                                            <div className="md:col-span-3 space-y-2">
+                                                <label htmlFor="availability-status-select" className="block text-sm font-bold text-slate-700">Availability Status</label>
+                                                <select 
+                                                    id="availability-status-select"
+                                                    className={`w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 outline-none transition-all ${isCopy ? 'opacity-60 cursor-not-allowed bg-slate-100' : 'focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900'}`} 
+                                                    value={formData.availability_status} 
+                                                    onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}
+                                                    disabled={isCopy}
+                                                >
+                                                    <option value="Available">Available</option>
+                                                    <option value="Sold">Sold</option>
+                                                </select>
+                                                {isCopy && <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1">Status locked to Available for duplicate entries</p>}
                                             </div>
                                         </div>
                                     </div>

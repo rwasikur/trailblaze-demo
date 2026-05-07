@@ -3,90 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Button } from '../components/ui/Button';
 import PurchaseModal from '../components/PurchaseModal';
+import { getColorCode } from '../constants/colorMapping';
 
 const CarDetailsPage = () => {
-    const getColorCode = (name) => {
-        if (!name) return '#000';
-        const colors = {
-            'Martini Racing': '#ffffff', // Primary white with livery
-            'Grey Alcantara': '#4a4a4a',
-            'Pearl White': '#fcfaf0',
-            'Carmine Red': '#a50021',
-            'Brooklyn Grey': '#8e918f',
-            'Midnight Blue': '#191970',
-            'Rosso Corsa': '#d40000',
-            'Obsidian Black': '#0b0b0b',
-            'Alfa Red': '#b00000',
-            'Fuji White': '#fcfcfc',
-            'Light Oyster': '#d1d1d1',
-            'Jet Black Metallic': '#050505',
-            'Luxor Beige': '#d2b48c',
-            'Suzuka Grey': '#dcdcdc',
-            'Torch Red': '#ff0000',
-            'Adrenaline Red': '#e60000',
-            'Grabber Blue': '#00aae4',
-            'Black Onyx': '#0f0f0f',
-            'Infrared': '#8b0000',
-            'Toasted Caramel': '#8b5a2b',
-            'Polar Silver': '#bcbcbc',
-            'Le Mans Blue': '#000080',
-            'Blue-Black Metallic': '#0a0a1a',
-            'Bayside Blue': '#0047ab',
-            'Grey Cloth': '#808080',
-            'Formula Red': '#cc0000',
-            'Renaissance Red': '#cc0000',
-            'Titanium Grey': '#565e5e',
-            'Mars Red': '#ad0e0e',
-            'Checkered Cloth': '#333333',
-            'Signature Black': '#000000',
-            'Boticelli Leather': '#3d2b1f',
-            'Solid Fire Red': '#c21807',
-            'Black': '#000000',
-            'Dual Tone': '#808080',
-            'Foliage Green': '#4a5d23',
-            'Black and Beige': '#d5c4a1',
-            'Red Rage': '#cc0000',
-            'Radiant Red Metallic': '#b30000',
-            'Beige Leather': '#f5f5dc',
-            'Super White': '#ffffff',
-            'Camel Brown Leather': '#c19a6b',
-            'Glacier White Pearl': '#f8f9fa',
-            'Diamond White': '#fffafa',
-            'Black & Golden': '#332f2c',
-            'White': '#ffffff',
-            'Black and Grey': '#555555',
-            'blue & black': '#1e3f66',
-            'Cosmic Gold': '#c5b358',
-            'Oyster White': '#e3d6c1',
-            'Midnight Black': '#111111',
-            'Light Beige': '#f5f5dc',
-            'Abyss Black': '#0a0a0a',
-            'Grey/Black Two-Tone': '#4a4a4a',
-            'Nexa Blue': '#003366',
-            'Bordeaux and Black': '#4d0011',
-            'Matte Graphite': '#36454f',
-            'Sage Green': '#77815c',
-            'Pearl White with Black Roof': '#f0ebd8',
-            'Black & Maroon': '#800000',
-            'Glaze Red': '#8b0000',
-            'Oak White and Black': '#e8e4c9',
-            'Crystal Blue': '#5cb3ff',
-            'Beige/Black': '#d1bfae',
-            'Phoenix Orange': '#ff7f00',
-            'Brown/Black': '#5c4033',
-            'Tornado Blue': '#1f4788',
-            'Grey/Black': '#555555',
-            'Crimson Red': '#dc143c',
-            'Aurora Silver': '#c0c0c0',
-            'Crystal White': '#f8f8ff',
-            'Foliage Blue': '#223a5e',
-            'Beige': '#f5f5dc',
-            'Black and White': '#ffffff',
-            'Black Leather': '#1a1a1a'
-        };
-        const normalized = Object.keys(colors).find(k => k.toLowerCase() === name.toLowerCase());
-        return normalized ? colors[normalized] : name;
-    };
+
 
     const { id } = useParams();
     const navigate = useNavigate();
@@ -190,11 +110,11 @@ const CarDetailsPage = () => {
                             <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Original Ex-Showroom</span>
-                                    <span className="text-lg font-bold text-slate-400 line-through">₹{originalPrice.toLocaleString()}</span>
+                                    <span className="text-lg font-bold text-slate-400 line-through">${originalPrice.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Owner Depreciation ({car.number_of_owners} Owners)</span>
-                                    <span className="text-red-500 text-sm font-bold">- ₹{depreciationAmount.toLocaleString()}</span>
+                                    <span className="text-red-500 text-sm font-bold">- ${depreciationAmount.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
@@ -202,7 +122,7 @@ const CarDetailsPage = () => {
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Current Valuation</span>
-                                    <span className="text-4xl font-black text-blue-600">₹{car.price?.toLocaleString()}</span>
+                                    <span className="text-4xl font-black text-blue-600">${car.price?.toLocaleString()}</span>
                                 </div>
                             </div>
                         </div>
@@ -214,7 +134,7 @@ const CarDetailsPage = () => {
                             <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Ex-Showroom Price</span>
-                                    <span className="text-2xl font-black text-slate-900">₹{car.price?.toLocaleString()}</span>
+                                    <span className="text-2xl font-black text-slate-900">${car.price?.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
@@ -222,7 +142,7 @@ const CarDetailsPage = () => {
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Valuation</span>
-                                    <span className="text-4xl font-black text-blue-600">₹{car.price?.toLocaleString()}</span>
+                                    <span className="text-4xl font-black text-blue-600">${car.price?.toLocaleString()}</span>
                                 </div>
                             </div>
                         </div>
@@ -269,25 +189,22 @@ const CarDetailsPage = () => {
                             </div>
                         </div>
 
-                        <div className="pt-2">
-                            <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4">Aesthetic Profiles</h3>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div className="w-10 h-10 rounded-lg shadow-inner border-2 border-white" style={{ backgroundColor: getColorCode(car.exterior_color) }}></div>
-                                    <div>
-                                        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Exterior</div>
-                                        <div className="text-sm font-black text-slate-900 truncate max-w-[100px]">{car.exterior_color || 'Standard'}</div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div className="w-10 h-10 rounded-lg shadow-inner border-2 border-white" style={{ backgroundColor: getColorCode(car.interior_color) }}></div>
-                                    <div>
-                                        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Interior</div>
-                                        <div className="text-sm font-black text-slate-900 truncate max-w-[100px]">{car.interior_color || 'Standard'}</div>
-                                    </div>
+                        {car.condition === 'New' && (
+                            <div className="pt-2">
+                                <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4">Available Palettes</h3>
+                                <div className="flex flex-wrap gap-4">
+                                    {car.available_colors && car.available_colors.map((color, idx) => (
+                                        <div key={idx} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 min-w-[140px]">
+                                            <div className="w-8 h-8 rounded-lg shadow-inner border-2 border-white" style={{ backgroundColor: getColorCode(color) }}></div>
+                                            <div>
+                                                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Color Option</div>
+                                                <div className="text-sm font-black text-slate-900">{color}</div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        </div>
+                        )}
 
                         <div className="pt-2">
                             <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2">Description</h3>
@@ -328,7 +245,7 @@ const CarDetailsPage = () => {
                             <div className="flex justify-between items-end relative z-10">
                                 <div>
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Acquisition</div>
-                                    <div className="text-4xl font-black tracking-tight">₹{car.price?.toLocaleString()}</div>
+                                    <div className="text-4xl font-black tracking-tight">${car.price?.toLocaleString()}</div>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Official Seller</div>
@@ -410,6 +327,17 @@ const CarDetailsPage = () => {
                             className={`w-full h-full object-cover transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                         />
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.1),transparent)] pointer-events-none"></div>
+
+                        {/* Condition Badge Overlay */}
+                        <div className="absolute top-8 left-8 z-20">
+                            <div className={`px-5 py-2.5 rounded-2xl backdrop-blur-xl shadow-2xl border border-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3 ${car.condition === 'New'
+                                    ? 'bg-indigo-600/90 text-white'
+                                    : 'bg-slate-800/90 text-white'
+                                }`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${car.condition === 'New' ? 'bg-white animate-pulse' : 'bg-amber-400'}`}></span>
+                                {car.condition === 'New' ? 'Brand New' : 'Pre-Owned'}
+                            </div>
+                        </div>
 
                         {/* Thumbnail Bar */}
                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-white/30 backdrop-blur-lg rounded-xl border border-white/20 shadow-xl">

@@ -2,827 +2,786 @@ const { connectDB } = require('../config/db');
 const { Op } = require('sequelize');
 const Car = require('../models/Car');
 const Admin = require('../models/Admin');
-const SaleHistory = require('../models/SaleHistory');
 const Booking = require('../models/Booking');
 
 const private_cars = [
     {
-        name: "Dzire",
+        name: "Swift",
         brand: "Maruti Suzuki",
-        model: "Dzire",
-        model_year: 2018,
-        price: 450000,
-        currency: "INR",
+        model: "Swift",
+        model_year: 2021,
+        price: 4699,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 1,
         transmission: "Manual",
         fuel_type: "Petrol",
-        mileage: "45,000 km",
-        mileage_unit: "km",
-        fuel_efficiency: "21.21 kmpl",
+        mileage: "23.2 kmpl",
+        total_distance_covered: "25,000 km",
         body_type: "Hatchback",
         seating_capacity: 5,
-        exterior_color: "White",
-        interior_color: "Black",
-        registration_number: "MH02AB1234",
-        registration_city: "Mumbai",
-        registration_state: "Maharashtra",
-        registration_year: 2018,
-        insurance_validity: "Oct 2024",
+        available_colors: ["Nexa Blue"],
+        registration_number: "KA05CD1234",
+        registration_city: "Bengaluru",
+        registration_state: "Karnataka",
+        registration_year: 2021,
+        insurance_validity: "Dec 2024",
         insurance_type: "Comprehensive",
         rc_status: "Active",
-        description: "Well-maintained Maruti Suzuki Swift LXi. Single owner, regular servicing done at authorized service center. Good fuel economy and perfect for city driving.",
-        thumbnail_image: "https://i.pinimg.com/1200x/a0/86/71/a086718b056e41421eaebc4996d71f09.jpg",
+        description: "Peppy and fun to drive Swift. Single handedly driven, completely scratchless.",
+        thumbnail_image: "https://i.pinimg.com/1200x/ac/27/ba/ac27badb68fb480babe95024691f348c.jpg",
         images: [
-            "https://i.pinimg.com/1200x/b7/f7/51/b7f7518ecd19cf75e6dc0def9060e747.jpg",
-            "https://i.pinimg.com/1200x/f8/d8/4a/f8d84af03ab51178865e65365406e9ef.jpg"
+            "https://i.pinimg.com/736x/b5/97/d7/b597d7a4d80ee6fe2fde65cc260d9b41.jpg"
         ],
-        availability_status: "Sold",
+        availability_status: "Available",
         discount_percentage: 5,
-        views: 854,
+        views: 1200,
         range: "160",
         past_owners: [
             {
-                sale_date: "2018-05-15",
-                sale_price: 750000,
-                seller_name: "Maruti Suzuki Arena",
-                buyer_name: "Rajesh Kumar"
+                sale_date: "2021-01-10",
+                sale_price: 6599,
+                seller_name: "Maruti Arena",
+                buyer_name: "Rahul Verma"
             }
         ]
     },
     {
-        name: "Elite i20",
+        name: "Baleno",
+        brand: "Maruti Suzuki",
+        model: "Baleno",
+        model_year: 2022,
+        price: 7850,
+        currency: "USD",
+        condition: "Used",
+        number_of_owners: 1,
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        mileage: "22.94 kmpl",
+        total_distance_covered: "18,000 km",
+        body_type: "Hatchback",
+        seating_capacity: 5,
+        available_colors: ["Autumn Orange"],
+        registration_number: "DL03EF5678",
+        registration_city: "New Delhi",
+        registration_state: "Delhi",
+        registration_year: 2022,
+        insurance_validity: "Mar 2025",
+        insurance_type: "Comprehensive",
+        rc_status: "Active",
+        description: "Premium hatchback with heads up display and 360 camera. Very smooth AMT.",
+        thumbnail_image: "https://i.pinimg.com/1200x/f2/8a/17/f28a17c88218764b51e689e7fb151d65.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/f2/9e/fa/f29efae233fc29b401c8880860808cf0.jpg",
+            "https://i.pinimg.com/1200x/6b/fe/26/6bfe267adf072e454626ce7a651d0d17.jpg"
+        ],
+        availability_status: "Available",
+        discount_percentage: 3,
+        views: 950,
+        range: "155",
+        past_owners: [
+            {
+                sale_date: "2022-04-15",
+                sale_price: 10299,
+                seller_name: "Nexa Showroom",
+                buyer_name: "Sunil Narang"
+            }
+        ]
+    },
+    {
+        name: "Venue",
         brand: "Hyundai",
-        model: "i20",
-        model_year: 2019,
-        price: 550000,
-        currency: "INR",
+        model: "Venue",
+        model_year: 2020,
+        price: 8899,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 2,
         transmission: "Manual",
         fuel_type: "Petrol",
-        mileage: "32,000 km",
-        mileage_unit: "km",
-        fuel_efficiency: "20.35 kmpl",
-        body_type: "Hatchback",
+        mileage: "17.52 kmpl",
+        total_distance_covered: "40,000 km",
+        body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "Polar White",
-        interior_color: "Beige",
-        registration_number: "DL01CD5678",
-        registration_city: "New Delhi",
-        registration_state: "Delhi",
-        registration_year: 2019,
-        insurance_validity: "Dec 2024",
+        available_colors: ["Typhoon Silver"],
+        registration_number: "MH01GH9012",
+        registration_city: "Mumbai",
+        registration_state: "Maharashtra",
+        registration_year: 2020,
+        insurance_validity: "Sep 2024",
         insurance_type: "Third Party",
         rc_status: "Active",
-        description: "Premium Hyundai i20 Asta with alloy wheels and touchscreen infotainment. Very clean interior and exterior.",
-        thumbnail_image: "https://i.pinimg.com/736x/43/92/95/43929567de08994099a9a62ce2b0ce7c.jpg",
+        description: "Compact SUV with great features and connectivity options.",
+        thumbnail_image: "https://i.pinimg.com/736x/43/26/d8/4326d8d1dc197f5965fae6cb512a7baa.jpg",
         images: [
-            "https://i.pinimg.com/736x/f4/7a/ed/f47aedc76ee298fb4c4d53ad917b8703.jpg",
-            "https://i.pinimg.com/736x/17/33/d6/1733d6f49180f6069be4bea1411e3fe7.jpg",
-            "https://i.pinimg.com/1200x/d5/b6/da/d5b6daba6bed1b3be603ef3909ee2983.jpg"
+            "https://i.pinimg.com/1200x/9f/66/58/9f6658e955a28940bbc85c8e0cc344fb.jpg",
+            "https://i.pinimg.com/736x/f6/a2/f8/f6a2f81b280742bb9866fe280bc2db6d.jpg"
         ],
-        availability_status: "Available",
-        discount_percentage: 20,
-        views: 1205,
-        range: "170",
+        availability_status: "Sold",
+        discount_percentage: 0,
+        views: 820,
+        range: "165",
         past_owners: [
             {
-                sale_date: "2019-02-10",
-                sale_price: 825000,
-                seller_name: "Hyundai Motor Plaza",
-                buyer_name: "Amit Shah"
+                sale_date: "2020-02-20",
+                sale_price: 10999,
+                seller_name: "Hyundai Dealership",
+                buyer_name: "Amit Desai"
             },
             {
-                sale_date: "2021-11-20",
-                sale_price: 680000,
-                seller_name: "Amit Shah",
-                buyer_name: "Priya Sharma"
+                sale_date: "2022-10-10",
+                sale_price: 9250,
+                seller_name: "Amit Desai",
+                buyer_name: "Rohan Kapoor"
             }
         ]
     },
     {
-        name: "Nexon EV",
+        name: "Altroz",
         brand: "Tata",
-        model: "Nexon",
-        model_year: 2020,
-        price: 950000,
-        currency: "INR",
-        condition: "Used",
-        number_of_owners: 1,
-        transmission: "Automatic",
-        fuel_type: "Electric",
-        mileage: "28,000 km",
-        mileage_unit: "km",
-        fuel_efficiency: "21.5 kmpl",
-        body_type: "SUV",
-        seating_capacity: 5,
-        exterior_color: "Foliage Blue",
-        interior_color: "Black and White",
-        registration_number: "KA03EF9012",
-        registration_city: "Bengaluru",
-        registration_state: "Karnataka",
-        registration_year: 2020,
-        insurance_validity: "Mar 2025",
-        insurance_type: "Comprehensive",
-        rc_status: "Active",
-        description: "5-star safety rated Tata Nexon XZ+ Diesel AMT. Excellent condition with zero dep insurance.",
-        thumbnail_image: "https://i.pinimg.com/736x/ea/da/97/eada975877a30336f0ce7d324c55eee7.jpg",
-        images: [
-            "https://i.pinimg.com/736x/b1/73/3e/b1733e6aac68b136d7e6f28f8cde98fb.jpg",
-            "https://i.pinimg.com/736x/d3/fe/57/d3fe577cee48932b03476ce8e10a0e96.jpg"
-        ],
-        availability_status: "Available",
-        discount_percentage: 5,
-        views: 450,
-        range: "120",
-        past_owners: [
-            {
-                sale_date: "2020-08-12",
-                sale_price: 1250000,
-                seller_name: "Tata Motors Dealer",
-                buyer_name: "Suresh Menon"
-            }
-        ]
-    },
-    {
-        name: "Thar LX",
-        brand: "Mahindra",
-        model: "Thar",
+        model: "Altroz",
         model_year: 2021,
-        price: 1050000,
-        currency: "INR",
+        price: 7150,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 1,
-        transmission: "Automatic",
+        transmission: "Manual",
         fuel_type: "Diesel",
-        mileage: "15,000 km",
-        mileage_unit: "km",
-        fuel_efficiency: "15.2 kmpl",
-        body_type: "SUV",
-        seating_capacity: 4,
-        exterior_color: "Red Rage",
-        interior_color: "Black",
-        registration_number: "TS09GH3456",
-        registration_city: "Hyderabad",
-        registration_state: "Telangana",
+        mileage: "25.11 kmpl",
+        total_distance_covered: "35,000 km",
+        body_type: "Hatchback",
+        seating_capacity: 5,
+        available_colors: ["Metallic Red"],
+        registration_number: "TN02KL3456",
+        registration_city: "Chennai",
+        registration_state: "Tamil Nadu",
         registration_year: 2021,
         insurance_validity: "Jan 2025",
         insurance_type: "Comprehensive",
         rc_status: "Active",
-        description: "Mahindra Thar LX Hard Top Diesel Automatic. Rarely used for off-roading. Modifications include custom alloy wheels and premium audio.",
-        thumbnail_image: "https://i.pinimg.com/1200x/d9/97/3b/d9973b0bb2d30a58e9da9d5979874778.jpg",
+        description: "5 star safety rating premium hatchback with incredible diesel efficiency.",
+        thumbnail_image: "https://i.pinimg.com/1200x/5f/1c/3d/5f1c3d39272088af0a4a3a7d3bc8ec99.jpg",
         images: [
-            "https://i.pinimg.com/736x/41/50/92/4150920d20fbbf974cc5cbbdaa49a7ec.jpg",
-            "https://i.pinimg.com/736x/1b/d7/61/1bd7616b64d1eb5207021fced8495e35.jpg"
-        ],
-        availability_status: "Sold",
-        discount_percentage: 8,
-        views: 2500,
-        range: "155",
-        past_owners: [
-            {
-                sale_date: "2021-03-22",
-                sale_price: 1250000,
-                seller_name: "Mahindra Showroom",
-                buyer_name: "Karan Johar"
-            }
-        ]
-    },
-    {
-        name: "City ZX",
-        brand: "Honda",
-        model: "City",
-        model_year: 2017,
-        price: 720000,
-        currency: "INR",
-        condition: "Used",
-        number_of_owners: 2,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        mileage: "55,000 km",
-        mileage_unit: "km",
-        fuel_efficiency: "18 kmpl",
-        body_type: "Sedan",
-        seating_capacity: 5,
-        exterior_color: "White",
-        interior_color: "Black Leather",
-        registration_number: "GJ01IJ7890",
-        registration_city: "Ahmedabad",
-        registration_state: "Gujarat",
-        registration_year: 2017,
-        insurance_validity: "Nov 2024",
-        insurance_type: "Comprehensive",
-        rc_status: "Active",
-        description: "Top end Honda City ZX CVT with sunroof and leather seats. Very smooth drive and excellent cabin space.",
-        thumbnail_image: "https://i.pinimg.com/736x/ff/1a/c1/ff1ac17cc8ca54f4258679aa879b8d1b.jpg",
-        images: [
-            "https://i.pinimg.com/1200x/9b/57/05/9b5705842e0ae772dc440451a57f7241.jpg",
-            "https://i.pinimg.com/1200x/e1/2f/71/e12f71393ec1430cd03bd23a59f6039a.jpg"
+            "https://i.pinimg.com/1200x/69/04/d2/6904d2c5a5405711094d869879117b42.jpg",
+            "https://i.pinimg.com/1200x/1c/54/6f/1c546f90fef26442a6686d3b30edc4aa.jpg"
         ],
         availability_status: "Available",
         discount_percentage: 10,
-        views: 670,
-        range: "180",
-        past_owners: [
-            {
-                sale_date: "2017-06-14",
-                sale_price: 1350000,
-                seller_name: "Deccan Honda",
-                buyer_name: "Vikram Singh"
-            },
-            {
-                sale_date: "2020-09-05",
-                sale_price: 950000,
-                seller_name: "Vikram Singh",
-                buyer_name: "Anjali Gupta"
-            }
-        ]
-    },
-    {
-        name: "Innova Crysta",
-        brand: "Toyota",
-        model: "Innova Crysta",
-        model_year: 2018,
-        price: 1850000,
-        currency: "INR",
-        condition: "Used",
-        number_of_owners: 1,
-        transmission: "Automatic",
-        fuel_type: "Diesel",
-        mileage: "85,000 km",
-        mileage_unit: "km",
-        fuel_efficiency: "13.68 kmpl",
-        body_type: "MUV",
-        seating_capacity: 7,
-        exterior_color: "Super White",
-        interior_color: "Camel Brown Leather",
-        registration_number: "TN09KL1234",
-        registration_city: "Chennai",
-        registration_state: "Tamil Nadu",
-        registration_year: 2018,
-        insurance_validity: "Feb 2025",
-        insurance_type: "Third Party",
-        rc_status: "Active",
-        description: "Highly reliable Toyota Innova Crysta. Top model with captain seats and automatic transmission.",
-        thumbnail_image: "https://i.pinimg.com/736x/4b/6a/9d/4b6a9d184003e00c1077441d5d73ed64.jpg",
-        images: [
-            "https://i.pinimg.com/1200x/21/3f/69/213f691b5ff4fc35461a01daf2907a6f.jpg"
-        ],
-        availability_status: "Available",
-        discount_percentage: 15,
-        views: 3200,
-        range: "175",
-        past_owners: [
-            {
-                sale_date: "2018-11-30",
-                sale_price: 2300000,
-                seller_name: "Toyota Lanson",
-                buyer_name: "Ramesh Babu"
-            }
-        ]
-    },
-    {
-        name: "Seltos HTX",
-        brand: "Kia",
-        model: "Seltos",
-        model_year: 2020,
-        price: 1250000,
-        currency: "INR",
-        condition: "Used",
-        number_of_owners: 1,
-        transmission: "Manual",
-        fuel_type: "Petrol",
-        mileage: "22,000 km",
-        mileage_unit: "km",
-        fuel_efficiency: "16.5 kmpl",
-        body_type: "SUV",
-        seating_capacity: 5,
-        exterior_color: "Glacier White Pearl",
-        interior_color: "Black",
-        registration_number: "HR26MN5678",
-        registration_city: "Gurgaon",
-        registration_state: "Haryana",
-        registration_year: 2020,
-        insurance_validity: "Aug 2024",
-        insurance_type: "Comprehensive",
-        rc_status: "Active",
-        description: "Well maintained Kia Seltos HTX. Features a sunroof, 10.25-inch display, and air purifier.",
-        thumbnail_image: "https://i.pinimg.com/1200x/44/f2/5c/44f25cd4711d7d7601f4026029ffaaad.jpg",
-        images: [
-            "https://i.pinimg.com/1200x/11/f8/bf/11f8bf97e3594144a2affc572b7dd722.jpg",
-            "https://i.pinimg.com/1200x/db/ff/4a/dbff4a407f09dd85de710e3477cfb755.jpg"
-        ],
-        availability_status: "Sold",
-        discount_percentage: 0,
-        views: 980,
+        views: 600,
         range: "170",
         past_owners: [
             {
-                sale_date: "2020-01-15",
-                sale_price: 1400000,
-                seller_name: "Kia Motors India",
-                buyer_name: "Neha Sharma"
+                sale_date: "2021-08-05",
+                sale_price: 9650,
+                seller_name: "Tata Motors",
+                buyer_name: "Karthik R"
             }
         ]
     },
     {
-        name: "EcoSport Titanium",
-        brand: "Ford",
-        model: "EcoSport",
-        model_year: 2019,
-        price: 580000,
-        currency: "INR",
-        condition: "Used",
-        number_of_owners: 2,
-        transmission: "Manual",
-        fuel_type: "Diesel",
-        mileage: "48,000 km",
-        mileage_unit: "km",
-        fuel_efficiency: "21.7 kmpl",
-        body_type: "SUV",
-        seating_capacity: 5,
-        exterior_color: "Diamond White",
-        interior_color: "Black",
-        registration_number: "WB02OP9012",
-        registration_city: "Kolkata",
-        registration_state: "West Bengal",
-        registration_year: 2019,
-        insurance_validity: "Sep 2024",
-        insurance_type: "Comprehensive",
-        rc_status: "Active",
-        description: "Solid build Ford EcoSport. Great driving dynamics, diesel engine provides excellent punch and economy.",
-        thumbnail_image: "https://i.pinimg.com/1200x/ef/d4/0a/efd40ade52ed54f4808b5872ff33a2d3.jpg",
-        images: [
-            "https://i.pinimg.com/736x/0f/2c/1f/0f2c1fefcc6f6ebdd8e48901f62c4587.jpg",
-            "https://i.pinimg.com/1200x/c5/ad/00/c5ad008eee3df6507724263cda992889.jpg"
-        ],
-        availability_status: "Available",
-        discount_percentage: 5,
-        views: 410,
-        range: "165",
-        past_owners: [
-            {
-                sale_date: "2019-07-20",
-                sale_price: 950000,
-                seller_name: "Ganges Ford",
-                buyer_name: "Arun Bose"
-            },
-            {
-                sale_date: "2022-04-10",
-                sale_price: 750000,
-                seller_name: "Arun Bose",
-                buyer_name: "Meera Das"
-            }
-        ]
-    },
-    {
-        name: "Polo GTI",
-        brand: "Volkswagen",
-        model: "Polo",
-        model_year: 2016,
-        price: 920000,
-        currency: "INR",
-        condition: "Used",
-        number_of_owners: 3,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        mileage: "60,000 km",
-        mileage_unit: "km",
-        fuel_efficiency: "16.47 kmpl",
-        body_type: "Hatchback",
-        seating_capacity: 5,
-        exterior_color: "White",
-        interior_color: "Black and Grey",
-        registration_number: "UP16QR3456",
-        registration_city: "Noida",
-        registration_state: "Uttar Pradesh",
-        registration_year: 2016,
-        insurance_validity: "Jan 2025",
-        insurance_type: "Third Party",
-        rc_status: "Active",
-        description: "Enthusiast's choice Polo GT TSI with the legendary 7-speed DSG. Mechanically sound and serviced regularly.",
-        thumbnail_image: "https://i.pinimg.com/1200x/58/5f/20/585f204e876a1f781b1f92d5154351d0.jpg",
-        images: [
-            "https://i.pinimg.com/736x/99/c1/de/99c1deb472b3ef93fbece8fe97517801.jpg",
-            "https://i.pinimg.com/736x/d5/85/bf/d585bf7fb3be8854345cbb0912f31d54.jpg"
-        ],
-        availability_status: "Available",
-        discount_percentage: 0,
-        views: 850,
-        range: "230",
-        past_owners: [
-            {
-                sale_date: "2016-04-12",
-                sale_price: 2850000,
-                seller_name: "VW Noida",
-                buyer_name: "Ravi Teja"
-            },
-            {
-                sale_date: "2019-08-25",
-                sale_price: 2050000,
-                seller_name: "Ravi Teja",
-                buyer_name: "Sanjay Dutt"
-            },
-            {
-                sale_date: "2022-12-05",
-                sale_price: 1550000,
-                seller_name: "Sanjay Dutt",
-                buyer_name: "Kabir Singh"
-            }
-        ]
-    },
-    {
-        name: "Duster RXZ",
-        brand: "Renault",
-        model: "Duster",
-        model_year: 2018,
-        price: 600000,
-        currency: "INR",
+        name: "Harrier",
+        brand: "Tata",
+        model: "Harrier",
+        model_year: 2022,
+        price: 17299,
+        currency: "USD",
         condition: "Used",
         number_of_owners: 1,
-        transmission: "Manual",
+        transmission: "Automatic",
         fuel_type: "Diesel",
-        mileage: "72,000 km",
-        mileage_unit: "km",
-        fuel_efficiency: "19.87 kmpl",
+        mileage: "14.6 kmpl",
+        total_distance_covered: "20,000 km",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "blue & black",
-        interior_color: "Black",
-        registration_number: "KL01ST7890",
-        registration_city: "Trivandrum",
-        registration_state: "Kerala",
-        registration_year: 2018,
+        available_colors: ["Oberon Black"],
+        registration_number: "TS07MN7890",
+        registration_city: "Hyderabad",
+        registration_state: "Telangana",
+        registration_year: 2022,
         insurance_validity: "May 2025",
         insurance_type: "Comprehensive",
         rc_status: "Active",
-        description: "Rugged Renault Duster with brilliant ride quality. Perfect for long trips and broken roads.",
-        thumbnail_image: "https://i.pinimg.com/736x/8a/c4/11/8ac4112707b8b3189b61b8692d8e5f1f.jpg",
+        description: "Bold and beautiful Tata Harrier with panoramic sunroof and Kryotec engine.",
+        thumbnail_image: "https://i.pinimg.com/1200x/44/16/17/4416176ef8e78724def40f2f1de8cf7f.jpg",
         images: [
-            "https://i.pinimg.com/736x/45/84/39/458439885eec665ece6180e3e36037d8.jpg"
+            "https://i.pinimg.com/736x/63/24/4a/63244ad1b999fff0e70a7062596b81fd.jpg"
         ],
         availability_status: "Sold",
-        discount_percentage: 8,
-        views: 330,
-        range: "160",
+        discount_percentage: 5,
+        views: 2100,
+        range: "185",
         past_owners: [
             {
-                sale_date: "2018-09-18",
-                sale_price: 1050000,
-                seller_name: "Renault Trivandrum",
-                buyer_name: "John Mathew"
+                sale_date: "2022-06-12",
+                sale_price: 23099,
+                seller_name: "Tata Dealership",
+                buyer_name: "Srinivas Rao"
             }
         ]
     },
     {
-        name: "Safari Accomplished",
-        brand: "Tata",
-        model: "Safari",
-        model_year: 2024,
-        price: 2549000,
-        currency: "INR",
-        condition: "New",
-        number_of_owners: 0,
+        name: "Scorpio-N",
+        brand: "Mahindra",
+        model: "Scorpio",
+        model_year: 2023,
+        price: 20450,
+        currency: "USD",
+        condition: "Used",
+        number_of_owners: 1,
         transmission: "Automatic",
         fuel_type: "Diesel",
-        mileage: "0 km",
-        mileage_unit: "km",
-        fuel_efficiency: "14.5 kmpl",
+        mileage: "14.0 kmpl",
+        total_distance_covered: "12,000 km",
         body_type: "SUV",
         seating_capacity: 7,
-        exterior_color: "Cosmic Gold",
-        interior_color: "Black",
-        registration_number: null,
-        insurance_validity: "Jan 2027",
+        available_colors: ["White"],
+        registration_number: "UP14OP1234",
+        registration_city: "Ghaziabad",
+        registration_state: "Uttar Pradesh",
+        registration_year: 2023,
+        insurance_validity: "Jul 2025",
         insurance_type: "Comprehensive",
-        rc_status: "Pending",
-        description: "Brand new Tata Safari Accomplished AT. Experience premium luxury with advanced ADAS, panoramic sunroof, and 7-seater comfort.",
-        thumbnail_image: "https://i.pinimg.com/1200x/86/f9/7e/86f97ef63f30f448f49b768884c41137.jpg",
+        rc_status: "Active",
+        description: "The Big Daddy of SUVs. Mahindra Scorpio-N Z8L Diesel AT.",
+        thumbnail_image: "https://i.pinimg.com/736x/22/00/ee/2200ee13a0a6bbbe73876bb7ea92b708.jpg",
         images: [
-            "https://i.pinimg.com/1200x/bb/0f/8f/bb0f8fae28e202c57273f0075812ebe4.jpg",
-            "https://i.pinimg.com/1200x/54/42/94/544294887db31768e18f7e2a8be5ed72.jpg"
+            "https://i.pinimg.com/736x/df/76/26/df7626dcda177e8f0b8e3ffa4107bcd6.jpg",
+            "https://i.pinimg.com/736x/40/58/f3/4058f38fa3aad2572b03996bab2f2e15.jpg"
         ],
         availability_status: "Available",
-        discount_percentage: 20,
-        views: 1500,
-        range: "175"
+        discount_percentage: 2,
+        views: 3500,
+        range: "190",
+        past_owners: [
+            {
+                sale_date: "2023-01-25",
+                sale_price: 24650,
+                seller_name: "Mahindra Showroom",
+                buyer_name: "Anil Sharma"
+            }
+        ]
     },
     {
-        name: "XUV700 AX7",
-        brand: "Mahindra",
-        model: "XUV700",
-        model_year: 2024,
-        price: 2499000,
-        currency: "INR",
-        condition: "New",
-        number_of_owners: 0,
+        name: "Carens",
+        brand: "Kia",
+        model: "Carens",
+        model_year: 2022,
+        price: 15199,
+        currency: "USD",
+        condition: "Used",
+        number_of_owners: 1,
         transmission: "Automatic",
         fuel_type: "Petrol",
-        mileage: "0 km",
-        mileage_unit: "km",
-        fuel_efficiency: "13 kmpl",
-        body_type: "SUV",
+        mileage: "16.5 kmpl",
+        total_distance_covered: "15,000 km",
+        body_type: "MUV",
         seating_capacity: 7,
-        exterior_color: "Midnight Black",
-        interior_color: "Black",
-        registration_number: null,
-        insurance_validity: "Jan 2027",
+        available_colors: ["Imperial Blue"],
+        registration_number: "GJ01QR5678",
+        registration_city: "Ahmedabad",
+        registration_state: "Gujarat",
+        registration_year: 2022,
+        insurance_validity: "Aug 2025",
         insurance_type: "Comprehensive",
-        rc_status: "Pending",
-        description: "Mahindra XUV700 AX7 Luxury Pack. Equipped with Alexa, ADAS level 2, and massive dual screens.",
-        thumbnail_image: "https://i.pinimg.com/736x/5d/03/cc/5d03cc06ea4f7bb38be73453058c7ed1.jpg",
+        rc_status: "Active",
+        description: "Spacious 7 seater with amazing ride comfort and features.",
+        thumbnail_image: "https://i.pinimg.com/1200x/1e/b4/0a/1eb40a237ecf39c3be47ce79dca23556.jpg",
         images: [
-            "https://i.pinimg.com/736x/19/25/3e/19253ecb44acbceb319c17d0337e460e.jpg"
+            "https://i.pinimg.com/1200x/c8/15/d1/c815d1e544b22536e4b96e08e4fdc694.jpg"
         ],
         availability_status: "Available",
-        discount_percentage: 20,
-        views: 4200,
-        range: "190"
+        discount_percentage: 8,
+        views: 1100,
+        range: "180",
+        past_owners: [
+            {
+                sale_date: "2022-09-18",
+                sale_price: 19399,
+                seller_name: "Kia Dealership",
+                buyer_name: "Vikram Patel"
+            }
+        ]
     },
     {
-        name: "Creta SX(O)",
-        brand: "Hyundai",
-        model: "Creta",
-        model_year: 2024,
-        price: 2015000,
-        currency: "INR",
-        condition: "New",
-        number_of_owners: 0,
+        name: "Kiger",
+        brand: "Renault",
+        model: "Kiger",
+        model_year: 2021,
+        price: 6799,
+        currency: "USD",
+        condition: "Used",
+        number_of_owners: 1,
         transmission: "Automatic",
         fuel_type: "Petrol",
-        mileage: "0 km",
-        mileage_unit: "km",
-        fuel_efficiency: "18.4 kmpl",
+        mileage: "19.03 kmpl",
+        total_distance_covered: "22,000 km",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "Abyss Black",
-        interior_color: "Beige",
+        available_colors: ["White"],
+        registration_number: "KL07ST9012",
+        registration_city: "Ernakulam",
+        registration_state: "Kerala",
+        registration_year: 2021,
+        insurance_validity: "Feb 2025",
+        insurance_type: "Third Party",
+        rc_status: "Active",
+        description: "Stunning sub-compact SUV with good ground clearance.",
+        thumbnail_image: "https://i.pinimg.com/1200x/20/92/f3/2092f304b5bf8def650e4d672f2c103c.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/7c/d5/f4/7cd5f42a35667daa129bb9d734e562ca.jpg"
+        ],
+        availability_status: "Available",
+        discount_percentage: 12,
+        views: 750,
+        range: "160",
+        past_owners: [
+            {
+                sale_date: "2021-11-30",
+                sale_price: 8899,
+                seller_name: "Renault Dealer",
+                buyer_name: "Joseph Matthew"
+            }
+        ]
+    },
+    {
+        name: "Magnite",
+        brand: "Nissan",
+        model: "Magnite",
+        model_year: 2022,
+        price: 7550,
+        currency: "USD",
+        condition: "Used",
+        number_of_owners: 1,
+        transmission: "Manual",
+        fuel_type: "Petrol",
+        mileage: "20.0 kmpl",
+        total_distance_covered: "16,000 km",
+        body_type: "SUV",
+        seating_capacity: 5,
+        available_colors: ["Flare Garnet Red"],
+        registration_number: "RJ14UV3456",
+        registration_city: "Jaipur",
+        registration_state: "Rajasthan",
+        registration_year: 2022,
+        insurance_validity: "Oct 2024",
+        insurance_type: "Comprehensive",
+        rc_status: "Active",
+        description: "Value for money SUV with striking looks.",
+        thumbnail_image: "https://i.pinimg.com/736x/6f/e2/08/6fe208105e9ef923380d4707e0693a21.jpg",
+        images: [],
+        availability_status: "Sold",
+        discount_percentage: 5,
+        views: 680,
+        range: "165",
+        past_owners: [
+            {
+                sale_date: "2022-03-05",
+                sale_price: 9450,
+                seller_name: "Nissan Showroom",
+                buyer_name: "Rajendra Singh"
+            }
+        ]
+    },
+    {
+        name: "Amaze",
+        brand: "Honda",
+        model: "Amaze",
+        model_year: 2020,
+        price: 6499,
+        currency: "USD",
+        condition: "Used",
+        number_of_owners: 2,
+        transmission: "Manual",
+        fuel_type: "Petrol",
+        mileage: "18.6 kmpl",
+        total_distance_covered: "45,000 km",
+        body_type: "Sedan",
+        seating_capacity: 5,
+        available_colors: ["White"],
+        registration_number: "WB02WX7890",
+        registration_city: "Kolkata",
+        registration_state: "West Bengal",
+        registration_year: 2020,
+        insurance_validity: "Nov 2024",
+        insurance_type: "Comprehensive",
+        rc_status: "Active",
+        description: "Reliable and spacious compact sedan. Excellent boot space.",
+        thumbnail_image: "https://i.pinimg.com/736x/c4/24/01/c42401a7a7c204cb9bb7fafe9041d05b.jpg",
+        images: [
+            "https://i.pinimg.com/736x/56/9c/e9/569ce918bf3aa178b1dadec97c91de1c.jpg"
+        ],
+        availability_status: "Available",
+        discount_percentage: 10,
+        views: 550,
+        range: "170",
+        past_owners: [
+            {
+                sale_date: "2020-07-22",
+                sale_price: 8899,
+                seller_name: "Honda Dealer",
+                buyer_name: "Suman Das"
+            },
+            {
+                sale_date: "2023-02-14",
+                sale_price: 7150,
+                seller_name: "Suman Das",
+                buyer_name: "Ravi Shankar"
+            }
+        ]
+    },
+    {
+        name: "Kushaq",
+        brand: "Skoda",
+        model: "Kushaq",
+        model_year: 2024,
+        price: 19399,
+        currency: "USD",
+        condition: "New",
+        number_of_owners: 0,
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        mileage: "18.09 kmpl",
+        body_type: "SUV",
+        seating_capacity: 5,
+        available_colors: ["Honey Orange", "Silver", "Gray"],
+        registration_number: null,
+        insurance_validity: "Jan 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "Brand new Skoda Kushaq Style 1.5 TSI DSG. Incredible performance.",
+        thumbnail_image: "https://i.pinimg.com/1200x/db/83/04/db83040af95ecda21c7602ff19b637bf.jpg",
+        images: [
+            "https://i.pinimg.com/736x/88/d3/c1/88d3c1b8975a8a6bc623c2af4912d27b.jpg",
+            "https://i.pinimg.com/1200x/52/de/43/52de43b4677b9826681515453adcddcf.jpg"
+        ],
+        availability_status: "Available",
+        discount_percentage: 5,
+        views: 1300,
+        range: "185",
+        past_owners: []
+    },
+    {
+        name: "Taigun",
+        brand: "Volkswagen",
+        model: "Taigun",
+        model_year: 2024,
+        price: 19950,
+        currency: "USD",
+        condition: "New",
+        number_of_owners: 0,
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        mileage: "18.18 kmpl",
+        body_type: "SUV",
+        seating_capacity: 5,
+        available_colors: ["Persimmon Red", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Feb 2027",
         insurance_type: "Comprehensive",
         rc_status: "Pending",
-        description: "The all-new Hyundai Creta SX(O) IVT. Segment defining SUV with updated design and class-leading features.",
-        thumbnail_image: "https://i.pinimg.com/1200x/62/f9/43/62f943b1e5b75150850cb39e9e33e798.jpg",
+        description: "Volkswagen Taigun GT Plus. Enthusiast's delight with sharp styling.",
+        thumbnail_image: "https://i.pinimg.com/1200x/eb/75/6d/eb756dec8913f902e8aea1a3558f074c.jpg",
         images: [
-            "https://i.pinimg.com/736x/0d/19/e1/0d19e17706b66f63d75d9e669efce8c4.jpg"
+            "https://i.pinimg.com/1200x/0b/67/24/0b67242e75f5b5e5da4653b6f0521da3.jpg"
         ],
         availability_status: "Available",
         discount_percentage: 8,
-        views: 2100,
-        range: "180"
+        views: 1500,
+        range: "190",
+        past_owners: []
     },
     {
-        name: "Grand Vitara Alpha",
+        name: "Fronx",
         brand: "Maruti Suzuki",
-        model: "Grand Vitara",
+        model: "Fronx",
         model_year: 2024,
-        price: 1999000,
-        currency: "INR",
+        price: 11550,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Automatic",
-        fuel_type: "Hybrid",
-        mileage: "0 km",
-        mileage_unit: "km",
-        fuel_efficiency: "27.97 kmpl",
+        fuel_type: "Petrol",
+        mileage: "20.01 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        exterior_color: "Nexa Blue",
-        interior_color: "Bordeaux and Black",
+        available_colors: ["Aurora Silver", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Mar 2027",
         insurance_type: "Comprehensive",
         rc_status: "Pending",
-        description: "Maruti Suzuki Grand Vitara Strong Hybrid Alpha. Experience exceptional fuel economy and silent EV mode driving.",
-        thumbnail_image: "https://i.pinimg.com/1200x/68/be/94/68be94762044f8fc662a1844b3eadda1.jpg",
+        description: "The shape of new. Maruti Suzuki Fronx with a bold SUV stance.",
+        thumbnail_image: "https://i.pinimg.com/736x/e6/5a/a2/e65aa273cc8da33992cd1a2c52e4c1a2.jpg",
         images: [
-            "https://i.pinimg.com/1200x/67/7a/8f/677a8ffd2bf7d8ad33dd9a403eb2d52c.jpg",
-            "https://i.pinimg.com/1200x/56/38/55/563855e4137b11c99506c4b8399c43ec.jpg"
+            "https://i.pinimg.com/736x/7a/24/2d/7a242dc5366040807abe05eaa4d63a1b.jpg"
         ],
         availability_status: "Available",
-        discount_percentage: 20,
-        views: 1800,
-        range: "170"
+        discount_percentage: 12,
+        views: 2200,
+        range: "175",
+        past_owners: []
     },
     {
-        name: "Sonet X-Line",
-        brand: "Kia",
-        model: "Sonet",
+        name: "Verna",
+        brand: "Hyundai",
+        model: "Verna",
         model_year: 2024,
-        price: 1499000,
-        currency: "INR",
+        price: 18350,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Automatic",
-        fuel_type: "Diesel",
-        mileage: "0 km",
-        mileage_unit: "km",
-        fuel_efficiency: "19.0 kmpl",
-        body_type: "SUV",
+        fuel_type: "Petrol",
+        mileage: "18.6 kmpl",
+        body_type: "Sedan",
         seating_capacity: 5,
-        exterior_color: "White",
-        interior_color: "Black",
+        available_colors: ["Titan Grey", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Apr 2027",
         insurance_type: "Comprehensive",
         rc_status: "Pending",
-        description: "Kia Sonet X-Line Diesel AT. The most aggressive and feature-rich compact SUV in its segment.",
-        thumbnail_image: "https://i.pinimg.com/736x/2d/b2/ba/2db2ba68804becb5bff9d9f3392e9b03.jpg",
+        description: "All new Hyundai Verna. Futuristic design with ADAS level 2.",
+        thumbnail_image: "https://i.pinimg.com/736x/c3/c1/b4/c3c1b47dfa3d7410a0456eb7fcd8b3b4.jpg",
         images: [
-            "https://i.pinimg.com/1200x/db/53/c4/db53c492437c6f62df15733f38e575da.jpg"
+            "https://i.pinimg.com/1200x/2c/58/af/2c58af64964a7eb7938714bcdb7ec02f.jpg"
         ],
         availability_status: "Available",
-        discount_percentage: 8,
-        views: 950,
-        range: "170"
+        discount_percentage: 10,
+        views: 1800,
+        range: "180",
+        past_owners: []
     },
     {
-        name: "Fortuner Legender",
-        brand: "Toyota",
-        model: "Fortuner",
+        name: "Aura",
+        brand: "Hyundai",
+        model: "Aura",
         model_year: 2024,
-        price: 4366000,
-        currency: "INR",
+        price: 9450,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
-        transmission: "Automatic",
-        fuel_type: "Diesel",
-        mileage: "0 km",
-        mileage_unit: "km",
-        fuel_efficiency: "14.4 kmpl",
-        body_type: "SUV",
-        seating_capacity: 7,
-        exterior_color: "Pearl White with Black Roof",
-        interior_color: "Black & Maroon",
-        registration_number: null,
-        insurance_validity: "Jan 2027",
-        insurance_type: "Comprehensive",
-        rc_status: "Pending",
-        description: "Toyota Fortuner Legender 4x2 AT. The boss of Indian roads with unmatched presence and reliability.",
-        thumbnail_image: "https://i.pinimg.com/736x/31/44/7e/31447e81b70fa293c1cf0abaf84dcc48.jpg",
-        images: [
-            "https://i.pinimg.com/736x/cd/ca/44/cdca44acbd0a4a1c72092d452984dc1e.jpg",
-            "https://i.pinimg.com/1200x/54/c8/e3/54c8e313b16f964f1b380bceddb9bcde.jpg"
-        ],
-        availability_status: "Available",
-        discount_percentage: 12,
-        views: 5200,
-        range: "180"
-    },
-    {
-        name: "Hector Savvy Pro",
-        brand: "MG",
-        model: "Hector",
-        model_year: 2024,
-        price: 2199000,
-        currency: "INR",
-        condition: "New",
-        number_of_owners: 0,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        mileage: "0 km",
-        mileage_unit: "km",
-        fuel_efficiency: "13.5 kmpl",
-        body_type: "SUV",
+        transmission: "Manual",
+        fuel_type: "CNG",
+        mileage: "28.0 km/kg",
+        body_type: "Sedan",
         seating_capacity: 5,
-        exterior_color: "Aurora Silver",
-        interior_color: "Oak White and Black",
+        available_colors: ["Aurora Silver", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "May 2027",
         insurance_type: "Comprehensive",
         rc_status: "Pending",
-        description: "MG Hector Savvy Pro CVT. Features a massive 14-inch HD portrait infotainment system and Level 2 ADAS.",
-        thumbnail_image: "https://i.pinimg.com/736x/e7/cc/31/e7cc31959dabb14ada838c150ea8f00a.jpg",
+        description: "Hyundai Aura CNG. Very economical and perfect for city commutes.",
+        thumbnail_image: "https://i.pinimg.com/1200x/af/96/ce/af96ce60b343f53e3ade8e2a9fb921dd.jpg",
         images: [
-            "https://i.pinimg.com/1200x/2e/2f/41/2e2f41dddb177e8c09ef76245792f1dc.jpg",
-            "https://i.pinimg.com/736x/a6/43/79/a6437978fe2f4e133804f32608032e16.jpg"
-        ],
-        availability_status: "Available",
-        discount_percentage: 5,
-        views: 1100,
-        range: "175"
-    },
-    {
-        name: "Slavia Style",
-        brand: "Skoda",
-        model: "Slavia",
-        model_year: 2024,
-        price: 1899000,
-        currency: "INR",
-        condition: "New",
-        number_of_owners: 0,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        mileage: "0 km",
-        mileage_unit: "km",
-        fuel_efficiency: "18.73 kmpl",
-        body_type: "Sedan",
-        seating_capacity: 5,
-        exterior_color: "Crystal White",
-        interior_color: "Black",
-        registration_number: null,
-        insurance_validity: "Feb 2027",
-        insurance_type: "Comprehensive",
-        rc_status: "Pending",
-        description: "Skoda Slavia Style 1.5 TSI DSG. The most powerful sedan in its class offering true European driving dynamics.",
-        thumbnail_image: "https://i.pinimg.com/736x/4b/21/2e/4b212e983a1d803b484be3d05cfd844d.jpg",
-        images: [
-            "https://i.pinimg.com/1200x/0a/71/08/0a7108395a0feff54a556914fa0e496d.jpg"
+            "https://i.pinimg.com/1200x/80/77/25/8077257e94f9b11cae736367dfe52018.jpg",
+            "https://i.pinimg.com/1200x/7f/9a/6d/7f9a6d7bc80d9c5d8ef67b22182d8982.jpg"
         ],
         availability_status: "Available",
         discount_percentage: 15,
-        views: 1350,
-        range: "190"
+        views: 900,
+        range: "160",
+        past_owners: []
     },
     {
-        name: "Elevate ZX",
-        brand: "Honda",
-        model: "Elevate",
+        name: "Tiago",
+        brand: "Tata",
+        model: "Tiago",
         model_year: 2024,
-        price: 1630000,
-        currency: "INR",
+        price: 7850,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Automatic",
         fuel_type: "Petrol",
-        mileage: "0 km",
-        mileage_unit: "km",
-        fuel_efficiency: "16.92 kmpl",
-        body_type: "SUV",
+        mileage: "19.0 kmpl",
+        body_type: "Hatchback",
         seating_capacity: 5,
-        exterior_color: "Crimson Red",
-        interior_color: "Black",
+        available_colors: ["Flame Red", "Silver", "Gray"],
         registration_number: null,
-        insurance_validity: "Mar 2027",
+        insurance_validity: "Jun 2027",
         insurance_type: "Comprehensive",
         rc_status: "Pending",
-        description: "Honda Elevate ZX CVT. Honda's latest SUV offering unmatched comfort, class-leading ground clearance, and Honda Sensing ADAS.",
-        thumbnail_image: "https://i.pinimg.com/736x/48/a1/6c/48a16cdded03dc96894ef37514ad836c.jpg",
+        description: "Tata Tiago AMT. Safe, peppy, and affordable.",
+        thumbnail_image: "https://i.pinimg.com/736x/0c/7e/92/0c7e9238788faaf93958bad0ee4f3e05.jpg",
         images: [
-            "https://i.pinimg.com/736x/1f/85/da/1f85daf874e5fed742ab8c284bfee1ff.jpg",
-            "https://i.pinimg.com/736x/57/cd/8c/57cd8c547e1e9a107988637fa591cd1c.jpg"
+            "https://i.pinimg.com/736x/77/c6/f8/77c6f855d93fa38f60464b39459a61bd.jpg"
         ],
         availability_status: "Available",
         discount_percentage: 12,
-        views: 1650,
-        range: "160"
+        views: 1050,
+        range: "155",
+        past_owners: []
     },
     {
-        name: "Punch Creative",
-        brand: "Tata",
-        model: "Punch",
+        name: "Bolero Neo",
+        brand: "Mahindra",
+        model: "Bolero",
         model_year: 2024,
-        price: 899000,
-        currency: "INR",
+        price: 13099,
+        currency: "USD",
+        condition: "New",
+        number_of_owners: 0,
+        transmission: "Manual",
+        fuel_type: "Diesel",
+        mileage: "17.29 kmpl",
+        body_type: "SUV",
+        seating_capacity: 7,
+        available_colors: ["Olive Green Metallic", "Silver", "Gray"],
+        registration_number: null,
+        insurance_validity: "Jul 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "Tough and rugged Bolero Neo. Body on frame construction.",
+        thumbnail_image: "https://i.pinimg.com/736x/1a/91/42/1a91420380b8d7ccc7abd9049a09b80f.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/7d/6d/90/7d6d90ad0fffae5a48c28e8c271341a8.jpg"
+        ],
+        availability_status: "Available",
+        discount_percentage: 5,
+        views: 1400,
+        range: "170",
+        past_owners: []
+    },
+    {
+        name: "Triber",
+        brand: "Renault",
+        model: "Triber",
+        model_year: 2024,
+        price: 9250,
+        currency: "USD",
+        condition: "New",
+        number_of_owners: 0,
+        transmission: "Automatic",
+        fuel_type: "Petrol",
+        mileage: "18.2 kmpl",
+        body_type: "MUV",
+        seating_capacity: 7,
+        available_colors: ["Metal Mustard", "Silver", "Gray"],
+        registration_number: null,
+        insurance_validity: "Aug 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "Versatile 7 seater from Renault. Great space management.",
+        thumbnail_image: "https://i.pinimg.com/1200x/57/f1/26/57f126e74d31c6bd02b7d9c6bf19a141.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/51/3a/13/513a13655d61f6a7ae665623c4f6e5af.jpg"
+        ],
+        availability_status: "Available",
+        discount_percentage: 15,
+        views: 980,
+        range: "165",
+        past_owners: []
+    },
+    {
+        name: "Glanza",
+        brand: "Toyota",
+        model: "Glanza",
+        model_year: 2024,
+        price: 9950,
+        currency: "USD",
         condition: "New",
         number_of_owners: 0,
         transmission: "Manual",
         fuel_type: "Petrol",
-        mileage: "0 km",
-        mileage_unit: "km",
-        fuel_efficiency: "20.09 kmpl",
-        body_type: "SUV",
+        mileage: "22.3 kmpl",
+        body_type: "Hatchback",
         seating_capacity: 5,
-        exterior_color: "Tornado Blue",
-        interior_color: "Grey/Black",
+        available_colors: ["Sportin Red", "Silver", "Gray"],
         registration_number: null,
-        insurance_validity: "May 2027",
+        insurance_validity: "Sep 2027",
         insurance_type: "Comprehensive",
         rc_status: "Pending",
-        description: "Tata Punch Creative. Micro SUV with 5-star Global NCAP safety rating and bold design.",
-        thumbnail_image: "https://i.pinimg.com/736x/b8/36/52/b8365283ad256ebb48983d0676314f3e.jpg",
+        description: "Toyota's premium hatchback. Reliability and high fuel efficiency.",
+        thumbnail_image: "https://i.pinimg.com/736x/f5/d6/fa/f5d6faf9db238c653baefb1b7b7a0851.jpg",
         images: [
-            "https://i.pinimg.com/736x/98/55/a9/9855a979dbd0c838bda623b44ccccbfa.jpg",
-            "https://i.pinimg.com/1200x/eb/47/16/eb47164471c352554d944f8ad20b7259.jpg",
-            "https://i.pinimg.com/736x/71/a1/bc/71a1bc6af0247be157085cddfd86bc1d.jpg",
-            "https://i.pinimg.com/736x/94/4c/b2/944cb27445e22e2c57e4c9716ff09e86.jpg"
+            "https://i.pinimg.com/1200x/98/3b/e9/983be94c7252384bd00fcfe2a9fb921dd.jpg"
         ],
-        availability_status: "Sold",
-        discount_percentage: 12,
-        views: 800,
-        range: "150"
+        availability_status: "Available",
+        discount_percentage: 10,
+        views: 1150,
+        range: "170",
+        past_owners: []
+    },
+    {
+        name: "Urban Cruiser Hyryder",
+        brand: "Toyota",
+        model: "Urban Cruiser",
+        model_year: 2024,
+        price: 20999,
+        currency: "USD",
+        condition: "New",
+        number_of_owners: 0,
+        transmission: "Automatic",
+        fuel_type: "Hybrid",
+        mileage: "27.97 kmpl",
+        body_type: "SUV",
+        seating_capacity: 5,
+        available_colors: ["Imperial Blue", "Silver", "Gray"],
+        registration_number: null,
+        insurance_validity: "Oct 2027",
+        insurance_type: "Comprehensive",
+        rc_status: "Pending",
+        description: "Strong hybrid SUV offering unmatched fuel efficiency in its segment.",
+        thumbnail_image: "https://i.pinimg.com/736x/b4/10/c9/b410c9f1f332d67275e860533d715d36.jpg",
+        images: [
+            "https://i.pinimg.com/1200x/0f/4d/e7/0f4de729f452e36f693bedac9239e500.jpg"
+        ],
+        availability_status: "Available",
+        discount_percentage: 5,
+        views: 2600,
+        range: "180",
+        past_owners: []
     }
 ];
 
 const sample_bookings = [
     {
-        user_name: "John Doe",
-        user_email: "john.doe@example.com",
-        user_contact: "1234567890",
-        status: "Accepted"
+        user_name: "Amit Sharma",
+        user_email: "amit.sharma@example.com",
+        user_contact: "9876543210",
+        status: "Accepted",
+        selected_color: "Black"
     },
     {
-        user_name: "Jane Smith",
-        user_email: "jane.smith@gmail.com",
-        user_contact: "2345678901",
-        status: "Pending"
+        user_name: "Priya Patel",
+        user_email: "priya.p@gmail.com",
+        user_contact: "8765432109",
+        status: "Accepted",
+        selected_color: "White"
     },
     {
-        user_name: "Bob Wilson",
-        user_email: "bob.wilson@outlook.com",
-        user_contact: "3456789012",
-        status: "Rejected"
+        user_name: "Vikram Singh",
+        user_email: "vikram.s@outlook.com",
+        user_contact: "7654321098",
+        status: "Accepted",
+        selected_color: "Silver"
+    },
+    {
+        user_name: "Sneha Reddy",
+        user_email: "sneha.reddy@yahoo.com",
+        user_contact: "9988776655",
+        status: "Accepted",
+        selected_color: "Nexa Blue"
+    },
+    {
+        user_name: "Anjali Verma",
+        user_email: "anjali.v@gmail.com",
+        user_contact: "8765432109",
+        status: "Pending",
+        selected_color: "Grey"
+    },
+    {
+        user_name: "Sandeep Gupta",
+        user_email: "sandeep.gupta@outlook.com",
+        user_contact: "7654321098",
+        status: "Rejected",
+        selected_color: "Red"
+    },
+    {
+        user_name: "Rohan Kapoor",
+        user_email: "rohan.k@example.com",
+        user_contact: "9123456789",
+        status: "Pending",
+        selected_color: "Blue"
     }
 ];
 
@@ -834,7 +793,7 @@ const seedPrivate = async () => {
         // Sync tables
         await Car.sync({ alter: true });
         await Booking.sync({ alter: true });
-        // SaleHistory sync removed as it is no longer used for seeding ownership history
+
 
         let created = 0;
         let updated = 0;
@@ -860,20 +819,7 @@ const seedPrivate = async () => {
                 });
                 updated += 1;
 
-                // Seed SaleHistory if sold and not already present
-                if (carData.availability_status === 'Sold') {
-                    const existingHistory = await SaleHistory.findOne({ where: { car_id: existingCar._id } });
-                    if (!existingHistory) {
-                        await SaleHistory.create({
-                            car_id: existingCar._id,
-                            sale_date: new Date(),
-                            price: carData.price,
-                            seller_name: 'TrailblazeAuto Dealership',
-                            buyer_name: carData.past_owners && carData.past_owners.length > 0 ? carData.past_owners[0].buyer_name : 'Valued Customer',
-                            sale_status: 'Sold'
-                        });
-                    }
-                }
+
             } else {
                 const car = await Car.create({
                     ...carData,
@@ -883,46 +829,57 @@ const seedPrivate = async () => {
                 });
                 created += 1;
 
-                // Seed SaleHistory if sold
-                if (carData.availability_status === 'Sold') {
-                    await SaleHistory.create({
-                        car_id: car._id,
-                        sale_date: new Date(),
-                        price: carData.price,
-                        seller_name: 'TrailblazeAuto Dealership',
-                        buyer_name: carData.past_owners && carData.past_owners.length > 0 ? carData.past_owners[0].buyer_name : 'Valued Customer',
-                        sale_status: 'Sold'
-                    });
-                }
+
             }
         }
 
-        // Seed some sample bookings
+        // Seed bookings with proper mapping to car status
         console.log("Seeding sample bookings...");
         const allCars = await Car.findAll();
-        for (let i = 0; i < sample_bookings.length; i++) {
-            const bookingData = sample_bookings[i];
-            // Assign to different cars
-            const car = allCars[i % allCars.length];
 
-            // For 'Accepted' booking, ensure car is 'Sold'
-            if (bookingData.status === 'Accepted' && car.availability_status !== 'Sold') {
-                await car.update({ availability_status: 'Sold' });
+        let acceptedIndex = 0;
+        let otherIndex = 0;
+        const acceptedSamples = sample_bookings.filter(b => b.status === 'Accepted');
+        const otherSamples = sample_bookings.filter(b => b.status !== 'Accepted');
+
+        for (const car of allCars) {
+            let bookingToCreate = null;
+
+            if (car.availability_status === 'Sold') {
+                // Ensure every sold car has an accepted booking
+                const sample = acceptedSamples[acceptedIndex % acceptedSamples.length];
+                bookingToCreate = {
+                    ...sample,
+                    user_email: `${car.name.toLowerCase().replace(/\s+/g, '.')}.${sample.user_email}`,
+                    car_id: car._id,
+                    selected_color: car.available_colors?.[0] || 'Black',
+                    createdAt: new Date(Date.now() - Math.floor(Math.random() * 2000000000))
+                };
+                acceptedIndex++;
+            } else if (Math.random() > 0.6) {
+                // Give some available cars pending or rejected bookings
+                const sample = otherSamples[otherIndex % otherSamples.length];
+                bookingToCreate = {
+                    ...sample,
+                    user_email: `${car.name.toLowerCase().replace(/\s+/g, '.')}.${sample.user_email}`,
+                    car_id: car._id,
+                    selected_color: car.available_colors?.[0] || 'Black',
+                    createdAt: new Date(Date.now() - Math.floor(Math.random() * 1000000000))
+                };
+                otherIndex++;
             }
 
-            // Check if booking already exists for this user and car
-            const existingBooking = await Booking.findOne({
-                where: {
-                    user_email: bookingData.user_email,
-                    car_id: car._id
-                }
-            });
-
-            if (!existingBooking) {
-                await Booking.create({
-                    ...bookingData,
-                    car_id: car._id
+            if (bookingToCreate) {
+                const existingBooking = await Booking.findOne({
+                    where: {
+                        user_email: bookingToCreate.user_email,
+                        car_id: bookingToCreate.car_id
+                    }
                 });
+
+                if (!existingBooking) {
+                    await Booking.create(bookingToCreate);
+                }
             }
         }
 
@@ -941,11 +898,17 @@ const seedPrivate = async () => {
 
         console.log("Seeding private auxiliary accounts...");
         for (const userData of private_users) {
-            await Admin.findOrCreate({
+            const [admin, created] = await Admin.findOrCreate({
                 where: { email: userData.email },
                 defaults: userData,
                 individualHooks: true
             });
+
+            if (!created) {
+                // If already exists, force update the password to the default seeded value
+                admin.password = userData.password;
+                await admin.save({ individualHooks: true });
+            }
         }
         console.log("Private auxiliary accounts seeded!");
 

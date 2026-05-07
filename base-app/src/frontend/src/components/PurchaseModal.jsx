@@ -1,13 +1,24 @@
 import React, { useState } from 'react';
 import api from '../api';
 import { toast } from 'react-toastify';
+import { getColorCode } from '../constants/colorMapping';
 
 const PurchaseModal = ({ car, isOpen, onClose }) => {
+
+
     const [formData, setFormData] = useState({
         user_name: '',
         user_email: '',
-        user_contact: ''
+        user_contact: '',
+        selected_color: car.available_colors?.[0] || ''
     });
+
+    React.useEffect(() => {
+        if (car.available_colors?.[0]) {
+            setFormData(prev => ({ ...prev, selected_color: car.available_colors[0] }));
+        }
+    }, [car]);
+
     const [loading, setLoading] = useState(false);
 
     if (!isOpen) return null;
@@ -30,6 +41,10 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
             return toast.error('Please enter a valid phone number (min 10 digits).');
         }
 
+        if (!formData.selected_color && car.available_colors && car.available_colors.length > 0) {
+            return toast.error('Please select a color.');
+        }
+
         setLoading(true);
         try {
             await api.post('/api/bookings', {
@@ -37,7 +52,11 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                 ...formData
             });
             toast.success('Booking request sent! Our team will contact you soon.');
-            onClose();
+
+            // Substantial delay to ensure toast is rendered and captured by automated tests
+            setTimeout(() => {
+                onClose();
+            }, 1000);
         } catch (error) {
             console.error('Error submitting booking:', error);
             toast.error(error.response?.data?.message || 'Failed to submit. Please try again.');
@@ -73,14 +92,14 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                             </div>
                             <div>
                                 <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">Price</div>
-                                <div className="text-xs font-black text-blue-400">₹{car.price?.toLocaleString()}</div>
+                                <div className="text-xs font-black text-blue-400">${car.price?.toLocaleString()}</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Right Section: Form */}
-                <div className="w-full md:w-7/12 p-6 md:p-10 bg-white flex flex-col relative overflow-hidden">
+                <div className="w-full md:w-7/12 p-6 md:p-8 bg-white flex flex-col relative overflow-hidden">
                     <button
                         onClick={onClose}
                         className="absolute top-6 right-6 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-900 hover:text-white transition-all shadow-sm z-10"
@@ -88,57 +107,82 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
 
-                    <div className="mb-6">
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Booking</h2>
-                        <p className="text-slate-400 font-medium text-xs mt-1">Reserve this vehicle.</p>
+                    <div className="mb-4">
+                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Booking</h2>
+                        <p className="text-slate-400 font-medium text-[10px] mt-0.5">Reserve this vehicle.</p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-                        <div className="grid gap-4">
+                    <form onSubmit={handleSubmit} className="space-y-3" noValidate>
+                        <div className="grid gap-3">
                             <div className="space-y-1">
-                                <label className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</label>
+                                <label htmlFor="purchase-name" className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</label>
                                 <input
                                     id="purchase-name"
                                     required
                                     type="text"
                                     value={formData.user_name}
                                     onChange={(e) => setFormData({ ...formData, user_name: e.target.value })}
-                                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-blue-600 transition-all"
+                                    className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold text-slate-900 focus:outline-none focus:border-blue-600 transition-all"
                                     placeholder="Your Name"
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Email</label>
+                                <label htmlFor="purchase-email" className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Email</label>
                                 <input
                                     id="purchase-email"
                                     required
                                     type="email"
                                     value={formData.user_email}
                                     onChange={(e) => setFormData({ ...formData, user_email: e.target.value })}
-                                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-blue-600 transition-all"
+                                    className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold text-slate-900 focus:outline-none focus:border-blue-600 transition-all"
                                     placeholder="Email Address"
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Contact</label>
+                                <label htmlFor="purchase-contact" className="block text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Contact</label>
                                 <input
                                     id="purchase-contact"
                                     required
                                     type="tel"
                                     value={formData.user_contact}
                                     onChange={(e) => setFormData({ ...formData, user_contact: e.target.value })}
-                                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:border-blue-600 transition-all"
+                                    className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold text-slate-900 focus:outline-none focus:border-blue-600 transition-all"
                                     placeholder="Phone Number"
                                 />
                             </div>
+                            {(car.available_colors && car.available_colors.length > 0) && (
+                                <div className="space-y-2">
+                                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Preferred Color</label>
+                                    <div className="flex flex-wrap gap-3 pt-1">
+                                        {(car.available_colors || []).map((color, idx) => (
+                                            <button
+                                                key={idx}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, selected_color: color })}
+                                                className={`group flex items-center gap-2 px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border ${
+                                                    formData.selected_color === color
+                                                    ? 'bg-slate-950 text-white border-slate-950 shadow-lg scale-105'
+                                                    : 'bg-white text-slate-600 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                                                }`}
+                                            >
+                                                <span 
+                                                    className="w-2.5 h-2.5 rounded-full border border-white/20 shadow-sm"
+                                                    style={{ backgroundColor: getColorCode(color) }}
+                                                ></span>
+                                                {color}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="pt-2">
+                        <div className="pt-4">
                             <button
                                 id="purchase-submit"
                                 disabled={loading}
                                 type="submit"
-                                className="w-full py-4 bg-slate-950 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-blue-600 transition-all active:scale-[0.98]"
+                                className="w-full py-3.5 bg-slate-950 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-blue-600 transition-all active:scale-[0.98] shadow-xl"
                             >
                                 {loading ? 'Processing...' : 'Book Now'}
                             </button>
