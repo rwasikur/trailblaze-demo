@@ -30,49 +30,19 @@ const CarDetailsPage = () => {
             }
         };
         fetchCar();
-
-        // Task 4: Track Recently Viewed
-        if (id) {
-            try {
-                const rawRecent = localStorage.getItem('recentCars');
-                let recent = JSON.parse(rawRecent || '[]');
-
-                // Filter out existing to ensure current visit is #1 (most recent)
-                recent = [id, ...recent.filter(item => item !== id)].slice(0, 5);
-
-                localStorage.setItem('recentCars', JSON.stringify(recent));
-
-                // Notify other components in the same tab
-                window.dispatchEvent(new Event('recentCarsUpdated'));
-            } catch (e) {
-                console.error('Error tracking visit', e);
-                localStorage.setItem('recentCars', JSON.stringify([id]));
-                window.dispatchEvent(new Event('recentCarsUpdated'));
-            }
-        }
     }, [id]);
 
     if (loading) return (
-        <div className="min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_35%,#f8fafc_100%)] px-4 py-8 md:px-6 md:py-10">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-                <div className="flex justify-between items-center">
-                    <Button id="back-to-catalogue" variant="outline" onClick={() => navigate(-1)} className="text-sm">
-                        &larr; Back to Fleet
-                    </Button>
-                </div>
-                <div className="flex justify-center mt-12"><p className="text-slate-500 font-medium animate-pulse">Loading details...</p></div>
-            </div>
+        <div className="min-h-full bg-slate-50 flex items-center justify-center">
+            <p className="text-slate-400 font-medium animate-pulse">Scanning vehicle signatures...</p>
         </div>
     );
+
     if (!car) return (
-        <div className="min-h-full bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_35%,#f8fafc_100%)] px-4 py-8 md:px-6 md:py-10">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-                <div className="flex justify-between items-center">
-                    <Button id="back-to-catalogue" variant="outline" onClick={() => navigate(-1)} className="text-sm">
-                        &larr; Back to Fleet
-                    </Button>
-                </div>
-                <div className="flex justify-center mt-12"><p className="text-slate-500 font-medium">Vehicle Not Found</p></div>
+        <div className="min-h-full bg-slate-50 flex items-center justify-center p-10">
+            <div className="text-center">
+                <h2 className="text-2xl font-bold text-slate-800">Vehicle Not Found</h2>
+                <Button onClick={() => navigate(-1)} className="mt-4">Back to Fleet</Button>
             </div>
         </div>
     );
@@ -331,8 +301,8 @@ const CarDetailsPage = () => {
                         {/* Condition Badge Overlay */}
                         <div className="absolute top-8 left-8 z-20">
                             <div className={`px-5 py-2.5 rounded-2xl backdrop-blur-xl shadow-2xl border border-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3 ${car.condition === 'New'
-                                    ? 'bg-indigo-600/90 text-white'
-                                    : 'bg-slate-800/90 text-white'
+                                ? 'bg-indigo-600/90 text-white'
+                                : 'bg-slate-800/90 text-white'
                                 }`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${car.condition === 'New' ? 'bg-white animate-pulse' : 'bg-amber-400'}`}></span>
                                 {car.condition === 'New' ? 'Brand New' : 'Pre-Owned'}
@@ -362,10 +332,11 @@ const CarDetailsPage = () => {
                 </div>
             </div>
 
+            {/* Lightbox */}
             {fullScreenImage && (
-                <div onClick={() => setFullScreenImage(null)} className="fixed inset-0 bg-slate-900/95 flex items-center justify-center z-[1100] p-4">
-                    <button onClick={() => setFullScreenImage(null)} className="absolute top-6 right-6 bg-white/10 hover:bg-white/20 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl transition-colors">&times;</button>
-                    <img src={fullScreenImage} alt="Maximized View" className="max-w-[90%] max-h-[90vh] object-contain rounded-xl shadow-2xl" onClick={(e) => e.stopPropagation()} />
+                <div onClick={() => setFullScreenImage(null)} className="fixed inset-0 bg-slate-950/98 flex items-center justify-center z-[1100] p-6 backdrop-blur-sm animate-in fade-in duration-300">
+                    <button onClick={() => setFullScreenImage(null)} className="absolute top-8 right-8 text-white text-4xl font-extralight hover:scale-125 transition-all">&times;</button>
+                    <img src={fullScreenImage} alt="Maximized" className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl" />
                 </div>
             )}
 
