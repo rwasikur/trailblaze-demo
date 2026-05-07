@@ -1,37 +1,80 @@
 import React, { useState, useMemo } from 'react';
 
-const TENURE_OPTIONS = [12, 24, 36, 48, 60, 72, 84];
-
 const EmiModal = ({ car, isOpen, onClose, onProceedToBook }) => {
     const [downPaymentPct, setDownPaymentPct] = useState(20);
+    const [downPaymentInput, setDownPaymentInput] = useState('20');
+
     const [annualRate, setAnnualRate] = useState(9.5);
-    const [selectedTenure, setSelectedTenure] = useState(36);
+    const [annualRateInput, setAnnualRateInput] = useState('9.5');
+
+    const [tenure, setTenure] = useState(36);
+    const [tenureInput, setTenureInput] = useState('36');
+
+    const price = car?.price || 0;
 
     const results = useMemo(() => {
-        const price = car?.price || 0;
         const downPayment = Math.round((downPaymentPct / 100) * price);
         const principal = price - downPayment;
         const r = annualRate / 12 / 100;
+        const n = tenure;
 
-        const calcEMI = (n) => {
-            if (r === 0 || principal === 0) return Math.round(principal / n);
-            return Math.round((principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
-        };
+        let emi = 0;
+        if (n > 0 && principal > 0) {
+            emi = r === 0
+                ? Math.round(principal / n)
+                : Math.round((principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
+        }
 
-        const tenures = TENURE_OPTIONS.map((n) => {
-            const emi = calcEMI(n);
-            const totalPayment = downPayment + emi * n;
-            const totalInterest = totalPayment - price;
-            return { n, emi, totalPayment, totalInterest, downPayment };
-        });
+        const totalPayment = downPayment + emi * n;
+        const totalInterest = totalPayment - price;
 
-        return { tenures, principal, downPayment };
-    }, [car?.price, downPaymentPct, annualRate]);
+        return { downPayment, principal, emi, totalPayment, totalInterest };
+    }, [price, downPaymentPct, annualRate, tenure]);
 
     if (!isOpen) return null;
 
     const fmt = (v) => '$' + Math.abs(Math.round(v)).toLocaleString('en-US');
-    const selected = results.tenures.find((t) => t.n === selectedTenure);
+
+    const tenureLabel = (n) => {
+        if (!n || n <= 0) return '';
+        if (n % 12 === 0) return `${n / 12} yr${n !== 12 ? 's' : ''}`;
+        return `${(n / 12).toFixed(1)} yrs`;
+    };
+
+    // ── Input handlers ──
+
+    const handleDownPaymentInput = (val) => {
+        setDownPaymentInput(val);
+        const num = parseFloat(val);
+        if (!isNaN(num) && num >= 0 && num <= 100) setDownPaymentPct(num);
+    };
+    const handleDownPaymentSlider = (val) => {
+        const num = Number(val);
+        setDownPaymentPct(num);
+        setDownPaymentInput(String(num));
+    };
+
+    const handleRateInput = (val) => {
+        setAnnualRateInput(val);
+        const num = parseFloat(val);
+        if (!isNaN(num) && num >= 0 && num <= 100) setAnnualRate(num);
+    };
+    const handleRateSlider = (val) => {
+        const num = Number(val);
+        setAnnualRate(num);
+        setAnnualRateInput(String(num));
+    };
+
+    const handleTenureInput = (val) => {
+        setTenureInput(val);
+        const num = parseInt(val, 10);
+        if (!isNaN(num) && num > 0 && num <= 360) setTenure(num);
+    };
+    const handleTenureSlider = (val) => {
+        const num = Number(val);
+        setTenure(num);
+        setTenureInput(String(num));
+    };
 
     return (
         <div
@@ -55,123 +98,161 @@ const EmiModal = ({ car, isOpen, onClose, onProceedToBook }) => {
                         <div className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 mb-1">Financial Tool</div>
                         <h2 className="text-2xl font-black text-white tracking-tight">EMI Calculator</h2>
                         <p className="text-slate-400 text-xs font-medium mt-1">
-                            {car?.brand} {car?.name}&nbsp;·&nbsp;Ex-showroom ${car?.price?.toLocaleString('en-US')}
+                            {car?.brand} {car?.name}&nbsp;·&nbsp;Ex-showroom ${price.toLocaleString('en-US')}
                         </p>
                     </div>
 
-                    {/* Down Payment Slider */}
+                    {/* ── Down Payment ── */}
                     <div>
                         <div className="flex justify-between items-center mb-2">
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Down Payment</span>
-                            <span className="text-sm font-black text-white">
-                                {downPaymentPct}%&nbsp;
-                                <span className="text-blue-400">{fmt(results.downPayment)}</span>
-                            </span>
+                            <span className="text-blue-400 text-sm font-black">{fmt(results.downPayment)}</span>
                         </div>
-                        <input
-                            type="range" min={10} max={50} step={5}
-                            value={downPaymentPct}
-                            onChange={(e) => setDownPaymentPct(Number(e.target.value))}
-                            className="w-full accent-blue-500 h-1.5 rounded-full cursor-pointer"
-                        />
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="range" min={0} max={100} step={0.1}
+                                value={Math.min(downPaymentPct, 100)}
+                                onChange={(e) => handleDownPaymentSlider(e.target.value)}
+                                className="flex-1 accent-blue-500 h-1.5 rounded-full cursor-pointer"
+                            />
+                            <div className="relative flex-shrink-0">
+                                <input
+                                    type="number" min={0} max={100} step={0.1}
+                                    value={downPaymentInput}
+                                    onChange={(e) => handleDownPaymentInput(e.target.value)}
+                                    className="w-20 bg-white/10 border border-white/20 rounded-lg text-white text-sm font-black text-center focus:outline-none focus:border-blue-400 focus:bg-white/15 transition-all pr-5 py-1"
+                                />
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">%</span>
+                            </div>
+                        </div>
                         <div className="flex justify-between text-[9px] font-bold text-slate-500 mt-1">
-                            <span>10%</span><span>50%</span>
+                            <span>0%</span><span>100%</span>
                         </div>
                     </div>
 
-                    {/* Interest Rate Slider */}
+                    {/* ── Interest Rate ── */}
                     <div>
                         <div className="flex justify-between items-center mb-2">
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Interest Rate</span>
-                            <span className="text-sm font-black text-white">
-                                <span className="text-blue-400">{annualRate.toFixed(1)}%</span>&nbsp;p.a.
-                            </span>
+                            <span className="text-slate-400 text-[10px] font-medium">per annum</span>
                         </div>
-                        <input
-                            type="range" min={5} max={20} step={0.5}
-                            value={annualRate}
-                            onChange={(e) => setAnnualRate(Number(e.target.value))}
-                            className="w-full accent-blue-500 h-1.5 rounded-full cursor-pointer"
-                        />
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="range" min={0} max={30} step={0.1}
+                                value={Math.min(annualRate, 30)}
+                                onChange={(e) => handleRateSlider(e.target.value)}
+                                className="flex-1 accent-blue-500 h-1.5 rounded-full cursor-pointer"
+                            />
+                            <div className="relative flex-shrink-0">
+                                <input
+                                    type="number" min={0} max={100} step={0.1}
+                                    value={annualRateInput}
+                                    onChange={(e) => handleRateInput(e.target.value)}
+                                    className="w-20 bg-white/10 border border-white/20 rounded-lg text-white text-sm font-black text-center focus:outline-none focus:border-blue-400 focus:bg-white/15 transition-all pr-5 py-1"
+                                />
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">%</span>
+                            </div>
+                        </div>
                         <div className="flex justify-between text-[9px] font-bold text-slate-500 mt-1">
-                            <span>5%</span><span>20%</span>
+                            <span>0%</span><span>30%+</span>
                         </div>
                     </div>
 
-                    {/* Summary pill */}
-                    <div className="flex gap-4 text-[10px] text-slate-500 font-medium pt-1 border-t border-white/10">
+                    {/* ── Loan Tenure ── */}
+                    <div>
+                        <div className="flex justify-between items-center mb-2">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Loan Tenure</span>
+                            {tenure > 0 && (
+                                <span className="text-slate-400 text-[10px] font-medium">{tenureLabel(tenure)}</span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="range" min={1} max={360} step={1}
+                                value={Math.min(Math.max(tenure, 1), 360)}
+                                onChange={(e) => handleTenureSlider(e.target.value)}
+                                className="flex-1 accent-blue-500 h-1.5 rounded-full cursor-pointer"
+                            />
+                            <div className="relative flex-shrink-0">
+                                <input
+                                    type="number" min={1} max={360} step={1}
+                                    value={tenureInput}
+                                    onChange={(e) => handleTenureInput(e.target.value)}
+                                    className="w-24 bg-white/10 border border-white/20 rounded-lg text-white text-sm font-black text-center focus:outline-none focus:border-blue-400 focus:bg-white/15 transition-all pr-7 py-1"
+                                />
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-[9px] font-bold pointer-events-none">mo</span>
+                            </div>
+                        </div>
+                        <div className="flex justify-between text-[9px] font-bold text-slate-500 mt-1">
+                            <span>1 mo</span><span>360 mo (30 yrs)</span>
+                        </div>
+                    </div>
+
+                    {/* ── Summary strip ── */}
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-slate-500 font-medium pt-1 border-t border-white/10">
                         <span>Loan: <span className="text-slate-300 font-bold">{fmt(results.principal)}</span></span>
-                        <span>Rate: <span className="text-slate-300 font-bold">{annualRate.toFixed(1)}% p.a.</span></span>
-                        <span>Down: <span className="text-slate-300 font-bold">{downPaymentPct}%</span></span>
+                        <span>Rate: <span className="text-slate-300 font-bold">{annualRate}% p.a.</span></span>
+                        <span>Down: <span className="text-slate-300 font-bold">{downPaymentPct}% · {fmt(results.downPayment)}</span></span>
+                        <span>Term: <span className="text-slate-300 font-bold">{tenure} mo{tenure > 0 ? ` · ${tenureLabel(tenure)}` : ''}</span></span>
                     </div>
                 </div>
 
-                {/* ── Tenure Cards ── */}
-                <div className="p-6 space-y-3">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Choose Tenure</div>
+                {/* ── Result Card ── */}
+                <div className="p-6 space-y-4">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Your EMI Breakdown</div>
 
-                    {results.tenures.map(({ n, emi, totalPayment, totalInterest }) => (
-                        <button
-                            key={n}
-                            onClick={() => setSelectedTenure(n)}
-                            className={`w-full rounded-2xl border-2 p-4 text-left transition-all duration-200 ${selectedTenure === n
-                                    ? 'border-blue-600 bg-blue-50 shadow-md shadow-blue-100'
-                                    : 'border-slate-100 bg-slate-50 hover:border-slate-200'
-                                }`}
-                        >
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${selectedTenure === n ? 'border-blue-600' : 'border-slate-300'}`}>
-                                        {selectedTenure === n && <div className="w-2 h-2 rounded-full bg-blue-600" />}
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-black text-slate-900">
-                                            {n} Months&nbsp;
-                                            <span className="text-slate-400 font-medium">
-                                                ({n % 12 === 0 ? `${n / 12} yr${n !== 12 ? 's' : ''}` : `${(n / 12).toFixed(1)} yrs`})
-                                            </span>
-                                        </div>
-                                        <div className="text-[10px] text-slate-400 font-medium">
-                                            Total Interest: <span className="text-red-500 font-bold">{fmt(totalInterest)}</span>
-                                        </div>
-                                    </div>
+                    <div className="rounded-2xl border-2 border-blue-600 bg-blue-50 shadow-md shadow-blue-100 p-5">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="text-xs font-black text-slate-900">
+                                    {tenure} Months
+                                    {tenure > 0 && (
+                                        <span className="text-slate-400 font-medium ml-1">({tenureLabel(tenure)})</span>
+                                    )}
                                 </div>
-                                <div className="text-right">
-                                    <div className="text-xl font-black text-blue-600">{fmt(emi)}</div>
-                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">/month</div>
+                                <div className="text-[10px] text-slate-400 font-medium mt-0.5">
+                                    @ <span className="text-slate-600 font-bold">{annualRate}%</span> p.a. · <span className="text-slate-600 font-bold">{downPaymentPct}%</span> down
                                 </div>
                             </div>
+                            <div className="text-right">
+                                <div className="text-3xl font-black text-blue-600">{fmt(results.emi)}</div>
+                                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">/month</div>
+                            </div>
+                        </div>
 
-                            {selectedTenure === n && (
-                                <div className="mt-3 pt-3 border-t border-blue-100 grid grid-cols-3 gap-2 text-center">
-                                    <div>
-                                        <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Down Payment</div>
-                                        <div className="text-xs font-black text-slate-700 mt-0.5">{fmt(results.downPayment)}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Total Interest</div>
-                                        <div className="text-xs font-black text-red-500 mt-0.5">{fmt(totalInterest)}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Total Cost</div>
-                                        <div className="text-xs font-black text-slate-700 mt-0.5">{fmt(totalPayment)}</div>
-                                    </div>
-                                </div>
-                            )}
-                        </button>
-                    ))}
+                        <div className="mt-4 pt-4 border-t border-blue-100 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                            <div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Down Payment</div>
+                                <div className="text-xs font-black text-slate-700 mt-0.5">{fmt(results.downPayment)}</div>
+                            </div>
+                            <div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Loan Amount</div>
+                                <div className="text-xs font-black text-slate-700 mt-0.5">{fmt(results.principal)}</div>
+                            </div>
+                            <div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Total Interest</div>
+                                <div className="text-xs font-black text-red-500 mt-0.5">{fmt(results.totalInterest)}</div>
+                            </div>
+                            <div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Total Cost</div>
+                                <div className="text-xs font-black text-slate-700 mt-0.5">{fmt(results.totalPayment)}</div>
+                            </div>
+                        </div>
+                    </div>
 
-                    <p className="text-[10px] text-slate-400 font-medium pt-1">
+                    <p className="text-[10px] text-slate-400 font-medium">
                         * EMI is indicative. Final rate subject to lender approval.
                     </p>
 
                     <button
                         onClick={() => {
                             onClose();
-                            onProceedToBook(selected
-                                ? { emi: selected.emi, tenure: selected.n, downPaymentPct, annualRate }
-                                : null
-                            );
+                            onProceedToBook({
+                                emi: results.emi,
+                                tenure,
+                                downPaymentPct,
+                                annualRate,
+                            });
                         }}
                         className="w-full mt-1 py-4 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-blue-700 transition-all active:scale-[0.98] shadow-lg shadow-blue-600/20"
                     >

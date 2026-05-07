@@ -49,7 +49,7 @@ const PurchaseModal = ({ car, isOpen, onClose, emiInfo }) => {
                 tenure: emiInfo.tenure,
                 downPaymentPct: emiInfo.downPaymentPct,
                 monthlyEmi: emiInfo.emi,
-                annualRate: 9.5
+                annualRate: emiInfo.annualRate
             }
             : null;
 
@@ -101,7 +101,7 @@ const PurchaseModal = ({ car, isOpen, onClose, emiInfo }) => {
                             </div>
                             <div>
                                 <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">Price</div>
-                                <div className="text-xs font-black text-blue-400">₹{car.price?.toLocaleString()}</div>
+                                <div className="text-xs font-black text-blue-400">${car.price?.toLocaleString()}</div>
                             </div>
                         </div>
 
@@ -111,7 +111,7 @@ const PurchaseModal = ({ car, isOpen, onClose, emiInfo }) => {
                                 <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Selected EMI Plan</div>
                                 <div className="flex items-baseline gap-1.5">
                                     <span className="text-lg font-black text-blue-400">
-                                        ₹{emiInfo.emi.toLocaleString('en-IN')}
+                                        ${emiInfo.emi.toLocaleString('en-US')}
                                     </span>
                                     <span className="text-[10px] font-bold text-slate-400">/month</span>
                                 </div>
@@ -136,7 +136,7 @@ const PurchaseModal = ({ car, isOpen, onClose, emiInfo }) => {
                         <h2 className="text-2xl font-black text-slate-900 tracking-tight">Booking</h2>
                         <p className="text-slate-400 font-medium text-[10px] mt-0.5">
                             {emiInfo
-                                ? `EMI plan · ₹${emiInfo.emi.toLocaleString('en-IN')}/mo for ${emiInfo.tenure} months`
+                                ? `EMI plan · $${emiInfo.emi.toLocaleString('en-US')}/mo for ${emiInfo.tenure} months`
                                 : 'Reserve this vehicle.'}
                         </p>
                     </div>

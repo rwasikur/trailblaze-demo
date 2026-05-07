@@ -63,7 +63,7 @@ const CarDetailsPage = () => {
                 onClick={() => setIsEmiModalOpen(true)}
                 className="w-full py-3 rounded-xl border-2 border-blue-100 bg-blue-50 text-blue-600 font-black text-[10px] uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all duration-200 flex items-center justify-center gap-2"
             >
-                <span>₹</span>
+                <span>$</span>
                 <span>Calculate EMI</span>
             </button>
         </div>
@@ -92,11 +92,11 @@ const CarDetailsPage = () => {
                             <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Original Ex-Showroom</span>
-                                    <span className="text-lg font-bold text-slate-400 line-through">₹{originalPrice.toLocaleString()}</span>
+                                    <span className="text-lg font-bold text-slate-400 line-through">${originalPrice.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Owner Depreciation ({car.number_of_owners} Owners)</span>
-                                    <span className="text-red-500 text-sm font-bold">- ₹{depreciationAmount.toLocaleString()}</span>
+                                    <span className="text-red-500 text-sm font-bold">- ${depreciationAmount.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
@@ -104,7 +104,7 @@ const CarDetailsPage = () => {
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Current Valuation</span>
-                                    <span className="text-4xl font-black text-blue-600">₹{car.price?.toLocaleString()}</span>
+                                    <span className="text-4xl font-black text-blue-600">${car.price?.toLocaleString()}</span>
                                 </div>
                                 <EmiButton />
                             </div>
@@ -117,7 +117,7 @@ const CarDetailsPage = () => {
                             <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Ex-Showroom Price</span>
-                                    <span className="text-2xl font-black text-slate-900">₹{car.price?.toLocaleString()}</span>
+                                    <span className="text-2xl font-black text-slate-900">${car.price?.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
@@ -125,7 +125,7 @@ const CarDetailsPage = () => {
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Valuation</span>
-                                    <span className="text-4xl font-black text-blue-600">₹{car.price?.toLocaleString()}</span>
+                                    <span className="text-4xl font-black text-blue-600">${car.price?.toLocaleString()}</span>
                                 </div>
                                 <EmiButton />
                             </div>
@@ -229,7 +229,7 @@ const CarDetailsPage = () => {
                             <div className="flex justify-between items-end relative z-10">
                                 <div>
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Acquisition</div>
-                                    <div className="text-4xl font-black tracking-tight">₹{car.price?.toLocaleString()}</div>
+                                    <div className="text-4xl font-black tracking-tight">${car.price?.toLocaleString()}</div>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Official Seller</div>
