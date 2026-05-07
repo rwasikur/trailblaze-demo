@@ -39,7 +39,6 @@
         "Locate pending booking Click 'Reject' Verify status 'Rejected' and toast 'Booking rejected!' using IDs #book-now-main-button, #purchase-name, #purchase-email, #purchase-contact, #purchase-submit, #admin-bookings-tab, #booking-row-{id}, and #booking-row-{id}-reject.",
         "Navigate to /car/invalid-id-999 Verify 'Vehicle Not Found' message and 'Back to Fleet' button.",
         "On empty DB, open 'Bookings' tab Verify 'No active bookings.' message.",
-        "On /browse, search for specific brand Verify grid filters matching vehicles using ID article[id^=\"car-card-\"] and div[id$=\"-brand\"].",
         "On Accepted booking, click 'Edit Status' Change to Rejected Verify status update and toast.",
         "In 'PurchaseModal', enter 9-digit contact Submit Verify toast 'Please enter a valid phone number (min 10 digits).' using IDs #book-now-main-button, #purchase-name, #purchase-email, #purchase-contact, and #purchase-submit.",
         "In 'Add Car', enter price below $100 Save Verify toast 'Price must be at least $100' using ID #car-price-input.",

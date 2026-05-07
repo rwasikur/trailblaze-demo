@@ -9,11 +9,15 @@ const createBooking = async (req, res) => {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Check for duplicate booking
+        // Normalize color: treat empty strings/undefined as null for consistent matching
+        const normalizedColor = (selected_color && selected_color.trim() !== '') ? selected_color : null;
+
+        // Check for duplicate booking (same car, same email, same color)
         const existingBooking = await Booking.findOne({
             where: {
                 car_id,
-                user_email
+                user_email,
+                selected_color: normalizedColor
             }
         });
 
@@ -54,7 +58,7 @@ const createBooking = async (req, res) => {
             user_name,
             user_email,
             user_contact,
-            selected_color,
+            selected_color: normalizedColor,
             emi_details: sanitizedEmiDetails
         });
 
