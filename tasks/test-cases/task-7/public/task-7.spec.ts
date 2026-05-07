@@ -1,294 +1,462 @@
-import { test, expect, request as playwrightRequest } from '@playwright/test';
+import { test, expect, request as playwrightRequest, type APIRequestContext, type Locator, type Page } from '@playwright/test';
 
-const ADMIN = { email: 'admin1@pub.com', password: 'pub123' };
+const DATA = {
+    admin: { email: 'admin1@pub.com', password: 'pub123' },
+    discountedName: 'Elite i20',
+    zeroDiscountName: 'Polo GTI',
+    createColor: 'White'
+};
 
-type CarRecord = Record<string, any>;
+type Car = Record<string, any>;
 
-async function apiContext(baseURL: string) {
+const money = (value: number) => `$${Math.round(value).toLocaleString('en-US')}`;
+const discountedPrice = (car: Car) => Math.round(car.price - (car.price * Number(car.discount_percentage) / 100));
+const discountAmount = (car: Car) => car.price - discountedPrice(car);
+const validDiscount = (car: Car) => Number(car.discount_percentage) > 0 && Number(car.discount_percentage) < 100;
+
+async function api(baseURL: string) {
     return playwrightRequest.newContext({ baseURL });
 }
 
-async function getAdminToken(baseURL: string) {
-    const ctx = await apiContext(baseURL);
-    const response = await ctx.post('/api/admin/login', { data: ADMIN });
-    expect(response.ok()).toBeTruthy();
-    const body = await response.json();
-    await ctx.dispose();
-    return body.token;
+async function authToken(ctx: APIRequestContext) {
+    const res = await ctx.post('/api/admin/login', { data: DATA.admin });
+    expect(res.ok()).toBeTruthy();
+    return (await res.json()).token;
 }
 
-async function getCars(baseURL: string) {
-    const ctx = await apiContext(baseURL);
-    const response = await ctx.get('/api/cars');
-    expect(response.ok()).toBeTruthy();
-    const body = await response.json();
-    await ctx.dispose();
-    return (body.cars ?? body) as CarRecord[];
+async function allCars(ctx: APIRequestContext) {
+    const res = await ctx.get('/api/cars');
+    expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    return body.cars ?? body;
 }
 
-async function getSeedCar(baseURL: string, predicate: (car: CarRecord) => boolean) {
-    const cars = await getCars(baseURL);
-    const car = cars.find(predicate);
-    expect(car, 'Expected matching seeded car to exist').toBeTruthy();
-    return car!;
+async function findCar(ctx: APIRequestContext, predicate: (car: Car) => boolean) {
+    const car = (await allCars(ctx)).find(predicate);
+    expect(car).toBeDefined();
+    return car;
 }
 
-function carPayloadFromSeed(seed: CarRecord, overrides: CarRecord = {}) {
-    return {
-        name: `${seed.name} Task7 ${Date.now()} ${Math.floor(Math.random() * 100000)}`,
-        brand: seed.brand,
-        model_year: seed.model_year,
-        transmission: seed.transmission,
-        fuel_type: seed.fuel_type,
-        seating_capacity: seed.seating_capacity,
-        price: seed.price,
-        range: seed.range,
-        body_type: seed.body_type,
-        mileage: seed.mileage,
-        total_distance_covered: seed.total_distance_covered,
-        exterior_color: seed.exterior_color,
-        interior_color: seed.interior_color,
-        number_of_owners: seed.condition === 'Used' ? seed.number_of_owners || 1 : 0,
-        registration_city: seed.registration_city,
-        insurance_validity: seed.insurance_validity,
-        description: seed.description,
+function carPayloadFromSeed(seed: Car, overrides: Car = {}) {
+    const payload: Car = {
+        ...seed,
+        name: overrides.name ?? `${seed.name} Task7 ${Date.now()}`,
+        brand: overrides.brand ?? seed.brand,
+        model_year: overrides.model_year ?? seed.model_year,
         image_url: seed.image_url,
-        secondary_images: seed.secondary_images || [],
-        availability_status: 'Available',
-        condition: seed.condition,
-        past_owners: seed.past_owners || [],
-        ...overrides,
+        secondary_images: seed.secondary_images ?? [],
+        available_colors: seed.available_colors ?? [DATA.createColor],
+        past_owners: seed.past_owners ?? [],
+        ...overrides
     };
+    delete payload._id;
+    delete payload.createdAt;
+    delete payload.updatedAt;
+    return payload;
 }
 
-async function createCarFromSeed(baseURL: string, overrides: CarRecord = {}, seedPredicate: (car: CarRecord) => boolean = () => true) {
-    const seed = await getSeedCar(baseURL, seedPredicate);
-    const token = await getAdminToken(baseURL);
-    const ctx = await apiContext(baseURL);
-    const response = await ctx.post('/api/cars', {
+async function createCar(ctx: APIRequestContext, token: string, seed: Car, overrides: Car = {}) {
+    const res = await ctx.post('/api/cars', {
         headers: { Authorization: `Bearer ${token}` },
-        data: carPayloadFromSeed(seed, overrides),
+        data: carPayloadFromSeed(seed, overrides)
     });
-    expect(response.ok()).toBeTruthy();
-    const created = await response.json();
-    await ctx.dispose();
-    return created as CarRecord;
+    expect(res.ok()).toBeTruthy();
+    return res.json();
 }
 
-async function updateCar(baseURL: string, car: CarRecord, overrides: CarRecord) {
-    const token = await getAdminToken(baseURL);
-    const ctx = await apiContext(baseURL);
-    const response = await ctx.put(`/api/cars/${car._id}`, {
+async function updateCar(ctx: APIRequestContext, token: string, car: Car, overrides: Car = {}) {
+    const res = await ctx.put(`/api/cars/${car._id}`, {
         headers: { Authorization: `Bearer ${token}` },
-        data: { ...car, ...overrides },
+        data: carPayloadFromSeed(car, { name: car.name, ...overrides })
     });
-    expect(response.ok()).toBeTruthy();
-    const updated = await response.json();
+    expect(res.ok()).toBeTruthy();
+    return res.json();
+}
+
+async function availableZeroDiscountCar(ctx: APIRequestContext) {
+    const existing = (await allCars(ctx)).find((c: Car) => Number(c.discount_percentage) === 0 && c.availability_status === 'Available');
+    if (existing) return existing;
+    const token = await authToken(ctx);
+    const seed = await findCar(ctx, c => Number(c.discount_percentage) === 0);
+    return createCar(ctx, token, seed, { discount_percentage: 0, availability_status: 'Available', condition: 'New', number_of_owners: 0, past_owners: [] });
+}
+
+async function createBooking(ctx: APIRequestContext, car: Car, emailPrefix = 'task7') {
+    const res = await ctx.post('/api/bookings', {
+        data: {
+            car_id: car._id,
+            user_name: 'Task Seven',
+            user_email: `${emailPrefix}.${Date.now()}@example.com`,
+            user_contact: '9876543210',
+            selected_color: car.available_colors?.[0] ?? DATA.createColor
+        }
+    });
+    expect(res.ok()).toBeTruthy();
+    return (await res.json()).booking;
+}
+
+async function login(page: Page, baseURL: string) {
+    await page.goto(`${baseURL}/admin`, { waitUntil: 'networkidle' });
+    if (page.url().includes('dashboard')) return;
+    await page.locator('#admin-email-input').fill(DATA.admin.email);
+    await page.locator('#admin-password-input').fill(DATA.admin.password);
+    await page.locator('#admin-login-button').click();
+    await page.waitForURL(/dashboard/, { timeout: 15000 });
+}
+
+async function openAddCarWithCopiedSeed(page: Page, baseURL: string, seed: Car) {
+    const ctx = await api(baseURL);
+    const token = await authToken(ctx);
     await ctx.dispose();
-    return updated as CarRecord;
+    await page.addInitScript(({ adminToken, car }: { adminToken: string; car: Car }) => {
+        localStorage.setItem('adminToken', adminToken);
+        window.history.replaceState({ usr: { copyFrom: car }, key: 'task7-copy' }, '', '/admin/add-car');
+    }, { adminToken: token, car: seed });
+    await page.goto(`${baseURL}/admin/add-car`, { waitUntil: 'domcontentloaded' });
 }
 
-async function signInBrowser(page: any, baseURL: string) {
-    const token = await getAdminToken(baseURL);
-    await page.goto(`${baseURL}/`);
-    await page.evaluate((adminToken: string) => localStorage.setItem('adminToken', adminToken), token);
-}
-
-async function selectReactOption(page: any, inputId: string, optionText: string) {
-    await page.locator(`#${inputId}`).click();
-    await page.locator(`#${inputId}`).fill(optionText);
-    await page.getByText(optionText, { exact: true }).first().click();
-}
-
-async function reachAddCarStep3(page: any, baseURL: string) {
-    await signInBrowser(page, baseURL);
-    await page.goto(`${baseURL}/admin/add-car`);
-    await page.locator('select').first().selectOption('New');
-    await selectReactOption(page, 'brand-select', 'Tata');
-    await selectReactOption(page, 'model-select', 'Safari');
-    await selectReactOption(page, 'year-select', '2024');
-    await page.locator('label:has-text("Exterior Color") + select').selectOption('Cosmic Gold');
-    await page.locator('label:has-text("Interior Color") + select').selectOption('Black');
-    await page.getByRole('button', { name: /Next Step/i }).click();
-    await page.locator('label:has-text("Transmission") + select').selectOption('Automatic');
-    await page.locator('label:has-text("Fuel Type") + select').selectOption('Diesel');
-    await page.locator('label:has-text("Seating Capacity") + input').fill('7');
-    await page.locator('label:has-text("Range") + input').fill('175');
-    await page.locator('label:has-text("Body Type") + input').fill('SUV');
-    await page.getByRole('button', { name: /Next Step/i }).click();
-}
-
-function expectedDiscountedPrice(price: number, discount: number) {
-    return Math.round(price - (price * discount / 100)).toLocaleString('en-US');
-}
-
-function expectedAppPrice(price: number) {
-    return price.toLocaleString('en-US');
-}
-
-// POSITIVE TESTS (AC 1-16)
-
-test("AC 1: 'GET /api/cars' must serialize seeded 'discount_percentage' values as numeric fields.", async ({ baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Innova Crysta' && seed.discount_percentage === 15);
-    expect(typeof car.discount_percentage).toBe('number');
-});
-
-test("AC 2: 'POST /api/cars' must persist 'discount_percentage' as integer 15 when the create request body contains 'discount_percentage': 15.", async ({ baseURL }) => {
-    const car = await createCarFromSeed(baseURL || '', { price: 100000, discount_percentage: 15 });
-    expect(car.discount_percentage).toBe(15);
-});
-
-test("AC 3: 'POST /api/cars' must persist 'discount_percentage' as 0 when the create request body omits the 'discount_percentage' property.", async ({ baseURL }) => {
-    const car = await createCarFromSeed(baseURL || '', { price: 100000, discount_percentage: undefined });
-    expect(car.discount_percentage).toBe(0);
-});
-
-test("AC 4: 'PUT /api/cars/:id' must persist 'discount_percentage' as integer 25 when the update request body contains 'discount_percentage': 25.", async ({ baseURL }) => {
-    const car = await createCarFromSeed(baseURL || '', { price: 100000, discount_percentage: 5 });
-    const updated = await updateCar(baseURL || '', car, { discount_percentage: 25 });
-    expect(updated.discount_percentage).toBe(25);
-});
-
-test("AC 5: 'GET /api/cars' must include the persisted 'discount_percentage' property in every serialized car object.", async ({ baseURL }) => {
-    const cars = await getCars(baseURL || '');
-    expect(cars.length).toBeGreaterThan(0);
-    for (const car of cars) expect(car).toHaveProperty('discount_percentage');
-});
-
-test("AC 6: 'GET /api/cars/:id' must include the persisted 'discount_percentage' property in the serialized car object.", async ({ baseURL }) => {
-    const seed = await getSeedCar(baseURL || '', car => car.name === 'Innova Crysta' && car.discount_percentage === 15);
-    const ctx = await apiContext(baseURL || '');
-    const response = await ctx.get(`/api/cars/${seed._id}`);
-    expect(response.ok()).toBeTruthy();
-    const car = await response.json();
+async function advanceAddCarToPricing(page: Page, baseURL: string) {
+    const ctx = await api(baseURL);
+    const seed = await findCar(ctx, car => validDiscount(car) && car.availability_status === 'Available' && car.condition === 'New' && car.image_url);
     await ctx.dispose();
-    expect(car.discount_percentage).toBe(15);
-});
-
-test("AC 7: 'AddCarPage' must render the 'Discount (%)' number input with id='car-discount-input' in Step 3 'Registration & Details' immediately after the 'Price' input.", async ({ page, baseURL }) => {
-    await reachAddCarStep3(page, baseURL || '');
+    await openAddCarWithCopiedSeed(page, baseURL, seed);
+    await page.getByRole('button', { name: /Next Step/i }).click();
+    await page.getByRole('button', { name: /Next Step/i }).click();
     await expect(page.getByRole('heading', { name: 'Registration & Details' })).toBeVisible();
-    await expect(page.locator('#car-discount-input')).toBeVisible();
-    const order = await page.evaluate(() => {
-        const price = document.querySelector('#car-price-input');
-        const discount = document.querySelector('#car-discount-input');
-        return !!price && !!discount && price.compareDocumentPosition(discount) === Node.DOCUMENT_POSITION_FOLLOWING;
-    });
-    expect(order).toBeTruthy();
+}
+
+async function expectLineThrough(locator: Locator) {
+    await expect(locator).toBeVisible();
+    await expect(locator).toHaveCSS('text-decoration-line', /line-through/);
+}
+
+async function openDiscountedCarCard(page: Page, baseURL: string, car: Car) {
+    await page.goto(`${baseURL}/browse`, { waitUntil: 'networkidle' });
+    await expect(page.locator(`#car-card-${car._id}`)).toBeVisible({ timeout: 15000 });
+}
+
+test("AC 1: 'Car' model must define 'discount_percentage' as an integer field with default value 0.", async ({ baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const token = await authToken(ctx);
+    const seed = await findCar(ctx, c => c.name === DATA.discountedName);
+    const payload = carPayloadFromSeed(seed, { name: `${seed.name} Default Discount ${Date.now()}` });
+    delete payload.discount_percentage;
+    const res = await ctx.post('/api/cars', { headers: { Authorization: `Bearer ${token}` }, data: payload });
+    expect(res.ok()).toBeTruthy();
+    const created = await res.json();
+    expect(created.discount_percentage).toBe(0);
+    expect(Number.isInteger(created.discount_percentage)).toBeTruthy();
+    await ctx.dispose();
 });
 
-test("AC 8: 'EditCarPage' must render the 'Discount (%)' number input with id='car-discount-input' and pre-fill it from the car's persisted 'discount_percentage' value.", async ({ page, baseURL }) => {
-    const seed = await getSeedCar(baseURL || '', car => car.name === 'Safari Accomplished' && car.discount_percentage === 20);
-    await signInBrowser(page, baseURL || '');
-    await page.goto(`${baseURL}/admin/edit-car/${seed._id}`);
-    await page.locator('#car-price-input').waitFor({ state: 'visible' });
-    await expect(page.locator('#car-discount-input')).toBeVisible();
-    await expect(page.locator('#car-discount-input')).toHaveValue('20');
+test("AC 2: 'POST /api/cars' must persist a provided 'discount_percentage' value as an integer.", async ({ baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const token = await authToken(ctx);
+    const seed = await findCar(ctx, c => c.name === DATA.discountedName);
+    const created = await createCar(ctx, token, seed, { discount_percentage: '13' });
+    expect(created.discount_percentage).toBe(13);
+    expect(Number.isInteger(created.discount_percentage)).toBeTruthy();
+    await ctx.dispose();
 });
 
-test("AC 9: 'CarCard' must render a discount badge with text '15% OFF' for a seeded car with 'discount_percentage': 15.", async ({ page, baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Innova Crysta' && seed.discount_percentage === 15);
-    await page.goto(`${baseURL}/browse`);
-    await expect(page.locator(`#car-card-${car._id}-discount-badge`)).toHaveText(/15% OFF/);
+test("AC 3: 'PUT /api/cars/:id' must persist a provided 'discount_percentage' value as an integer.", async ({ baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const token = await authToken(ctx);
+    const seed = await findCar(ctx, c => c.name === DATA.discountedName);
+    const created = await createCar(ctx, token, seed, { discount_percentage: 4 });
+    const updated = await updateCar(ctx, token, created, { discount_percentage: '17' });
+    expect(updated.discount_percentage).toBe(17);
+    expect(Number.isInteger(updated.discount_percentage)).toBeTruthy();
+    await ctx.dispose();
 });
 
-test("AC 10: 'CarCard' must render the discounted price for a seeded car with 'discount_percentage': 15.", async ({ page, baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Innova Crysta' && seed.discount_percentage === 15);
-    await page.goto(`${baseURL}/browse`);
-    await expect(page.locator(`#car-card-${car._id}-price`)).toContainText(expectedDiscountedPrice(car.price, 15));
+test("AC 4: 'AddCarPage' must render a 'Discount (%)' number input with id='car-discount-input' in the pricing/details step.", async ({ page, baseURL }) => {
+    await advanceAddCarToPricing(page, baseURL || '');
+    const input = page.locator('#car-discount-input');
+    await expect(input).toBeVisible();
+    await expect(input).toHaveAttribute('type', 'number');
 });
 
-test("AC 11: 'CarCard' must render the original price as a line-through value for a seeded car with 'discount_percentage': 15.", async ({ page, baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Innova Crysta' && seed.discount_percentage === 15);
-    await page.goto(`${baseURL}/browse`);
+test("AC 5: 'AddCarPage' must include the entered discount value in the submitted 'POST /api/cars' request body.", async ({ page, baseURL }) => {
+    await advanceAddCarToPricing(page, baseURL || '');
+    await page.locator('#car-price-input').fill('4699');
+    await page.locator('#car-discount-input').fill('11');
+    await page.getByRole('button', { name: /Next Step/i }).click();
+    await expect(page.getByRole('heading', { name: 'Vehicle Media' })).toBeVisible();
+    const requestPromise = page.waitForRequest(req => req.method() === 'POST' && /\/api\/cars$/.test(req.url()));
+    await page.getByRole('button', { name: /Save Vehicle to Fleet/i }).click({ force: true });
+    const body = requestPromise.then(req => req.postDataJSON());
+    await expect(await body).toMatchObject({ discount_percentage: '11' });
+});
+
+test("AC 6: 'EditCarPage' must pre-fill the discount input from the car's persisted 'discount_percentage'.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const token = await authToken(ctx);
+    const seed = await findCar(ctx, c => c.name === DATA.discountedName);
+    const created = await createCar(ctx, token, seed, { discount_percentage: 23, condition: 'New', number_of_owners: 0, past_owners: [] });
+    await ctx.dispose();
+    await login(page, baseURL || '');
+    await page.goto(`${baseURL}/admin/edit-car/${created._id}`);
+    await expect(page.locator('#car-discount-input')).toHaveValue('23', { timeout: 15000 });
+});
+
+test("AC 7: 'EditCarPage' must include the edited discount value in the submitted 'PUT /api/cars/:id' request body.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const token = await authToken(ctx);
+    const seed = await findCar(ctx, c => c.name === DATA.discountedName);
+    const created = await createCar(ctx, token, seed, { discount_percentage: 6, condition: 'New', number_of_owners: 0, past_owners: [] });
+    await ctx.dispose();
+    await login(page, baseURL || '');
+    await page.goto(`${baseURL}/admin/edit-car/${created._id}`);
+    await page.locator('#car-discount-input').fill('19');
+    const requestPromise = page.waitForRequest(req => req.method() === 'PUT' && req.url().includes(`/api/cars/${created._id}`));
+    await page.getByRole('button', { name: /Save Changes/i }).click({ force: true });
+    expect((await requestPromise).postDataJSON().discount_percentage).toBe('19');
+});
+
+test("AC 8: 'CarCard' must render a discount badge with '<discount_percentage>% OFF' when 'discount_percentage' is greater than 0 and less than 100.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await findCar(ctx, c => c.name === DATA.discountedName);
+    await ctx.dispose();
+    await openDiscountedCarCard(page, baseURL || '', car);
+    await expect(page.locator(`#car-card-${car._id}-discount-badge`)).toHaveText(`${car.discount_percentage}% OFF`);
+});
+
+test("AC 9: 'CarCard' must render the rounded discounted price when 'discount_percentage' is greater than 0 and less than 100.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await findCar(ctx, c => c.name === DATA.discountedName);
+    await ctx.dispose();
+    await openDiscountedCarCard(page, baseURL || '', car);
+    await expect(page.locator(`#car-card-${car._id}-price`)).toHaveText(money(discountedPrice(car)));
+});
+
+test("AC 10: 'CarCard' must render the original price as a line-through value when a valid discount is present.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await findCar(ctx, c => c.name === DATA.discountedName);
+    await ctx.dispose();
+    await openDiscountedCarCard(page, baseURL || '', car);
     const original = page.locator(`#car-card-${car._id}-original-price`);
-    await expect(original).toContainText(expectedAppPrice(car.price));
-    await expect(original).toHaveClass(/line-through/);
+    await expect(original).toHaveText(money(car.price));
+    await expectLineThrough(original);
 });
 
-test("AC 12: 'CarDetailsPage' Overview tab must render a discount badge with text '15% OFF' for a seeded API car response with 'discount_percentage': 15.", async ({ page, baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Innova Crysta' && seed.discount_percentage === 15);
+test("AC 11: 'CarDetailsPage' Overview tab must render a discount badge with '<discount_percentage>% OFF' when a valid discount is present.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await findCar(ctx, c => c.name === DATA.discountedName);
+    await ctx.dispose();
     await page.goto(`${baseURL}/car/${car._id}`);
-    await expect(page.locator('#car-details-discount-badge')).toHaveText(/15% OFF/);
+    await expect(page.locator('#car-details-discount-badge')).toHaveText(`${car.discount_percentage}% OFF`);
 });
 
-test("AC 13: 'CarDetailsPage' Price tab must render 'Festival Discount (15%)' for a seeded new car API response with 'condition': 'New' and 'discount_percentage': 15.", async ({ page, baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Slavia Style' && seed.condition === 'New' && seed.discount_percentage === 15);
+test("AC 12: 'CarDetailsPage' Overview acquisition card must render the original price as a line-through value when a valid discount is present.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await findCar(ctx, c => c.name === DATA.discountedName);
+    await ctx.dispose();
     await page.goto(`${baseURL}/car/${car._id}`);
-    await page.getByRole('button', { name: 'Price' }).click();
-    await expect(page.getByText('Festival Discount (15%)')).toBeVisible();
+    await expect(page.getByText(money(discountedPrice(car))).first()).toBeVisible();
+    await expectLineThrough(page.getByText(money(car.price)).first());
 });
 
-test("AC 14: 'CarDetailsPage' Price tab must render 'Special Offer Discount (15%)' for a seeded used car API response with 'condition': 'Used' and 'discount_percentage': 15.", async ({ page, baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Innova Crysta' && seed.condition === 'Used' && seed.discount_percentage === 15);
+test("AC 13: 'CarDetailsPage' Price tab must render the discount deduction amount as original price minus discounted price.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await findCar(ctx, c => c.name === DATA.discountedName);
+    await ctx.dispose();
     await page.goto(`${baseURL}/car/${car._id}`);
-    await page.getByRole('button', { name: 'Price' }).click();
-    await expect(page.getByText('Special Offer Discount (15%)')).toBeVisible();
+    await page.getByRole('button', { name: /^Price$/ }).click();
+    await expect(page.getByText(`- ${money(discountAmount(car))}`).first()).toBeVisible();
 });
 
-test("AC 15: 'PurchaseModal' must render the final discounted price for a seeded car with 'discount_percentage': 15.", async ({ page, baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Innova Crysta' && seed.discount_percentage === 15);
+test("AC 14: 'PurchaseModal' must render the rounded final discounted price when a valid discount is present.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await findCar(ctx, c => c.name === DATA.discountedName && c.availability_status === 'Available');
+    await ctx.dispose();
     await page.goto(`${baseURL}/car/${car._id}`);
     await page.locator('#book-now-main-button').click();
     await expect(page.locator('h2:has-text("Booking")')).toBeVisible();
-    await expect(page.locator('.fixed').last().getByText(new RegExp(expectedDiscountedPrice(car.price, 15))).last()).toBeVisible();
+    await expect(page.getByText(money(discountedPrice(car))).first()).toBeVisible();
 });
 
-test("AC 16: 'PurchaseModal' must render an 'Offer' value of '15% OFF' for a seeded car with 'discount_percentage': 15.", async ({ page, baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Innova Crysta' && seed.discount_percentage === 15);
+test("AC 15: 'PurchaseModal' must render an 'Offer' value of '<discount_percentage>% OFF' when a valid discount is present.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await findCar(ctx, c => c.name === DATA.discountedName && c.availability_status === 'Available');
+    await ctx.dispose();
     await page.goto(`${baseURL}/car/${car._id}`);
     await page.locator('#book-now-main-button').click();
-    const modal = page.locator('.fixed').last();
-    await expect(modal.getByText('Offer')).toBeVisible();
-    await expect(modal.getByText('15% OFF').last()).toBeVisible();
+    await expect(page.getByText('Offer')).toBeVisible();
+    await expect(page.getByText(`${car.discount_percentage}% OFF`).first()).toBeVisible();
 });
 
-// NEGATIVE TESTS (AC 17-23)
-test("AC 17: Negative - 'CarCard' must not render a discount badge for a seeded car with 'discount_percentage': 0.", async ({ page, baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Polo GTI' && seed.discount_percentage === 0);
-    await page.goto(`${baseURL}/browse`);
+test("AC 16: 'PurchaseModal' must render the original price as a line-through value when a valid discount is present.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await findCar(ctx, c => c.name === DATA.discountedName && c.availability_status === 'Available');
+    await ctx.dispose();
+    await page.goto(`${baseURL}/car/${car._id}`);
+    await page.locator('#book-now-main-button').click();
+    await expectLineThrough(page.getByText(money(car.price)).first());
+});
+
+test("AC 17: 'AdminDashboard' Vehicles tab must render the discounted display price for a discounted car.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await findCar(ctx, c => c.name === DATA.discountedName);
+    await ctx.dispose();
+    await login(page, baseURL || '');
+    const row = page.locator(`#car-row-${car._id}`);
+    await expect(row).toBeVisible({ timeout: 15000 });
+    await expect(row.getByText(money(discountedPrice(car)))).toBeVisible();
+});
+
+test("AC 18: 'AdminDashboard' Bookings tab must render the discounted display price for a booking whose car has a valid discount.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await findCar(ctx, c => c.name === DATA.discountedName && c.availability_status === 'Available');
+    const booking = await createBooking(ctx, car, 'discount-booking');
+    await ctx.dispose();
+    await login(page, baseURL || '');
+    await page.locator('#admin-bookings-tab').click();
+    const row = page.locator(`#booking-row-${booking._id}`);
+    await expect(row).toBeVisible({ timeout: 15000 });
+    await expect(row.getByText(money(discountedPrice(car)))).toBeVisible();
+});
+
+test("AC 19: 'HomePage' must render '#homepage-discounts-section' when the API returns at least one car with a valid discount.", async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/`);
+    await expect(page.locator('#homepage-discounts-section')).toBeVisible({ timeout: 15000 });
+});
+
+test("AC 20: 'HomePage' must render no more than six discounted car banners.", async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/`);
+    await expect(page.locator('#homepage-discounts-section')).toBeVisible({ timeout: 15000 });
+    expect(await page.locator('[id^="discount-banner-"]:not([id$="-badge"]):not([id$="-price"]):not([id$="-original-price"])').count()).toBeLessThanOrEqual(6);
+});
+
+test("AC 21: 'HomePage' must render each discounted car banner as a link to '/car/<car._id>'.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const valid = (await allCars(ctx)).filter((c: Car) => Number(c.discount_percentage) > 0 && Number(c.discount_percentage) < 100).slice(0, 6);
+    await ctx.dispose();
+    await page.goto(`${baseURL}/`);
+    for (const car of valid) {
+        await expect(page.locator(`#discount-banner-${car._id}`)).toHaveAttribute('href', `/car/${car._id}`);
+    }
+});
+
+test("AC 22: 'HomePage' must render each discount banner with '<discount_percentage>% OFF' badge text and the rounded discounted price.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const valid = (await allCars(ctx)).filter((c: Car) => Number(c.discount_percentage) > 0 && Number(c.discount_percentage) < 100).slice(0, 6);
+    await ctx.dispose();
+    await page.goto(`${baseURL}/`);
+    for (const car of valid) {
+        await expect(page.locator(`#discount-banner-${car._id}-badge`)).toHaveText(`${car.discount_percentage}% OFF`);
+        await expect(page.locator(`#discount-banner-${car._id}-price`)).toHaveText(money(discountedPrice(car)));
+    }
+});
+
+test("AC 23: 'HomePage' must render each discount banner's original price as a line-through value.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const valid = (await allCars(ctx)).filter((c: Car) => Number(c.discount_percentage) > 0 && Number(c.discount_percentage) < 100).slice(0, 6);
+    await ctx.dispose();
+    await page.goto(`${baseURL}/`);
+    for (const car of valid) {
+        const original = page.locator(`#discount-banner-${car._id}-original-price`);
+        await expect(original).toHaveText(money(car.price));
+        await expectLineThrough(original);
+    }
+});
+
+test("AC 24: 'CarCard' must not render a discount badge when 'discount_percentage' is 0.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await availableZeroDiscountCar(ctx);
+    await ctx.dispose();
+    await openDiscountedCarCard(page, baseURL || '', car);
     await expect(page.locator(`#car-card-${car._id}-discount-badge`)).toHaveCount(0);
 });
 
-test("AC 18: Negative - 'CarCard' must not render an original line-through price for a seeded car with 'discount_percentage': 0.", async ({ page, baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Polo GTI' && seed.discount_percentage === 0);
-    await page.goto(`${baseURL}/browse`);
-    await expect(page.locator(`#car-card-${car._id}-original-price`)).toHaveCount(0);
+test("AC 25: 'CarCard' must render the original price, not a discounted price, when 'discount_percentage' is 100.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const token = await authToken(ctx);
+    const seed = await findCar(ctx, c => c.name === DATA.discountedName);
+    const car = await createCar(ctx, token, seed, { discount_percentage: 100 });
+    await ctx.dispose();
+    await openDiscountedCarCard(page, baseURL || '', car);
+    await expect(page.locator(`#car-card-${car._id}-price`)).toHaveText(money(car.price));
+    await expect(page.locator(`#car-card-${car._id}-discount-badge`)).toHaveCount(0);
 });
 
-test("AC 19: Negative - 'CarDetailsPage' Overview tab must not render a discount badge for a seeded API car response with 'discount_percentage': 0.", async ({ page, baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Polo GTI' && seed.discount_percentage === 0);
+test("AC 26: 'CarDetailsPage' Overview tab must not render a discount badge when 'discount_percentage' is 0.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await availableZeroDiscountCar(ctx);
+    await ctx.dispose();
     await page.goto(`${baseURL}/car/${car._id}`);
     await expect(page.locator('#car-details-discount-badge')).toHaveCount(0);
 });
 
-test("AC 20: Negative - 'PurchaseModal' must not render the 'Offer' section for a seeded car with 'discount_percentage': 0.", async ({ page, baseURL }) => {
-    const car = await getSeedCar(baseURL || '', seed => seed.name === 'Polo GTI' && seed.discount_percentage === 0);
+test("AC 27: 'CarDetailsPage' Price tab must not render a discount row when 'discount_percentage' is 0.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await availableZeroDiscountCar(ctx);
+    await ctx.dispose();
+    await page.goto(`${baseURL}/car/${car._id}`);
+    await page.getByRole('button', { name: /^Price$/ }).click();
+    await expect(page.getByText(/Discount \(/)).toHaveCount(0);
+});
+
+test("AC 28: 'CarDetailsPage' Overview tab must render the original acquisition price, not a discounted price, when 'discount_percentage' is negative.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const token = await authToken(ctx);
+    const seed = await findCar(ctx, c => c.name === DATA.discountedName);
+    const car = await createCar(ctx, token, seed, { discount_percentage: -10 });
+    await ctx.dispose();
+    await page.goto(`${baseURL}/car/${car._id}`);
+    await expect(page.locator('#car-details-discount-badge')).toHaveCount(0);
+    await expect(page.getByText(money(car.price)).first()).toBeVisible();
+});
+
+test("AC 29: 'PurchaseModal' must not render the 'Offer' section when 'discount_percentage' is 0.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await availableZeroDiscountCar(ctx);
+    await ctx.dispose();
     await page.goto(`${baseURL}/car/${car._id}`);
     await page.locator('#book-now-main-button').click();
     await expect(page.getByText('Offer')).toHaveCount(0);
 });
 
-test("AC 21: Negative - 'CarCard' must render the original price, not a discounted price, when 'discount_percentage' is 100.", async ({ page, baseURL }) => {
-    const car = await createCarFromSeed(baseURL || '', { price: 100000, discount_percentage: 100 });
-    await page.goto(`${baseURL}/browse`);
-    await expect(page.locator(`#car-card-${car._id}-price`)).toContainText('100,000');
-    await expect(page.locator(`#car-card-${car._id}-original-price`)).toHaveCount(0);
-});
-
-test("AC 22: Negative - 'CarDetailsPage' Overview tab must render the original acquisition price, not a discounted price, when 'discount_percentage' is -10.", async ({ page, baseURL }) => {
-    const car = await createCarFromSeed(baseURL || '', { price: 100000, discount_percentage: 0 });
-    const updated = await updateCar(baseURL || '', car, { discount_percentage: -10 });
-    await page.goto(`${baseURL}/car/${updated._id}`);
-    await expect(page.getByText(/100,000/)).toBeVisible();
-    await expect(page.getByText(/110,000/)).toHaveCount(0);
-});
-
-test("AC 23: Negative - 'PurchaseModal' must render the original price and must not render an 'Offer' section when 'discount_percentage' is 100.", async ({ page, baseURL }) => {
-    const car = await createCarFromSeed(baseURL || '', { price: 100000, discount_percentage: 100 });
+test("AC 30: 'PurchaseModal' must render the original price and no discount offer when 'discount_percentage' is 100.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const token = await authToken(ctx);
+    const seed = await findCar(ctx, c => c.name === DATA.discountedName);
+    const car = await createCar(ctx, token, seed, { discount_percentage: 100 });
+    await ctx.dispose();
     await page.goto(`${baseURL}/car/${car._id}`);
     await page.locator('#book-now-main-button').click();
-    const modal = page.locator('.fixed').last();
-    await expect(modal.getByText(/100,000/).last()).toBeVisible();
-    await expect(modal.getByText('Offer')).toHaveCount(0);
+    await expect(page.getByText(money(car.price)).first()).toBeVisible();
+    await expect(page.getByText('Offer')).toHaveCount(0);
+});
+
+test("AC 31: 'AdminDashboard' Vehicles tab must render the original price when 'discount_percentage' is 0.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await availableZeroDiscountCar(ctx);
+    await ctx.dispose();
+    await login(page, baseURL || '');
+    const row = page.locator(`#car-row-${car._id}`);
+    await expect(row).toBeVisible({ timeout: 15000 });
+    await expect(row.getByText(money(car.price))).toBeVisible();
+});
+
+test("AC 32: 'AdminDashboard' Bookings tab must render the original booking car price when 'discount_percentage' is 100.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const token = await authToken(ctx);
+    const seed = await findCar(ctx, c => c.name === DATA.discountedName);
+    const car = await createCar(ctx, token, seed, { discount_percentage: 100 });
+    const booking = await createBooking(ctx, car, 'hundred-booking');
+    await ctx.dispose();
+    await login(page, baseURL || '');
+    await page.locator('#admin-bookings-tab').click();
+    const row = page.locator(`#booking-row-${booking._id}`);
+    await expect(row).toBeVisible({ timeout: 15000 });
+    await expect(row.getByText(money(car.price))).toBeVisible();
+});
+
+test("AC 33: 'HomePage' must not render a discount banner for a seeded car with 'discount_percentage' 0.", async ({ page, baseURL }) => {
+    const ctx = await api(baseURL || '');
+    const car = await findCar(ctx, c => c.name === DATA.zeroDiscountName);
+    await ctx.dispose();
+    await page.goto(`${baseURL}/`);
+    await expect(page.locator(`#discount-banner-${car._id}`)).toHaveCount(0);
 });
