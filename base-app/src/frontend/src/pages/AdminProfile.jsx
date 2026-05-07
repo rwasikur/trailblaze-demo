@@ -206,8 +206,9 @@ const AdminProfile = () => {
                         <form onSubmit={handleSubmit} className="space-y-10" noValidate>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-3">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Full Legal Name</label>
+                                    <label htmlFor="profile-name-input" className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Full Legal Name</label>
                                     <input
+                                        id="profile-name-input"
                                         type="text"
                                         value={formData.full_name}
                                         onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
@@ -217,8 +218,9 @@ const AdminProfile = () => {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Secure Email Gateway</label>
+                                    <label htmlFor="profile-email-input" className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Secure Email Gateway</label>
                                     <input
+                                        id="profile-email-input"
                                         type="email"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -228,8 +230,9 @@ const AdminProfile = () => {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Direct Communication</label>
+                                    <label htmlFor="profile-phone-input" className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Direct Communication</label>
                                     <input
+                                        id="profile-phone-input"
                                         type="text"
                                         placeholder="+1 (555) 000-0000"
                                         value={formData.phone}
@@ -239,8 +242,9 @@ const AdminProfile = () => {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Avatar Vector (URL)</label>
+                                    <label htmlFor="profile-avatar-input" className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Avatar Vector (URL)</label>
                                     <input
+                                        id="profile-avatar-input"
                                         type="text"
                                         placeholder="https://..."
                                         value={formData.avatar_url}
@@ -250,8 +254,9 @@ const AdminProfile = () => {
                                 </div>
 
                                 <div className="md:col-span-2 space-y-3">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Professional Bio</label>
+                                    <label htmlFor="profile-bio-textarea" className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Professional Bio</label>
                                     <textarea
+                                        id="profile-bio-textarea"
                                         rows="4"
                                         value={formData.bio}
                                         onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
@@ -264,8 +269,9 @@ const AdminProfile = () => {
                             <div className="pt-8 border-t border-white/5">
                                 <h3 className="text-xl font-bold text-white tracking-tight mb-8 italic text-red-500">Security Sector</h3>
                                 <div className="max-w-md space-y-3">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Update Password</label>
+                                    <label htmlFor="profile-password-input" className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Update Password</label>
                                     <input
+                                        id="profile-password-input"
                                         type="password"
                                         placeholder="••••••••••••"
                                         value={formData.password}
