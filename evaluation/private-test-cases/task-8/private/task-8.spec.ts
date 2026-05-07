@@ -1,10 +1,10 @@
 import { test, expect, request as playwrightRequest } from '@playwright/test';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PRIVATE SEED DATA
-//   First "New" car: Skoda Kushaq  →  price $19,399
-//   The tests use getFirstNewCar() to fetch it dynamically from the API,
-//   so they remain resilient even if seed order changes.
+// PRIVATE SEED DATA (seed_private.js)
+//   First New+Available car: Skoda Kushaq → price $19,399
+//   First Used+Available car: Maruti Suzuki Swift → price $4,699
+//   Tests fetch cars dynamically from the API so they stay resilient.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -27,7 +27,6 @@ async function openEmiModal(page: any, baseURL: string) {
     const car = await getFirstNewCar(baseURL);
     await page.goto(`${baseURL}/car/${car._id}`);
     await expect(page.getByText(/Scanning vehicle signatures/i)).not.toBeVisible({ timeout: 15000 });
-    // Navigate to Price tab where the Calculate EMI button lives
     await page.getByText('Price').click();
     await page.getByText('Calculate EMI').click();
     await expect(page.getByText('EMI Calculator')).toBeVisible({ timeout: 8000 });
@@ -35,11 +34,27 @@ async function openEmiModal(page: any, baseURL: string) {
 }
 
 /**
- * Typed number input helper — clears then fills.
+ * Typed number input helper — triple-clicks to select all, then fills.
  */
 async function fillNumberInput(page: any, locator: any, value: string) {
     await locator.click({ clickCount: 3 });
+    await locator.press('Control+a');
     await locator.fill(value);
+}
+
+/**
+ * Set a range slider value using nativeInputValueSetter so React state
+ * updates correctly (plain dispatchEvent does not trigger React's onChange).
+ */
+async function setSliderValue(sliderLocator: any, value: number) {
+    await sliderLocator.evaluate((el: HTMLInputElement, v: number) => {
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+            window.HTMLInputElement.prototype, 'value'
+        )!.set;
+        nativeInputValueSetter!.call(el, String(v));
+        el.dispatchEvent(new InputEvent('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+    }, value);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -58,28 +73,27 @@ test('AC-01 | Navigate to Price tab on a car detail page, click "Calculate EMI" 
     await expect(page.getByText('EMI Calculator')).toBeVisible({ timeout: 8000 });
     await expect(page.getByText(new RegExp(car.brand, 'i'))).toBeVisible();
     await expect(page.getByText(/Financial Tool/i)).toBeVisible();
-    // Price should be shown in header formatted with $
-    await expect(page.getByText(new RegExp('\\$' + car.price.toLocaleString('en-US')))).toBeVisible();
+
+    // Price is in the modal header subtitle — scope to dark header to avoid duplicate matches
+    const modalHeader = page.locator('div.bg-slate-950');
+    await expect(modalHeader.getByText(new RegExp('\\$' + car.price.toLocaleString('en-US')))).toBeVisible();
 });
 
 test('AC-02 | Open EMI modal; verify the three default values: down payment input = "20", interest rate input = "9.5", tenure input = "36".', async ({ page, baseURL }) => {
     await openEmiModal(page, baseURL!);
 
-    // Down payment number input should default to 20
     const downInput = page.locator('input[type="number"]').nth(0);
     await expect(downInput).toHaveValue('20');
 
-    // Interest rate input should default to 9.5
     const rateInput = page.locator('input[type="number"]').nth(1);
     await expect(rateInput).toHaveValue('9.5');
 
-    // Tenure input should default to 36
     const tenureInput = page.locator('input[type="number"]').nth(2);
     await expect(tenureInput).toHaveValue('36');
 });
 
 test('AC-03 | Open EMI modal with a $19,399 car; verify default breakdown shows Down Payment $3,880, Loan Amount $15,519, and EMI $497/mo (20% down, 9.5% p.a., 36 months).', async ({ page, baseURL }) => {
-    // This test targets the private seed first New car: Skoda Kushaq @ $19,399
+    // Private seed first New car: Skoda Kushaq @ $19,399
     const car = await getFirstNewCar(baseURL!);
     await page.goto(`${baseURL}/car/${car._id}`);
     await expect(page.getByText(/Scanning vehicle signatures/i)).not.toBeVisible({ timeout: 15000 });
@@ -88,18 +102,18 @@ test('AC-03 | Open EMI modal with a $19,399 car; verify default breakdown shows 
     await expect(page.getByText('EMI Calculator')).toBeVisible({ timeout: 8000 });
 
     if (car.price === 19399) {
-        // Down payment shown in header badge
-        await expect(page.getByText(/\$3,880/)).toBeVisible();
-        // Result card EMI
-        await expect(page.getByText(/\$497/)).toBeVisible();
-        // Loan Amount
-        await expect(page.getByText(/\$15,519/)).toBeVisible();
+        // Scope to result card to avoid strict-mode violations from duplicate labels
+        const resultCard = page.locator('div.rounded-2xl.border-2');
+        await expect(resultCard.getByText(/\$3,880/)).toBeVisible();
+        await expect(resultCard.getByText(/\$497/)).toBeVisible();
+        await expect(resultCard.getByText(/\$15,519/)).toBeVisible();
     } else {
-        // Generic assertion: EMI breakdown section must show all four stat labels
-        await expect(page.getByText('Down Payment')).toBeVisible();
-        await expect(page.getByText('Loan Amount')).toBeVisible();
-        await expect(page.getByText('Total Interest')).toBeVisible();
-        await expect(page.getByText('Total Cost')).toBeVisible();
+        // Generic: result card must show all four stat labels
+        const resultCard = page.locator('div.rounded-2xl.border-2');
+        await expect(resultCard.getByText('Down Payment')).toBeVisible();
+        await expect(resultCard.getByText('Loan Amount')).toBeVisible();
+        await expect(resultCard.getByText('Total Interest')).toBeVisible();
+        await expect(resultCard.getByText('Total Cost')).toBeVisible();
     }
 });
 
@@ -109,9 +123,10 @@ test('AC-04 | Open EMI modal; change down payment via number input to "30"; veri
     const downInput = page.locator('input[type="number"]').nth(0);
     await fillNumberInput(page, downInput, '30');
 
-    // For $19,399: 30% = $5,820. For any car the amount must update and show $
+    // 30% of $19,399 = $5,820 — scope to summary strip to avoid duplicate $ matches
     const expectedDown = Math.round(0.30 * car.price);
-    await expect(page.getByText(new RegExp('\\$' + expectedDown.toLocaleString('en-US')))).toBeVisible({ timeout: 5000 });
+    const summaryStrip = page.locator('div.bg-slate-950 .flex.flex-wrap');
+    await expect(summaryStrip.getByText(new RegExp('\\$' + expectedDown.toLocaleString('en-US')))).toBeVisible({ timeout: 5000 });
 });
 
 test('AC-05 | Open EMI modal; change interest rate via number input to "7.5"; verify the summary strip updates to show "7.5% p.a.".', async ({ page, baseURL }) => {
@@ -120,7 +135,9 @@ test('AC-05 | Open EMI modal; change interest rate via number input to "7.5"; ve
     const rateInput = page.locator('input[type="number"]').nth(1);
     await fillNumberInput(page, rateInput, '7.5');
 
-    await expect(page.getByText(/7\.5% p\.a\./i)).toBeVisible({ timeout: 5000 });
+    // Scope to summary strip — "Rate: 7.5% p.a." lives there
+    const summaryStrip = page.locator('div.bg-slate-950 .flex.flex-wrap');
+    await expect(summaryStrip.getByText(/7\.5% p\.a\./i)).toBeVisible({ timeout: 5000 });
 });
 
 test('AC-06 | Open EMI modal; change tenure via number input to "60"; verify summary strip shows "60 mo" and year label "5 yrs".', async ({ page, baseURL }) => {
@@ -129,8 +146,10 @@ test('AC-06 | Open EMI modal; change tenure via number input to "60"; verify sum
     const tenureInput = page.locator('input[type="number"]').nth(2);
     await fillNumberInput(page, tenureInput, '60');
 
-    await expect(page.getByText(/60 mo/i)).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText(/5 yrs/i)).toBeVisible({ timeout: 5000 });
+    // "Term: 60 mo · 5 yrs" is in the summary strip — scope there
+    const summaryStrip = page.locator('div.bg-slate-950 .flex.flex-wrap');
+    await expect(summaryStrip.getByText(/60 mo/i)).toBeVisible({ timeout: 5000 });
+    await expect(summaryStrip.getByText(/5 yrs/i)).toBeVisible({ timeout: 5000 });
 });
 
 test('AC-07 | Open EMI modal for $19,399 car; set down=30%, rate=7.5%, tenure=60; verify EMI=$272/mo, Down Payment=$5,820, Loan Amount=$13,579, Total Interest=$2,741, Total Cost=$22,140.', async ({ page, baseURL }) => {
@@ -150,13 +169,13 @@ test('AC-07 | Open EMI modal for $19,399 car; set down=30%, rate=7.5%, tenure=60
     await fillNumberInput(page, tenureInput, '60');
 
     if (car.price === 19399) {
-        await expect(page.getByText(/\$272/)).toBeVisible({ timeout: 5000 });
-        await expect(page.getByText(/\$5,820/)).toBeVisible();
-        await expect(page.getByText(/\$13,579/)).toBeVisible();
-        await expect(page.getByText(/\$2,741/)).toBeVisible();
-        await expect(page.getByText(/\$22,140/)).toBeVisible();
+        const resultCard = page.locator('div.rounded-2xl.border-2');
+        await expect(resultCard.getByText(/\$272/)).toBeVisible({ timeout: 5000 });
+        await expect(resultCard.getByText(/\$5,820/)).toBeVisible();
+        await expect(resultCard.getByText(/\$13,579/)).toBeVisible();
+        await expect(resultCard.getByText(/\$2,741/)).toBeVisible();
+        await expect(resultCard.getByText(/\$22,140/)).toBeVisible();
     } else {
-        // Verify live recomputation occurred — EMI /month label must be visible
         await expect(page.getByText('/month')).toBeVisible({ timeout: 5000 });
     }
 });
@@ -164,34 +183,26 @@ test('AC-07 | Open EMI modal for $19,399 car; set down=30%, rate=7.5%, tenure=60
 test('AC-08 | Open EMI modal; drag down payment slider to a new position; verify down payment number input and dollar amount both update in sync with slider.', async ({ page, baseURL }) => {
     const car = await openEmiModal(page, baseURL!);
 
-    // Move the down payment range slider
+    // Use nativeInputValueSetter so React state updates (plain dispatchEvent won't work)
     const slider = page.locator('input[type="range"]').nth(0);
-    await slider.evaluate((el: HTMLInputElement) => {
-        el.value = '50';
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+    await setSliderValue(slider, 50);
 
     const downInput = page.locator('input[type="number"]').nth(0);
     await expect(downInput).toHaveValue('50', { timeout: 5000 });
 
     const expectedDown = Math.round(0.50 * car.price);
-    await expect(page.getByText(new RegExp('\\$' + expectedDown.toLocaleString('en-US')))).toBeVisible({ timeout: 5000 });
+    const summaryStrip = page.locator('div.bg-slate-950 .flex.flex-wrap');
+    await expect(summaryStrip.getByText(new RegExp('\\$' + expectedDown.toLocaleString('en-US')))).toBeVisible({ timeout: 5000 });
 });
 
 test('AC-09 | Open EMI modal; drag interest rate slider; verify rate number input syncs and EMI result recomputes.', async ({ page, baseURL }) => {
     await openEmiModal(page, baseURL!);
 
     const rateSlider = page.locator('input[type="range"]').nth(1);
-    await rateSlider.evaluate((el: HTMLInputElement) => {
-        el.value = '12';
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+    await setSliderValue(rateSlider, 12);
 
     const rateInput = page.locator('input[type="number"]').nth(1);
     await expect(rateInput).toHaveValue('12', { timeout: 5000 });
-    // EMI /month label must still be visible — confirms recomputation
     await expect(page.getByText('/month')).toBeVisible();
 });
 
@@ -199,15 +210,14 @@ test('AC-10 | Open EMI modal; drag tenure slider; verify tenure number input syn
     await openEmiModal(page, baseURL!);
 
     const tenureSlider = page.locator('input[type="range"]').nth(2);
-    await tenureSlider.evaluate((el: HTMLInputElement) => {
-        el.value = '24';
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+    await setSliderValue(tenureSlider, 24);
 
     const tenureInput = page.locator('input[type="number"]').nth(2);
     await expect(tenureInput).toHaveValue('24', { timeout: 5000 });
-    await expect(page.getByText(/2 yrs/i)).toBeVisible({ timeout: 5000 });
+
+    // "2 yrs" in summary strip "Term: 24 mo · 2 yrs"
+    const summaryStrip = page.locator('div.bg-slate-950 .flex.flex-wrap');
+    await expect(summaryStrip.getByText(/2 yrs/i)).toBeVisible({ timeout: 5000 });
 });
 
 test('AC-11 | Open EMI modal; set tenure to 1 month; verify the result card still shows a computed EMI (not zero) and displays "1 Months".', async ({ page, baseURL }) => {
@@ -216,9 +226,10 @@ test('AC-11 | Open EMI modal; set tenure to 1 month; verify the result card stil
     const tenureInput = page.locator('input[type="number"]').nth(2);
     await fillNumberInput(page, tenureInput, '1');
 
-    await expect(page.getByText(/1 Months/i)).toBeVisible({ timeout: 5000 });
-    // EMI should be approximately the entire principal in one payment — visible as a $ value
-    await expect(page.getByText(/\$\d/)).toBeVisible();
+    // Scope to result card to avoid strict-mode violations on /\$\d/
+    const resultCard = page.locator('div.rounded-2xl.border-2');
+    await expect(resultCard.getByText(/1 Months/i)).toBeVisible({ timeout: 5000 });
+    await expect(resultCard.locator('div.text-3xl').getByText(/\$\d/)).toBeVisible();
     await expect(page.getByText('/month')).toBeVisible();
 });
 
@@ -228,7 +239,9 @@ test('AC-12 | Open EMI modal; set tenure to 360 months; verify year label "30 yr
     const tenureInput = page.locator('input[type="number"]').nth(2);
     await fillNumberInput(page, tenureInput, '360');
 
-    await expect(page.getByText(/30 yrs/i)).toBeVisible({ timeout: 5000 });
+    // "30 yrs" in summary strip "Term: 360 mo · 30 yrs" — scope there
+    const summaryStrip = page.locator('div.bg-slate-950 .flex.flex-wrap');
+    await expect(summaryStrip.getByText(/30 yrs/i)).toBeVisible({ timeout: 5000 });
     await expect(page.getByText('/month')).toBeVisible();
 });
 
@@ -238,9 +251,8 @@ test('AC-13 | Open EMI modal; set interest rate to 0%; verify EMI = principal / 
     const rateInput = page.locator('input[type="number"]').nth(1);
     await fillNumberInput(page, rateInput, '0');
 
-    // With 0% interest Total Interest should be $0 or very close — the label "Total Interest" must be visible
-    await expect(page.getByText('Total Interest')).toBeVisible({ timeout: 5000 });
-    // EMI /month must still render
+    const resultCard = page.locator('div.rounded-2xl.border-2');
+    await expect(resultCard.getByText('Total Interest')).toBeVisible({ timeout: 5000 });
     await expect(page.getByText('/month')).toBeVisible();
 });
 
@@ -250,44 +262,44 @@ test('AC-14 | Open EMI modal; set down payment to 100%; verify principal becomes
     const downInput = page.locator('input[type="number"]').nth(0);
     await fillNumberInput(page, downInput, '100');
 
-    // Principal is 0 → EMI must be $0
-    await expect(page.getByText(/\$0/)).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText('Loan Amount')).toBeVisible();
+    // Scope to result card's EMI display (div.text-3xl) for unique $0 match
+    const resultCard = page.locator('div.rounded-2xl.border-2');
+    await expect(resultCard.locator('div.text-3xl').getByText(/\$0/)).toBeVisible({ timeout: 5000 });
+    await expect(resultCard.getByText('Loan Amount')).toBeVisible();
 });
 
 test('AC-15 | Open EMI modal; verify result card always shows all four stat labels: "Down Payment", "Loan Amount", "Total Interest", "Total Cost".', async ({ page, baseURL }) => {
     await openEmiModal(page, baseURL!);
 
-    await expect(page.getByText('Down Payment')).toBeVisible();
-    await expect(page.getByText('Loan Amount')).toBeVisible();
-    await expect(page.getByText('Total Interest')).toBeVisible();
-    await expect(page.getByText('Total Cost')).toBeVisible();
+    // Scope to result card to get the unique stat-label divs (not the slider header spans)
+    const resultCard = page.locator('div.rounded-2xl.border-2');
+    await expect(resultCard.getByText('Down Payment')).toBeVisible();
+    await expect(resultCard.getByText('Loan Amount')).toBeVisible();
+    await expect(resultCard.getByText('Total Interest')).toBeVisible();
+    await expect(resultCard.getByText('Total Cost')).toBeVisible();
 });
 
 test('AC-16 | Open EMI modal; verify all monetary values in the breakdown card are formatted with a "$" prefix (no "₹" or other currency symbols).', async ({ page, baseURL }) => {
     await openEmiModal(page, baseURL!);
 
-    // All visible monetary spans inside the result card must start with $
     const allText = await page.locator('div.rounded-2xl.border-2').innerText();
-    // Must contain $ signs
     expect(allText).toContain('$');
-    // Must NOT contain rupee symbol
     expect(allText).not.toContain('₹');
 });
 
 test('AC-17 | Open EMI modal; verify the summary strip below sliders shows "Loan:", "Rate:", "Down:", and "Term:" all update as values change.', async ({ page, baseURL }) => {
     await openEmiModal(page, baseURL!);
 
-    // Summary strip items are visible at default
-    await expect(page.getByText(/Loan:/i)).toBeVisible();
-    await expect(page.getByText(/Rate:/i)).toBeVisible();
-    await expect(page.getByText(/Down:/i)).toBeVisible();
-    await expect(page.getByText(/Term:/i)).toBeVisible();
+    const summaryStrip = page.locator('div.bg-slate-950 .flex.flex-wrap');
+    await expect(summaryStrip.getByText(/Loan:/i)).toBeVisible();
+    await expect(summaryStrip.getByText(/Rate:/i)).toBeVisible();
+    await expect(summaryStrip.getByText(/Down:/i)).toBeVisible();
+    await expect(summaryStrip.getByText(/Term:/i)).toBeVisible();
 
-    // Change tenure and verify Term updates
+    // Change tenure and verify Term updates — "48 mo · 4 yrs" in summary strip
     const tenureInput = page.locator('input[type="number"]').nth(2);
     await fillNumberInput(page, tenureInput, '48');
-    await expect(page.getByText(/48 mo/i)).toBeVisible({ timeout: 5000 });
+    await expect(summaryStrip.getByText(/48 mo/i)).toBeVisible({ timeout: 5000 });
 });
 
 test('AC-18 | Open EMI modal; set down=15.5%, rate=11.5%, tenure=48 for a $19,399 car; verify EMI=$428/mo, Down Payment=$3,007, Total Interest=$4,152, Total Cost=$23,551.', async ({ page, baseURL }) => {
@@ -307,10 +319,11 @@ test('AC-18 | Open EMI modal; set down=15.5%, rate=11.5%, tenure=48 for a $19,39
     await fillNumberInput(page, tenureInput, '48');
 
     if (car.price === 19399) {
-        await expect(page.getByText(/\$428/)).toBeVisible({ timeout: 5000 });
-        await expect(page.getByText(/\$3,007/)).toBeVisible();
-        await expect(page.getByText(/\$4,152/)).toBeVisible();
-        await expect(page.getByText(/\$23,551/)).toBeVisible();
+        const resultCard = page.locator('div.rounded-2xl.border-2');
+        await expect(resultCard.getByText(/\$428/)).toBeVisible({ timeout: 5000 });
+        await expect(resultCard.getByText(/\$3,007/)).toBeVisible();
+        await expect(resultCard.getByText(/\$4,152/)).toBeVisible();
+        await expect(resultCard.getByText(/\$23,551/)).toBeVisible();
     } else {
         await expect(page.getByText('/month')).toBeVisible({ timeout: 5000 });
     }
@@ -319,22 +332,18 @@ test('AC-18 | Open EMI modal; set down=15.5%, rate=11.5%, tenure=48 for a $19,39
 test('AC-19 | Click "Proceed to Book" in EMI modal; verify EMI modal closes and booking modal opens showing the "Selected EMI Plan" strip with correct EMI/mo and tenure.', async ({ page, baseURL }) => {
     await openEmiModal(page, baseURL!);
 
-    // Change to a distinct tenure so we can verify it carries over
     const tenureInput = page.locator('input[type="number"]').nth(2);
     await fillNumberInput(page, tenureInput, '48');
 
-    // Click Proceed to Book
     await page.getByText('Proceed to Book →').click();
 
-    // EMI modal should close
     await expect(page.getByText('EMI Calculator')).not.toBeVisible({ timeout: 5000 });
-
-    // Booking modal should open
     await expect(page.locator('h2:has-text("Booking")')).toBeVisible({ timeout: 8000 });
 
-    // "Selected EMI Plan" strip must be visible with the tenure we set
     await expect(page.getByText(/Selected EMI Plan/i)).toBeVisible();
-    await expect(page.getByText(/48 months/i)).toBeVisible();
+    // The dedicated EMI strip div shows "{tenure} months · {pct}% down payment"
+    const emiStrip = page.locator('div.rounded-xl.bg-white\\/10');
+    await expect(emiStrip.getByText(/48 months/i)).toBeVisible({ timeout: 5000 });
 });
 
 test('AC-20 | After "Proceed to Book" from EMI modal, fill booking form and submit; verify 201 response and booking is created with emi_details containing opted=true, tenure, and annualRate.', async ({ page, baseURL }) => {
@@ -368,7 +377,7 @@ test('AC-20 | After "Proceed to Book" from EMI modal, fill booking form and subm
     }
 });
 
-test('AC-21 | Booking made via "Proceed to Book" from EMI modal shows the EMI plan in the booking button label as "EMI plan · $X/mo for Y months".', async ({ page, baseURL }) => {
+test('AC-21 | Booking made via "Proceed to Book" from EMI modal shows the EMI plan in the booking subtitle as "EMI plan · $X/mo for Y months".', async ({ page, baseURL }) => {
     await openEmiModal(page, baseURL!);
 
     const tenureInput = page.locator('input[type="number"]').nth(2);
@@ -377,29 +386,30 @@ test('AC-21 | Booking made via "Proceed to Book" from EMI modal shows the EMI pl
     await page.getByText('Proceed to Book →').click();
     await expect(page.locator('h2:has-text("Booking")')).toBeVisible({ timeout: 8000 });
 
-    // The submit button text should contain "EMI plan"
-    const submitBtn = page.locator('#purchase-submit');
-    await expect(submitBtn).toContainText(/EMI plan/i);
-    await expect(submitBtn).toContainText(/\/mo for 36 months/i);
+    // PurchaseModal renders subtitle <p> "EMI plan · $X/mo for 36 months" when emiInfo is set.
+    // Scoped to the right-side white form section for uniqueness.
+    const bookingForm = page.locator('div.bg-white').last();
+    await expect(bookingForm.getByText(/EMI plan/i)).toBeVisible({ timeout: 5000 });
+    await expect(bookingForm.getByText(/\/mo for 36 months/i)).toBeVisible({ timeout: 5000 });
 });
 
 test('AC-22 | Open EMI modal; close it with the X button; verify modal is no longer visible and car detail page is still showing.', async ({ page, baseURL }) => {
     const car = await openEmiModal(page, baseURL!);
 
-    // Click the close (×) button in the dark header
+    // The X close button is scoped inside the dark modal header
     const closeBtn = page.locator('div.bg-slate-950 button').first();
     await closeBtn.click();
 
     await expect(page.getByText('EMI Calculator')).not.toBeVisible({ timeout: 5000 });
-    // Car name should still be on the page
     await expect(page.getByText(new RegExp(car.name, 'i')).first()).toBeVisible();
 });
 
 test('AC-23 | Open EMI modal; click the backdrop (outside the modal card); verify modal closes.', async ({ page, baseURL }) => {
     await openEmiModal(page, baseURL!);
 
-    // Click on the fixed backdrop element (the outer div that triggers onClose)
-    await page.mouse.click(10, 10);
+    // Click the outermost backdrop div directly with force to bypass child interception
+    const backdrop = page.locator('div.fixed.inset-0.z-\\[200\\]').first();
+    await backdrop.click({ position: { x: 10, y: 10 }, force: true });
 
     await expect(page.getByText('EMI Calculator')).not.toBeVisible({ timeout: 5000 });
 });
@@ -430,12 +440,14 @@ test('AC-25 | Open EMI modal; type a decimal tenure like "18" (non-multiple of 1
     const tenureInput = page.locator('input[type="number"]').nth(2);
     await fillNumberInput(page, tenureInput, '18');
 
-    await expect(page.getByText(/1\.5 yrs/i)).toBeVisible({ timeout: 5000 });
+    // "Term: 18 mo · 1.5 yrs" in summary strip — scope there
+    const summaryStrip = page.locator('div.bg-slate-950 .flex.flex-wrap');
+    await expect(summaryStrip.getByText(/1\.5 yrs/i)).toBeVisible({ timeout: 5000 });
     await expect(page.getByText('/month')).toBeVisible();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// NEGATIVE TESTS  (>30% of total — 11 negative out of 36 total = 30.5%)
+// NEGATIVE TESTS
 // ─────────────────────────────────────────────────────────────────────────────
 
 test('AC-26 | Open EMI modal; type "0" into the tenure input; verify EMI does not crash and shows $0 or no positive EMI (principal / 0 is undefined — UI must handle gracefully).', async ({ page, baseURL }) => {
@@ -444,9 +456,7 @@ test('AC-26 | Open EMI modal; type "0" into the tenure input; verify EMI does no
     const tenureInput = page.locator('input[type="number"]').nth(2);
     await fillNumberInput(page, tenureInput, '0');
 
-    // The app should not crash — EMI Calculator title must still be visible
     await expect(page.getByText('EMI Calculator')).toBeVisible({ timeout: 3000 });
-    // No JS error overlay should appear
     await expect(page.locator('body')).not.toContainText('TypeError');
     await expect(page.locator('body')).not.toContainText('NaN');
 });
@@ -457,7 +467,6 @@ test('AC-27 | Open EMI modal; type a negative number "-5" into tenure input; ver
     const tenureInput = page.locator('input[type="number"]').nth(2);
     await fillNumberInput(page, tenureInput, '-5');
 
-    // The component only updates state when num > 0, so the calculated result must still be sane
     await expect(page.getByText('EMI Calculator')).toBeVisible();
     await expect(page.locator('body')).not.toContainText('NaN');
 });
@@ -468,8 +477,6 @@ test('AC-28 | Open EMI modal; type "361" into tenure input (above 360 max); veri
     const tenureInput = page.locator('input[type="number"]').nth(2);
     await fillNumberInput(page, tenureInput, '361');
 
-    // The handler guard (num <= 360) means state should NOT be updated to 361
-    // The UI must not crash
     await expect(page.getByText('EMI Calculator')).toBeVisible();
     await expect(page.locator('body')).not.toContainText('NaN');
 });
@@ -510,10 +517,12 @@ test('AC-32 | Open EMI modal; enter letters/special chars "abc" into the tenure 
     await openEmiModal(page, baseURL!);
 
     const tenureInput = page.locator('input[type="number"]').nth(2);
-    await fillNumberInput(page, tenureInput, 'abc');
+    // Use keyboard typing — fill() rejects non-numeric values on type=number inputs
+    await tenureInput.click({ clickCount: 3 });
+    await tenureInput.press('Control+a');
+    await page.keyboard.type('abc');
 
     await expect(page.getByText('EMI Calculator')).toBeVisible();
-    // The breakdown must still show a result from the last valid tenure
     await expect(page.getByText('Your EMI Breakdown')).toBeVisible();
 });
 
@@ -522,9 +531,7 @@ test('AC-33 | Attempt to open EMI Calculator without navigating to the Price tab
     await page.goto(`${baseURL}/car/${car._id}`);
     await expect(page.getByText(/Scanning vehicle signatures/i)).not.toBeVisible({ timeout: 15000 });
 
-    // Default tab is Overview — Calculate EMI should NOT be visible there
     await expect(page.getByText('Calculate EMI')).not.toBeVisible();
-    // EMI modal must NOT be open
     await expect(page.getByText('EMI Calculator')).not.toBeVisible();
 });
 
@@ -533,17 +540,17 @@ test('AC-34 | Click "Proceed to Book" from EMI modal then close booking modal wi
     await page.getByText('Proceed to Book →').click();
     await expect(page.locator('h2:has-text("Booking")')).toBeVisible({ timeout: 8000 });
 
-    // Close booking modal without filling form
-    const closeBtn = page.locator('button[aria-label="close"], button:has-text("×"), button:has-text("✕")').first();
-    if (await closeBtn.isVisible()) {
-        await closeBtn.click();
+    // The PurchaseModal close button is absolute-positioned inside the white right section
+    const bookingCloseBtn = page.locator('div.bg-white button.absolute').first();
+    if (await bookingCloseBtn.isVisible()) {
+        await bookingCloseBtn.click();
     } else {
-        // Click backdrop
-        await page.mouse.click(10, 10);
+        // Fallback: click the booking modal backdrop directly
+        const backdrop = page.locator('div.fixed.inset-0.z-\\[100\\]').first();
+        await backdrop.click({ position: { x: 10, y: 10 }, force: true });
     }
 
     await expect(page.locator('h2:has-text("Booking")')).not.toBeVisible({ timeout: 5000 });
-    // Car detail page should still be showing
     await expect(page).toHaveURL(/\/car\//);
 });
 
@@ -564,7 +571,6 @@ test('AC-36 | Try to submit booking (via "Proceed to Book" flow) with an empty n
     await page.getByText('Proceed to Book →').click();
     await expect(page.locator('h2:has-text("Booking")')).toBeVisible({ timeout: 8000 });
 
-    // Leave name as a single character
     await page.locator('#purchase-name').fill('A');
     await page.locator('#purchase-email').fill('priv_emi_neg@test.com');
     await page.locator('#purchase-contact').fill('9876543210');
