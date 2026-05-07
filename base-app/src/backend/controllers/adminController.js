@@ -82,6 +82,7 @@ const updateCar = async (req, res) => {
             car.secondary_images = req.body.secondary_images !== undefined ? req.body.secondary_images : car.secondary_images;
             car.availability_status = newStatus;
             car.condition = req.body.condition || car.condition;
+            car.discount_percentage = req.body.discount_percentage !== undefined ? parseInt(req.body.discount_percentage) : car.discount_percentage;
 
             const updatedCar = await car.save();
 

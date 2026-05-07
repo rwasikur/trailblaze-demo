@@ -81,6 +81,7 @@ A premium automotive Catalogue management platform that bridges the gap between 
 | `fuel_type` | String | Energy source (Electric/Petrol/etc.) |
 | `seating_capacity` | Integer | Number of seats |
 | `price` | Integer | Daily rental/listing price |
+| `discount_percentage` | Integer | Optional percentage discount applied to displayed vehicle prices |
 | `availability_status`| String | Current fleet status (Available/Unavailable) |
 | `condition` | Enum | Vehicle state (New/Used) |
 | `number_of_owners` | Integer | Count of previous owners (for Used vehicles) |

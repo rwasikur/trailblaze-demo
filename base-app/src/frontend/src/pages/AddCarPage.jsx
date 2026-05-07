@@ -19,7 +19,7 @@ const AddCarPage = () => {
         name: '', brand: '', model_year: '', transmission: '', fuel_type: '', seating_capacity: '',
         price: '', range: '', body_type: '', mileage: '', total_distance_covered: '', available_colors: [''],
         number_of_owners: 0, registration_city: '', insurance_validity: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0], description: '',
-        availability_status: 'Available', image_url: '', secondary_images: [], condition: 'New', past_owners: []
+        availability_status: 'Available', image_url: '', secondary_images: [], condition: 'New', past_owners: [], discount_percentage: 0
     });
 
     const [colorCount, setColorCount] = useState(1);
@@ -540,6 +540,7 @@ const AddCarPage = () => {
                                                 <Input id="owners-count-input" label="Number of Owners" type="number" min="0" value={formData.number_of_owners} onChange={handleOwnerCountChange} disabled={formData.condition === 'New'} className={formData.condition === 'New' ? 'opacity-50' : ''} required={formData.condition === 'Used'} />
                                             </div>
                                             <Input id="car-price-input" label="Price ($)" type="number" min="1" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
+                                            <Input id="car-discount-input" label="Discount (%)" type="number" min="0" max="100" value={formData.discount_percentage} onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })} />
                                             {formData.condition === 'Used' && (
                                                 <>
                                                     <Input id="registration-city-input" label="Registration City" value={formData.registration_city} onChange={(e) => setFormData({ ...formData, registration_city: e.target.value })} />
