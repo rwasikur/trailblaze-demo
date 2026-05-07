@@ -12,6 +12,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AddCarPage from './pages/AddCarPage';
 import EditCarPage from './pages/EditCarPage';
 import ManageCataloguePage from './pages/ManageCataloguePage';
+import SalesHistoryPage from './pages/SalesHistoryPage';
 import AdminProfile from './pages/AdminProfile';
 import AdminSignup from './pages/AdminSignup';
 import { PageTransition } from './components/ui/PageTransition';
@@ -29,6 +30,7 @@ function AnimatedRoutes() {
         <Route path="/admin" element={<PageTransition><AdminLogin /></PageTransition>} />
         <Route path="/admin/signup" element={<PageTransition><AdminSignup /></PageTransition>} />
         <Route path="/admin/dashboard" element={<PageTransition><AdminDashboard /></PageTransition>} />
+        <Route path="/admin/sales-history" element={<PageTransition><SalesHistoryPage /></PageTransition>} />
         <Route path="/admin/catalogue" element={<PageTransition><ManageCataloguePage /></PageTransition>} />
         <Route path="/admin/add-car" element={<PageTransition><AddCarPage /></PageTransition>} />
         <Route path="/admin/edit-car/:id" element={<PageTransition><EditCarPage /></PageTransition>} />

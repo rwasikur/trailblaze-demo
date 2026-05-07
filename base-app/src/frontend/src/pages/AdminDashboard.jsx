@@ -57,10 +57,8 @@ const AdminDashboard = () => {
             toast.success(`Booking ${status.toLowerCase()}!`);
 
             if (status === 'Accepted') {
-                setLastAcceptedId(bookingId);
-                setActiveTab('sales');
-                // Clear highlight after 5 seconds
-                setTimeout(() => setLastAcceptedId(null), 5000);
+                navigate('/admin/sales-history', { state: { lastAcceptedId: bookingId } });
+                return;
             }
 
             // Simultaneous refresh to ensure UI is in sync
@@ -80,6 +78,9 @@ const AdminDashboard = () => {
                         <p className="text-slate-500 mt-2 text-sm md:text-base font-medium">Manage your vehicle Catalogue and purchase bookings.</p>
                     </div>
                     <div className="flex flex-wrap gap-3">
+                        <Button id="sales-history-link" variant="outline" onClick={() => navigate('/admin/sales-history')} className="text-xs font-bold h-10 border-slate-300">
+                            Sales History
+                        </Button>
                         <Button variant="outline" onClick={() => navigate('/admin/catalogue')} className="text-xs font-bold h-10 border-slate-300">
                             Manage Catalogue
                         </Button>
@@ -87,29 +88,6 @@ const AdminDashboard = () => {
                             + Add New Vehicle
                         </Button>
                     </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="bg-white border-slate-200 shadow-sm overflow-hidden">
-                        <CardContent className="p-6">
-                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Total Units Sold</div>
-                            <div className="text-3xl font-black text-slate-900 mt-2">{bookings.filter(b => b.status === 'Accepted').length}</div>
-                        </CardContent>
-                    </Card>
-                    <Card className="bg-white border-slate-200 shadow-sm overflow-hidden">
-                        <CardContent className="p-6">
-                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Net Revenue</div>
-                            <div id="net-revenue-stat" className="text-3xl font-black text-blue-600 mt-2">
-                                ${bookings.filter(b => b.status === 'Accepted').reduce((acc, b) => acc + (b.final_price || 0), 0).toLocaleString()}
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="bg-white border-slate-200 shadow-sm overflow-hidden">
-                        <CardContent className="p-6">
-                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Active Fleet</div>
-                            <div className="text-3xl font-black text-slate-900 mt-2">{cars.filter(c => c.availability_status === 'Available').length}</div>
-                        </CardContent>
-                    </Card>
                 </div>
 
                 {/* Tabs */}
@@ -127,13 +105,6 @@ const AdminDashboard = () => {
                         className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'bookings' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         Bookings ({bookings.length})
-                    </button>
-                    <button
-                        id="sales-history-tab"
-                        onClick={() => setActiveTab('sales')}
-                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'sales' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        Sales History ({bookings.filter(b => b.status === 'Accepted').length})
                     </button>
                 </div>
 
@@ -218,13 +189,13 @@ const AdminDashboard = () => {
                                     <h2 className="text-base font-black uppercase tracking-widest text-slate-400">Incoming Requests</h2>
                                     <div className="flex gap-2">
                                         {['All', 'Pending', 'Accepted', 'Rejected'].map(status => (
-                                            <button
+                                            <div
                                                 key={status}
                                                 onClick={() => setBookingFilter(status)}
-                                                className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${bookingFilter === status ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                                className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer ${bookingFilter === status ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                                             >
                                                 {status}
-                                            </button>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>

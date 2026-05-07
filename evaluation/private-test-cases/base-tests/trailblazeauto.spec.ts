@@ -6,11 +6,11 @@ const USED_IMAGE_PATH = path.join(ASSERT_DIR, 'car3.avif');
 const SEED_IMAGE_PATH = path.join(ASSERT_DIR, 'car4.jpg');
 
 const USERS = {
-    admin1: { email: 'admin1@pub.com', password: 'pub123' },
-    admin2: { email: 'admin2@pub.com', password: 'pub123' },
-    admin3: { email: 'admin3@pub.com', password: 'pub123' },
-    admin4: { email: 'admin4@pub.com', password: 'pub123' },
-    admin5: { email: 'admin5@pub.com', password: 'pub123' }
+    admin1: { email: 'admin1@pri.com', password: 'pri123' },
+    admin2: { email: 'admin2@pri.com', password: 'pri123' },
+    admin3: { email: 'admin3@pri.com', password: 'pri123' },
+    admin4: { email: 'admin4@pri.com', password: 'pri123' },
+    admin5: { email: 'admin5@pri.com', password: 'pri123' }
 };
 
 // Helpers

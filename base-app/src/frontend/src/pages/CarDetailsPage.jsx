@@ -332,7 +332,7 @@ const CarDetailsPage = () => {
                     {/* Right: Action Button */}
                     <button
                         id="book-now-main-button"
-                        onClick={() => car.availability_status === 'Available' && setIsPurchaseModalOpen(true)}
+                        onClick={() => setIsPurchaseModalOpen(true)}
                         disabled={car.availability_status !== 'Available'}
                         className={`h-10 px-8 rounded-full font-black uppercase tracking-[0.2em] text-[11px] transition-all shrink-0 ${car.availability_status === 'Available'
                             ? 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/20'

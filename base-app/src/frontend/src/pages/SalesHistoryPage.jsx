@@ -247,34 +247,38 @@ const SalesHistoryPage = () => {
                             </div>
                         </div>
 
-                        {loading ? (
-                            <div className="p-24 text-center">
-                                <div className="inline-block w-12 h-12 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin"></div>
-                                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-6">Synchronizing Data Node...</p>
-                            </div>
-                        ) : filteredSales.length === 0 ? (
-                            <div className="p-24 text-center">
-                                <div className="p-4 bg-slate-50 rounded-2xl inline-block mb-6 text-slate-200">
-                                    <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                </div>
-                                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No records matching your search criteria.</p>
-                                <button onClick={() => { setSearch(''); setConditionFilter('All'); }} className="mt-4 text-blue-600 text-[10px] font-black uppercase tracking-widest hover:underline underline-offset-4 transition-all">Reset Filters</button>
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table id="sales-ledger-table" className="w-full text-left border-collapse">
-                                    <thead className="text-[10px] text-slate-400 bg-white uppercase tracking-[0.2em] border-b border-slate-100">
+                        <div className="overflow-x-auto">
+                            <table id="sales-ledger-table" className="w-full text-left border-collapse">
+                                <thead className="text-[10px] text-slate-400 bg-white uppercase tracking-[0.2em] border-b border-slate-100">
+                                    <tr>
+                                        <th className="px-6 py-6 font-black">Ref ID</th>
+                                        <th className="px-6 py-6 font-black">Buyer</th>
+                                        <th className="px-6 py-6 font-black">Vehicle</th>
+                                        <th className="px-6 py-6 font-black">Date</th>
+                                        <th className="px-6 py-6 text-right font-black">Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50 bg-white">
+                                    {loading ? (
                                         <tr>
-                                            <th className="px-6 py-6 font-black">Ref ID</th>
-                                            <th className="px-6 py-6 font-black">Buyer</th>
-                                            <th className="px-6 py-6 font-black">Vehicle</th>
-                                            <th className="px-6 py-6 font-black">Date</th>
-                                            <th className="px-6 py-6 text-right font-black">Price</th>
+                                            <td colSpan="5" className="p-24 text-center">
+                                                <div className="inline-block w-12 h-12 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin"></div>
+                                                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-6">Synchronizing Data Node...</p>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-50 bg-white">
-                                        {filteredSales.map(sale => (
-                                            <tr key={sale._id} className={`hover:bg-slate-50/50 transition-all duration-300 group cursor-default ${sale._id === lastAcceptedId ? 'bg-blue-50/50' : ''}`}>
+                                    ) : filteredSales.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="5" className="p-24 text-center">
+                                                <div className="p-4 bg-slate-50 rounded-2xl inline-block mb-6 text-slate-200">
+                                                    <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                </div>
+                                                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No records matching your search criteria.</p>
+                                                <button onClick={() => { setSearch(''); setConditionFilter('All'); }} className="mt-4 text-blue-600 text-[10px] font-black uppercase tracking-widest hover:underline underline-offset-4 transition-all">Reset Filters</button>
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredSales.map(sale => (
+                                            <tr key={sale._id} className={`hover:bg-slate-50/50 transition-all duration-300 group cursor-default ${String(sale.booking_id) === String(lastAcceptedId) ? 'bg-blue-50/50' : ''}`}>
                                                 <td className="px-6 py-6">
                                                     <div className="font-mono text-[10px] font-bold text-slate-400">#TRB-{sale._id.slice(-8).toUpperCase()}</div>
                                                 </td>
@@ -304,11 +308,11 @@ const SalesHistoryPage = () => {
                                                     </div>
                                                 </td>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const Car = require('../models/Car');
 const Admin = require('../models/Admin');
 const Booking = require('../models/Booking');
+const Sale = require('../models/Sale');
 
 const private_cars = [
     {
@@ -793,6 +794,7 @@ const seedPrivate = async () => {
         // Sync tables
         await Car.sync({ alter: true });
         await Booking.sync({ alter: true });
+        await Sale.sync({ alter: true });
 
         let created = 0;
         let updated = 0;
@@ -865,15 +867,33 @@ const seedPrivate = async () => {
             }
 
             if (bookingToCreate) {
-                const existingBooking = await Booking.findOne({
+                let booking = await Booking.findOne({
                     where: {
                         user_email: bookingToCreate.user_email,
                         car_id: bookingToCreate.car_id
                     }
                 });
 
-                if (!existingBooking) {
-                    await Booking.create(bookingToCreate);
+                if (!booking) {
+                    booking = await Booking.create(bookingToCreate);
+                }
+
+                // ENSURE SALE RECORD EXISTS FOR ACCEPTED BOOKINGS
+                if (booking.status === 'Accepted') {
+                    const existingSale = await Sale.findOne({
+                        where: { booking_id: booking._id }
+                    });
+
+                    if (!existingSale) {
+                        await Sale.create({
+                            car_id: car._id,
+                            booking_id: booking._id,
+                            sale_price: car.price,
+                            sale_date: booking.createdAt,
+                            buyer_name: booking.user_name,
+                            buyer_email: booking.user_email
+                        });
+                    }
                 }
             }
         }
