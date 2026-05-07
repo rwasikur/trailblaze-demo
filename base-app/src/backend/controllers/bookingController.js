@@ -3,13 +3,13 @@ const Car = require('../models/Car');
 
 const createBooking = async (req, res) => {
     try {
-        const { car_id, user_name, user_email, user_contact } = req.body;
+        const { car_id, user_name, user_email, user_contact, selected_color } = req.body;
 
         if (!car_id || !user_name || !user_email || !user_contact) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Check for duplicate booking
+        // Check for duplicate booking (same car, same email)
         const existingBooking = await Booking.findOne({
             where: {
                 car_id,
@@ -18,7 +18,7 @@ const createBooking = async (req, res) => {
         });
 
         if (existingBooking) {
-            return res.status(400).json({ message: 'A booking request with this email already exists for this vehicle.' });
+            return res.status(400).json({ message: 'A booking request with this email and color already exists for this vehicle.' });
         }
 
         // Email validation
@@ -41,7 +41,8 @@ const createBooking = async (req, res) => {
             car_id,
             user_name,
             user_email,
-            user_contact
+            user_contact,
+            selected_color
         });
 
         res.status(201).json({ message: 'Booking submitted successfully', booking });
@@ -76,47 +77,15 @@ const updateBookingStatus = async (req, res) => {
         }
 
         const oldStatus = booking.status;
+        booking.status = status;
+        await booking.save();
 
-        // Transitioning FROM Accepted back to Pending/Rejected
-        if (oldStatus === 'Accepted' && status !== 'Accepted' && booking.car) {
-            const car = await Car.findByPk(booking.car_id);
-            if (car) {
-                // Remove the last owner record (added when accepted)
-                const updatedPastOwners = [...(car.past_owners || [])];
-                updatedPastOwners.pop();
-                const updatedOwnerCount = Math.max(0, (car.number_of_owners || 0) - 1);
-
-                await car.update({
-                    availability_status: 'Available',
-                    past_owners: updatedPastOwners,
-                    number_of_owners: updatedOwnerCount
-                });
-
-                await booking.update({ status, final_price: null });
-            }
-        }
-        // Transitioning TO Accepted
-        else if (status === 'Accepted' && booking.car) {
-            const car = await Car.findByPk(booking.car_id);
-            if (car) {
-                const newSale = {
-                    sale_date: new Date().toISOString(),
-                    sale_price: car.price,
-                    seller_name: 'TrailblazeAuto Dealership',
-                    buyer_name: booking.user_name
-                };
-
-                const updatedPastOwners = [...(car.past_owners || []), newSale];
-                const updatedOwnerCount = (car.number_of_owners || 0) + 1;
-
-                await car.update({
-                    availability_status: 'Sold',
-                    past_owners: updatedPastOwners,
-                    number_of_owners: updatedOwnerCount
-                });
-
-                await booking.update({ status, final_price: car.price });
-            }
+        // If accepted, mark car as Sold and reject other pending bookings
+        if (status === 'Accepted' && booking.car) {
+            await Car.update(
+                { availability_status: 'Sold' },
+                { where: { _id: booking.car_id } }
+            );
 
             // Auto-reject other pending bookings for the same car
             await Booking.update(
@@ -129,9 +98,14 @@ const updateBookingStatus = async (req, res) => {
                     }
                 }
             );
-        } else {
-            // Standard status update
-            await booking.update({ status });
+        }
+
+        // If the booking was previously Accepted and now moved to Pending or Rejected, reset car status
+        if (oldStatus === 'Accepted' && (status === 'Pending' || status === 'Rejected') && booking.car) {
+            await Car.update(
+                { availability_status: 'Available' },
+                { where: { _id: booking.car_id } }
+            );
         }
 
         res.json({ message: `Booking ${status.toLowerCase()} successfully`, booking });

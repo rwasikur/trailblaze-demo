@@ -735,46 +735,53 @@ const private_cars = [
 
 const sample_bookings = [
     {
-        user_name: "John Doe",
-        user_email: "john.doe@example.com",
-        user_contact: "1234567890",
-        status: "Accepted"
+        user_name: "Amit Sharma",
+        user_email: "amit.sharma@example.com",
+        user_contact: "9876543210",
+        status: "Accepted",
+        selected_color: "Black"
     },
     {
-        user_name: "Jane Smith",
-        user_email: "jane.smith@gmail.com",
-        user_contact: "2345678901",
-        status: "Pending"
+        user_name: "Priya Patel",
+        user_email: "priya.p@gmail.com",
+        user_contact: "8765432109",
+        status: "Accepted",
+        selected_color: "White"
     },
     {
-        user_name: "Bob Wilson",
-        user_email: "bob.wilson@outlook.com",
-        user_contact: "3456789012",
-        status: "Rejected"
+        user_name: "Vikram Singh",
+        user_email: "vikram.s@outlook.com",
+        user_contact: "7654321098",
+        status: "Accepted",
+        selected_color: "Silver"
     },
     {
-        user_name: "Alice Cooper",
-        user_email: "alice.c@example.com",
-        user_contact: "1122334455",
-        status: "Accepted"
+        user_name: "Sneha Reddy",
+        user_email: "sneha.reddy@yahoo.com",
+        user_contact: "9988776655",
+        status: "Accepted",
+        selected_color: "Nexa Blue"
     },
     {
-        user_name: "Bob Marley",
-        user_email: "bob.m@gmail.com",
-        user_contact: "2233445566",
-        status: "Accepted"
+        user_name: "Anjali Verma",
+        user_email: "anjali.v@gmail.com",
+        user_contact: "8765432109",
+        status: "Pending",
+        selected_color: "Grey"
     },
     {
-        user_name: "Charlie Brown",
-        user_email: "charlie.b@outlook.com",
-        user_contact: "3344556677",
-        status: "Accepted"
+        user_name: "Sandeep Gupta",
+        user_email: "sandeep.gupta@outlook.com",
+        user_contact: "7654321098",
+        status: "Rejected",
+        selected_color: "Red"
     },
     {
-        user_name: "Diana Ross",
-        user_email: "diana.r@yahoo.com",
-        user_contact: "4455667788",
-        status: "Rejected"
+        user_name: "Rohan Kapoor",
+        user_email: "rohan.k@example.com",
+        user_contact: "9123456789",
+        status: "Pending",
+        selected_color: "Blue"
     }
 ];
 
@@ -821,33 +828,53 @@ const seedPrivate = async () => {
             }
         }
 
-        // Seed some sample bookings
+        // Seed bookings with proper mapping to car status
         console.log("Seeding sample bookings...");
         const allCars = await Car.findAll();
-        for (let i = 0; i < sample_bookings.length; i++) {
-            const bookingData = sample_bookings[i];
-            // Assign to different cars
-            const car = allCars[i % allCars.length];
 
-            // For 'Accepted' booking, ensure car is 'Sold'
-            if (bookingData.status === 'Accepted' && car.availability_status !== 'Sold') {
-                await car.update({ availability_status: 'Sold' });
+        let acceptedIndex = 0;
+        let otherIndex = 0;
+        const acceptedSamples = sample_bookings.filter(b => b.status === 'Accepted');
+        const otherSamples = sample_bookings.filter(b => b.status !== 'Accepted');
+
+        for (const car of allCars) {
+            let bookingToCreate = null;
+
+            if (car.availability_status === 'Sold') {
+                // Ensure every sold car has an accepted booking
+                const sample = acceptedSamples[acceptedIndex % acceptedSamples.length];
+                bookingToCreate = {
+                    ...sample,
+                    user_email: `${car.name.toLowerCase().replace(/\s+/g, '.')}.${sample.user_email}`,
+                    car_id: car._id,
+                    selected_color: car.available_colors?.[0] || 'Black',
+                    createdAt: new Date(Date.now() - Math.floor(Math.random() * 2000000000))
+                };
+                acceptedIndex++;
+            } else if (Math.random() > 0.6) {
+                // Give some available cars pending or rejected bookings
+                const sample = otherSamples[otherIndex % otherSamples.length];
+                bookingToCreate = {
+                    ...sample,
+                    user_email: `${car.name.toLowerCase().replace(/\s+/g, '.')}.${sample.user_email}`,
+                    car_id: car._id,
+                    selected_color: car.available_colors?.[0] || 'Black',
+                    createdAt: new Date(Date.now() - Math.floor(Math.random() * 1000000000))
+                };
+                otherIndex++;
             }
 
-            // Check if booking already exists for this user and car
-            const existingBooking = await Booking.findOne({
-                where: {
-                    user_email: bookingData.user_email,
-                    car_id: car._id
-                }
-            });
-
-            if (!existingBooking) {
-                await Booking.create({
-                    ...bookingData,
-                    car_id: car._id,
-                    final_price: bookingData.status === 'Accepted' ? car.price : null
+            if (bookingToCreate) {
+                const existingBooking = await Booking.findOne({
+                    where: {
+                        user_email: bookingToCreate.user_email,
+                        car_id: bookingToCreate.car_id
+                    }
                 });
+
+                if (!existingBooking) {
+                    await Booking.create(bookingToCreate);
+                }
             }
         }
 
