@@ -25,6 +25,11 @@ const EditCarPage = () => {
     const mainFileRef = useRef(null);
     const multiFileRef = useRef(null);
 
+    useEffect(() => {
+        const token = localStorage.getItem('adminToken');
+        if (!token) navigate('/admin');
+    }, [navigate]);
+
     const brands = Object.keys(BRANDS_MODELS).sort();
     const models = formData.brand && BRANDS_MODELS[formData.brand] ? BRANDS_MODELS[formData.brand] : [];
 
@@ -373,16 +378,16 @@ const EditCarPage = () => {
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="block text-sm font-bold text-slate-700">Transmission</label>
-                                        <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required>
+                                        <label htmlFor="transmission-select" className="block text-sm font-bold text-slate-700">Transmission</label>
+                                        <select id="transmission-select" className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.transmission} onChange={(e) => setFormData({ ...formData, transmission: e.target.value })} required>
                                             <option value="">Select</option>
                                             <option value="Automatic">Automatic</option>
                                             <option value="Manual">Manual</option>
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="block text-sm font-bold text-slate-700">Fuel Type</label>
-                                        <select className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required>
+                                        <label htmlFor="fuel-type-select" className="block text-sm font-bold text-slate-700">Fuel Type</label>
+                                        <select id="fuel-type-select" className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all" value={formData.fuel_type} onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })} required>
                                             <option value="">Select Fuel</option>
                                             <option value="Petrol">Petrol</option>
                                             <option value="Diesel">Diesel</option>
@@ -392,20 +397,21 @@ const EditCarPage = () => {
                                             <option value="CNG">CNG</option>
                                         </select>
                                     </div>
-                                    <Input label="Seating Capacity" type="number" min="1" max="60" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
-                                    <Input label="Range (e.g. 350km)" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
-                                    <Input label="Body Type (e.g. SUV)" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
-                                    <Input label="Mileage (kmpl)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} placeholder="e.g. 18.5" />
+                                    <Input id="seating-capacity-input" label="Seating Capacity" type="number" min="1" max="60" value={formData.seating_capacity} onChange={(e) => setFormData({ ...formData, seating_capacity: e.target.value })} required />
+                                    <Input id="range-input" label="Range (e.g. 350km)" value={formData.range} onChange={(e) => setFormData({ ...formData, range: e.target.value })} />
+                                    <Input id="body-type-input" label="Body Type (e.g. SUV)" value={formData.body_type} onChange={(e) => setFormData({ ...formData, body_type: e.target.value })} />
+                                    <Input id="mileage-input" label="Mileage (kmpl)" value={formData.mileage} onChange={(e) => setFormData({ ...formData, mileage: e.target.value })} placeholder="e.g. 18.5" />
                                     {formData.condition === 'Used' && (
-                                        <Input label="Total Distance Covered" value={formData.total_distance_covered} onChange={(e) => setFormData({ ...formData, total_distance_covered: e.target.value })} placeholder="e.g. 45,000 km" />
+                                        <Input id="distance-input" label="Total Distance Covered" value={formData.total_distance_covered} onChange={(e) => setFormData({ ...formData, total_distance_covered: e.target.value })} placeholder="e.g. 45,000 km" />
                                     )}
 
                                     {/* Color Selection Block */}
                                     <div className="md:col-span-2 lg:col-span-3 space-y-6">
                                         {formData.condition === 'New' && (
                                             <div className="space-y-2 max-w-xs">
-                                                <label className="block text-sm font-bold text-slate-700">Available Colors Count</label>
+                                                <label htmlFor="color-count-input" className="block text-sm font-bold text-slate-700">Available Colors Count</label>
                                                 <input
+                                                    id="color-count-input"
                                                     type="number"
                                                     min="1"
                                                     className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
@@ -419,11 +425,12 @@ const EditCarPage = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-100 pt-6">
                                             {formData.available_colors.map((color, idx) => (
                                                 <div key={idx} className="space-y-2">
-                                                    <label className="block text-sm font-bold text-slate-700">
+                                                    <label htmlFor={`color-select-${idx}`} className="block text-sm font-bold text-slate-700">
                                                         Color Option {idx + 1}
                                                         {idx === 0 && <span className="text-[10px] text-blue-600 ml-2">(Primary)</span>}
                                                     </label>
                                                     <select
+                                                        id={`color-select-${idx}`}
                                                         className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
                                                         value={color}
                                                         onChange={(e) => handleColorChange(idx, e.target.value)}
