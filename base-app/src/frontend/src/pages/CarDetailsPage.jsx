@@ -32,6 +32,20 @@ const CarDetailsPage = () => {
         fetchCar();
     }, [id]);
 
+    useEffect(() => {
+        if (id) {
+            try {
+                const raw = localStorage.getItem('recentCars');
+                const recent = JSON.parse(raw || '[]');
+                const updated = [id, ...recent.filter(rid => rid !== id)].slice(0, 5);
+                localStorage.setItem('recentCars', JSON.stringify(updated));
+                window.dispatchEvent(new Event('recentCarsUpdated'));
+            } catch (e) {
+                console.error('Error updating recentCars', e);
+            }
+        }
+    }, [id]);
+
     if (loading) return (
         <div className="min-h-full bg-slate-50 flex items-center justify-center">
             <p className="text-slate-400 font-medium animate-pulse">Scanning vehicle signatures...</p>

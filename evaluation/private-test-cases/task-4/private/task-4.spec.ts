@@ -112,7 +112,7 @@ test.describe('Task 4: Recently Viewed - Private Validation Suite', () => {
     test('Filter Persistence: Default State on Clean Navigation', async ({ page, baseURL }) => {
         await login(page, baseURL || '', USERS.admin2);
         await page.goto(`${baseURL || ''}/browse`);
-        const allFilter = page.getByRole('button', { name: /^All$/i }).nth(1);
+        const allFilter = page.getByRole('button', { name: /^All$/i }).first();
         await expect(allFilter).toHaveClass(/bg-white text-slate-900/);
     });
 
@@ -120,7 +120,7 @@ test.describe('Task 4: Recently Viewed - Private Validation Suite', () => {
         await login(page, baseURL || '', USERS.admin3);
         await page.goto(`${baseURL || ''}/browse`);
         await page.getByRole('button', { name: /^Recent$/i }).click();
-        await page.getByRole('button', { name: /^All$/i }).nth(1).click();
+        await page.getByRole('button', { name: /^All$/i }).first().click();
         const cards = page.locator('article[id^="car-card-"]');
         expect(await cards.count()).toBeGreaterThan(1);
     });

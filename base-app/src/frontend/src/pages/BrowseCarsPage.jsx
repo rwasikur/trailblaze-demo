@@ -5,7 +5,23 @@ import CarCard from '../components/CarCard';
 const BrowseCarsPage = () => {
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [conditionFilter, setConditionFilter] = useState('All');
+    const [activeFilter, setActiveFilter] = useState('All');
+    const [recentCarIds, setRecentCarIds] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const sync = () => {
+        try {
+            const raw = localStorage.getItem('recentCars');
+            let recent = JSON.parse(raw || '[]');
+            if (recent.length > 5) {
+                recent = recent.slice(0, 5);
+                localStorage.setItem('recentCars', JSON.stringify(recent));
+            }
+            setRecentCarIds(recent);
+        } catch (e) {
+            setRecentCarIds([]);
+        }
+    };
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -22,34 +38,64 @@ const BrowseCarsPage = () => {
             }
         };
         fetchCars();
+        sync();
+
+        window.addEventListener('storage', sync);
+        window.addEventListener('recentCarsUpdated', sync);
+        return () => {
+            window.removeEventListener('storage', sync);
+            window.removeEventListener('recentCarsUpdated', sync);
+        };
     }, []);
 
     const filteredCars = useMemo(() => {
-        return cars.filter(car => {
-            const matchesCondition =
-                conditionFilter === 'All' ||
-                (conditionFilter === 'New' && car.condition === 'New') ||
-                (conditionFilter === 'Pre-Owned' && car.condition === 'Used');
+        let result = cars;
+        if (activeFilter === 'Recent') {
+            const idMap = new Map(recentCarIds.map((id, i) => [id, i]));
+            result = cars
+                .filter(car => idMap.has(car._id))
+                .sort((a, b) => idMap.get(a._id) - idMap.get(b._id));
+        } else if (activeFilter === 'New') {
+            result = cars.filter(c => c.condition === 'New');
+        } else if (activeFilter === 'Pre-Owned') {
+            result = cars.filter(c => c.condition === 'Used');
+        }
+
+        return result.filter(car => {
+            const matchesSearch =
+                car.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                car.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                car.body_type?.toLowerCase().includes(searchQuery.toLowerCase());
 
             const isAvailable = car.availability_status === 'Available';
 
-            return matchesCondition && isAvailable;
+            return matchesSearch && isAvailable;
         });
-    }, [cars, conditionFilter]);
+    }, [cars, activeFilter, recentCarIds, searchQuery]);
+
+    const featuredCar = useMemo(() => {
+        if ((activeFilter === 'All' || activeFilter === 'Recent') && recentCarIds.length > 0) {
+            return cars.find(c => c._id === recentCarIds[0]) || null;
+        }
+        return null;
+    }, [cars, activeFilter, recentCarIds]);
+
+    const remainingCars = useMemo(() => {
+        if (!featuredCar) return filteredCars;
+        return filteredCars.filter(c => c._id !== featuredCar._id);
+    }, [filteredCars, featuredCar]);
 
     return (
         <div className="min-h-full bg-slate-50">
             <div className="mx-auto w-full max-w-7xl px-6 pt-4 pb-8">
-
-                {/* Filter Section */}
                 <div className="mb-12 flex flex-col md:flex-row items-center justify-center gap-6">
                     <div className="flex gap-2 p-1.5 bg-slate-200/50 rounded-2xl w-fit">
-                        {['All', 'New', 'Pre-Owned'].map((opt) => (
+                        {['All', 'Recent', 'New', 'Pre-Owned'].map((opt) => (
                             <button
                                 key={opt}
                                 id={`filter-${opt.toLowerCase().replace(' ', '-')}`}
-                                onClick={() => setConditionFilter(opt)}
-                                className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${conditionFilter === opt ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                onClick={() => setActiveFilter(opt)}
+                                className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeFilter === opt ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 {opt}
                             </button>
@@ -74,7 +120,7 @@ const BrowseCarsPage = () => {
                         </div>
                         <h2 className="text-3xl font-black text-slate-900 tracking-tight">No matches found</h2>
                         <p className="mx-auto mt-4 max-w-md text-base text-slate-500 leading-relaxed">We couldn't find any vehicles matching your search criteria.</p>
-                        <button onClick={() => { setConditionFilter('All'); }} className="mt-10 rounded-2xl bg-slate-900 px-8 py-4 text-sm font-bold text-white shadow-xl transition-all hover:bg-blue-600 active:scale-95">Clear All Filters</button>
+                        <button onClick={() => { setActiveFilter('All'); }} className="mt-10 rounded-2xl bg-slate-900 px-8 py-4 text-sm font-bold text-white shadow-xl transition-all hover:bg-blue-600 active:scale-95">Clear All Filters</button>
                     </div>
                 ) : (
                     <div className="space-y-12">
