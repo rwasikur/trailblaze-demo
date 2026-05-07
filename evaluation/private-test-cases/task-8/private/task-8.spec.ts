@@ -405,7 +405,7 @@ test('AC-21 | Booking made via "Proceed to Book" from EMI modal shows the EMI pl
 });
 
 test('AC-22 | Open EMI modal; close it with the X button; verify modal is no longer visible and car detail page is still showing.', async ({ page, baseURL }) => {
-    const car = await openEmiModal(page, baseURL!);
+    await openEmiModal(page, baseURL!);
 
     // The X close button is absolutely positioned at top-right of the modal's
     // dark header. We can't use `div.bg-slate-950 button` because the App root
@@ -423,7 +423,13 @@ test('AC-22 | Open EMI modal; close it with the X button; verify modal is no lon
     await closeBtn.click({ force: true });
 
     await expect(page.getByText('EMI Calculator')).not.toBeVisible({ timeout: 5000 });
-    await expect(page.getByText(new RegExp(car.name, 'i')).first()).toBeVisible();
+    // After closing, we remain on the Price tab — `car.name` is only rendered
+    // inside the Overview tab body (`<h1 id="car-detail-name">{car.name}</h1>`),
+    // so asserting on it would fail. Instead verify we're still on the car
+    // detail page via the URL and that persistent page chrome (tab nav) is
+    // visible.
+    await expect(page).toHaveURL(/\/car\//);
+    await expect(page.getByRole('button', { name: 'Price' })).toBeVisible();
 });
 
 test('AC-23 | Open EMI modal; click the backdrop (outside the modal card); verify modal closes.', async ({ page, baseURL }) => {
