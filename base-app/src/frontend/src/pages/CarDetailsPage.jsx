@@ -3,10 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Button } from '../components/ui/Button';
 import PurchaseModal from '../components/PurchaseModal';
+import EmiModal from '../components/EmiModal';
 import { getColorCode } from '../constants/colorMapping';
 
 const CarDetailsPage = () => {
-
 
     const { id } = useParams();
     const navigate = useNavigate();
@@ -17,6 +17,8 @@ const CarDetailsPage = () => {
     const [fullScreenImage, setFullScreenImage] = useState(null);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+    const [isEmiModalOpen, setIsEmiModalOpen] = useState(false);
+    const [emiInfo, setEmiInfo] = useState(null);
 
     useEffect(() => {
         const fetchCar = async () => {
@@ -54,6 +56,19 @@ const CarDetailsPage = () => {
 
     const tabs = ['Overview', 'Price', 'Specs', 'Images'];
 
+    // Shared EMI button used in both New and Used price panels
+    const EmiButton = () => (
+        <div className="pt-3">
+            <button
+                onClick={() => setIsEmiModalOpen(true)}
+                className="w-full py-3 rounded-xl border-2 border-blue-100 bg-blue-50 text-blue-600 font-black text-[10px] uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all duration-200 flex items-center justify-center gap-2"
+            >
+                <span>₹</span>
+                <span>Calculate EMI</span>
+            </button>
+        </div>
+    );
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'Price':
@@ -68,9 +83,6 @@ const CarDetailsPage = () => {
                         originalPrice = Math.round(car.price / (1 - depreciationFactor));
                     }
                     console.log(originalPrice, "originalPrice");
-                    // if (typeof originalPrice !== 'number' || isNaN(originalPrice)) {
-                    //     originalPrice = car.price || 0;
-                    // }
                     console.log(originalPrice, "originalPrice");
                     const depreciationAmount = originalPrice - (car.price || 0);
                     console.log(depreciationAmount, "depreciationAmount");
@@ -80,11 +92,11 @@ const CarDetailsPage = () => {
                             <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Original Ex-Showroom</span>
-                                    <span className="text-lg font-bold text-slate-400 line-through">${originalPrice.toLocaleString()}</span>
+                                    <span className="text-lg font-bold text-slate-400 line-through">₹{originalPrice.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Owner Depreciation ({car.number_of_owners} Owners)</span>
-                                    <span className="text-red-500 text-sm font-bold">- ${depreciationAmount.toLocaleString()}</span>
+                                    <span className="text-red-500 text-sm font-bold">- ₹{depreciationAmount.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
@@ -92,8 +104,9 @@ const CarDetailsPage = () => {
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Current Valuation</span>
-                                    <span className="text-4xl font-black text-blue-600">${car.price?.toLocaleString()}</span>
+                                    <span className="text-4xl font-black text-blue-600">₹{car.price?.toLocaleString()}</span>
                                 </div>
+                                <EmiButton />
                             </div>
                         </div>
                     );
@@ -104,7 +117,7 @@ const CarDetailsPage = () => {
                             <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Ex-Showroom Price</span>
-                                    <span className="text-2xl font-black text-slate-900">${car.price?.toLocaleString()}</span>
+                                    <span className="text-2xl font-black text-slate-900">₹{car.price?.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
@@ -112,8 +125,9 @@ const CarDetailsPage = () => {
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Valuation</span>
-                                    <span className="text-4xl font-black text-blue-600">${car.price?.toLocaleString()}</span>
+                                    <span className="text-4xl font-black text-blue-600">₹{car.price?.toLocaleString()}</span>
                                 </div>
+                                <EmiButton />
                             </div>
                         </div>
                     );
@@ -215,7 +229,7 @@ const CarDetailsPage = () => {
                             <div className="flex justify-between items-end relative z-10">
                                 <div>
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Acquisition</div>
-                                    <div className="text-4xl font-black tracking-tight">${car.price?.toLocaleString()}</div>
+                                    <div className="text-4xl font-black tracking-tight">₹{car.price?.toLocaleString()}</div>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Official Seller</div>
@@ -301,8 +315,8 @@ const CarDetailsPage = () => {
                         {/* Condition Badge Overlay */}
                         <div className="absolute top-8 left-8 z-20">
                             <div className={`px-5 py-2.5 rounded-2xl backdrop-blur-xl shadow-2xl border border-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3 ${car.condition === 'New'
-                                    ? 'bg-indigo-600/90 text-white'
-                                    : 'bg-slate-800/90 text-white'
+                                ? 'bg-indigo-600/90 text-white'
+                                : 'bg-slate-800/90 text-white'
                                 }`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${car.condition === 'New' ? 'bg-white animate-pulse' : 'bg-amber-400'}`}></span>
                                 {car.condition === 'New' ? 'Brand New' : 'Pre-Owned'}
@@ -340,10 +354,26 @@ const CarDetailsPage = () => {
                 </div>
             )}
 
+            {/* EMI Calculator Modal */}
+            <EmiModal
+                car={car}
+                isOpen={isEmiModalOpen}
+                onClose={() => setIsEmiModalOpen(false)}
+                onProceedToBook={(info) => {
+                    setEmiInfo(info);
+                    setIsPurchaseModalOpen(true);
+                }}
+            />
+
+            {/* Booking Modal */}
             <PurchaseModal
                 car={car}
                 isOpen={isPurchaseModalOpen}
-                onClose={() => setIsPurchaseModalOpen(false)}
+                onClose={() => {
+                    setIsPurchaseModalOpen(false);
+                    setEmiInfo(null);
+                }}
+                emiInfo={emiInfo}
             />
         </div>
     );
