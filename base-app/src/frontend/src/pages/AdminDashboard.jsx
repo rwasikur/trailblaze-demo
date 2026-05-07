@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api';
 import { toast } from 'react-toastify';
+import api from '../api';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -17,11 +17,14 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
-        if (!token) navigate('/admin');
-        else {
-            fetchCars(token);
-            fetchBookings(token);
+
+        if (!token) {
+            navigate('/admin');
+            return;
         }
+
+        fetchCars(token);
+        fetchBookings(token);
     }, [navigate]);
 
     const fetchCars = async (token) => {
@@ -55,7 +58,6 @@ const AdminDashboard = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success(`Booking ${status.toLowerCase()}!`);
-            // Simultaneous refresh to ensure UI is in sync
             await Promise.all([fetchBookings(token), fetchCars(token)]);
         } catch (err) {
             toast.error('Failed to update booking status');
@@ -68,20 +70,41 @@ const AdminDashboard = () => {
             <div className="max-w-7xl mx-auto space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h1 id="dashboard-heading" className="text-3xl font-black text-slate-900 tracking-tight">Admin Dashboard</h1>
-                        <p className="text-slate-500 mt-2 text-sm md:text-base font-medium">Manage your vehicle Catalogue and purchase bookings.</p>
+                        <h1 id="dashboard-heading" className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">
+                            Admin Dashboard
+                        </h1>
+                        <p className="text-slate-500 mt-2 text-base">
+                            Manage your vehicle Catalogue, purchase bookings, and system operations.
+                        </p>
                     </div>
-                    <div className="flex flex-wrap gap-3">
-                        <Button variant="outline" onClick={() => navigate('/admin/catalogue')} className="text-xs font-bold h-10 border-slate-300">
+
+                    <div className="flex flex-wrap gap-4">
+                        <Button
+                            id="analytics-dashboard-button"
+                            variant="outline"
+                            onClick={() => navigate('/admin/analytics')}
+                            className="text-sm font-semibold h-11 border-slate-300"
+                        >
+                            View Analytics
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => navigate('/admin/catalogue')}
+                            className="text-sm font-semibold h-11 border-slate-300"
+                        >
                             Manage Catalogue
                         </Button>
-                        <Button id="add-car-button" onClick={() => navigate('/admin/add-car')} className="text-xs font-bold h-10 shadow-lg shadow-slate-900/10" variant="slate">
+                        <Button
+                            id="add-car-button"
+                            onClick={() => navigate('/admin/add-car')}
+                            className="text-sm font-semibold h-11"
+                            variant="slate"
+                        >
                             + Add New Vehicle
                         </Button>
                     </div>
                 </div>
 
-                {/* Tabs */}
                 <div className="flex gap-2 p-1.5 bg-slate-200/50 rounded-2xl w-fit">
                     <button
                         id="admin-vehicles-tab"
@@ -128,7 +151,7 @@ const AdminDashboard = () => {
                                                     <tr id={`car-row-${car._id}`} key={car._id} className="hover:bg-slate-50/30 transition-colors group">
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">
-                                                                {car.name.toLowerCase().startsWith(car.brand.toLowerCase()) ? car.name : `${car.brand} ${car.name}`}
+                                                                {car.name?.toLowerCase().startsWith(car.brand?.toLowerCase()) ? car.name : `${car.brand} ${car.name}`}
                                                             </div>
                                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{car.fuel_type} • {car.transmission}</div>
                                                             <div className="flex items-center gap-2 mt-1.5">
@@ -220,7 +243,7 @@ const AdminDashboard = () => {
                                                         <td className="px-6 py-5 text-slate-600 font-bold text-sm tracking-tight">{booking.user_contact}</td>
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">
-                                                                {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
+                                                                {booking.car?.name?.toLowerCase().startsWith(booking.car?.brand?.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
                                                             </div>
                                                             <div className="flex items-center gap-1.5 mt-1">
                                                                 <div className="font-bold text-blue-600 text-[10px] uppercase tracking-widest">${booking.car?.price?.toLocaleString()}</div>
@@ -267,7 +290,7 @@ const AdminDashboard = () => {
                                                                             <option value="Accepted">Accepted</option>
                                                                             <option value="Rejected">Rejected</option>
                                                                         </select>
-                                                                        <button 
+                                                                        <button
                                                                             onClick={() => setEditingBookingId(null)}
                                                                             className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 px-2"
                                                                         >
