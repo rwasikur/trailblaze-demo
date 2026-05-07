@@ -3,22 +3,26 @@ const Car = require('../models/Car');
 
 const createBooking = async (req, res) => {
     try {
-        const { car_id, user_name, user_email, user_contact, selected_color } = req.body;
+        const { car_id, user_name, user_email, user_contact, selected_color, emi_details } = req.body;
 
         if (!car_id || !user_name || !user_email || !user_contact) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Check for duplicate booking (same car, same email)
+        // Normalize color: treat empty strings/undefined as null for consistent matching
+        const normalizedColor = (selected_color && selected_color.trim() !== '') ? selected_color : null;
+
+        // Check for duplicate booking (same car, same email, same color)
         const existingBooking = await Booking.findOne({
             where: {
                 car_id,
-                user_email
+                user_email,
+                selected_color: normalizedColor
             }
         });
 
         if (existingBooking) {
-            return res.status(400).json({ message: 'A booking request with this email and color already exists for this vehicle.' });
+            return res.status(400).json({ message: 'A booking request with this email already exists for this vehicle.' });
         }
 
         // Email validation
@@ -37,12 +41,25 @@ const createBooking = async (req, res) => {
             return res.status(400).json({ message: 'Name must be at least 2 characters' });
         }
 
+        // Sanitize and validate emi_details if provided
+        let sanitizedEmiDetails = null;
+        if (emi_details && emi_details.opted === true) {
+            sanitizedEmiDetails = {
+                opted: true,
+                tenure: parseInt(emi_details.tenure) || null,
+                downPaymentPct: parseInt(emi_details.downPaymentPct) || null,
+                monthlyEmi: parseInt(emi_details.monthlyEmi) || null,
+                annualRate: parseFloat(emi_details.annualRate) || 9.5
+            };
+        }
+
         const booking = await Booking.create({
             car_id,
             user_name,
             user_email,
             user_contact,
-            selected_color
+            selected_color: normalizedColor,
+            emi_details: sanitizedEmiDetails
         });
 
         res.status(201).json({ message: 'Booking submitted successfully', booking });

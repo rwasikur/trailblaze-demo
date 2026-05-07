@@ -7,6 +7,30 @@ import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { getColorCode } from '../constants/colorMapping';
 
+// Small inline component for the EMI / Full Payment badge in the bookings table
+const FinancingBadge = ({ emiDetails }) => {
+    if (emiDetails && emiDetails.opted) {
+        return (
+            <div className="space-y-1">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-[9px] font-black uppercase tracking-widest">
+                    <span>$</span> EMI
+                </span>
+                <div className="text-[10px] font-bold text-slate-700">
+                    ${emiDetails.monthlyEmi?.toLocaleString('en-US')}<span className="text-slate-400">/mo</span>
+                </div>
+                <div className="text-[9px] text-slate-400 font-medium">
+                    {emiDetails.tenure} mo · {emiDetails.downPaymentPct}% down · {emiDetails.annualRate}% p.a.
+                </div>
+            </div>
+        );
+    }
+    return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-500 text-[9px] font-black uppercase tracking-widest">
+            Full Payment
+        </span>
+    );
+};
+
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [cars, setCars] = useState([]);
@@ -200,9 +224,10 @@ const AdminDashboard = () => {
                                         <table className="w-full text-left border-collapse">
                                             <thead className="text-[10px] text-slate-400 bg-slate-50/50 uppercase tracking-[0.2em] border-b border-slate-100">
                                                 <tr>
-                                                    <th className="px-6 py-4 font-black">Customer Profile</th>
+                                                    <th className="px-6 py-4 font-black">Customer Name</th>
                                                     <th className="px-6 py-4 font-black">Contact Info</th>
                                                     <th className="px-6 py-4 font-black">Vehicle Choice</th>
+                                                    <th className="px-6 py-4 font-black">Financing</th>
                                                     <th className="px-6 py-4 font-black">Timestamp</th>
                                                     <th className="px-6 py-4 font-black">Current Status</th>
                                                     <th className="px-6 py-4 text-right font-black">Action Panel</th>
@@ -215,9 +240,11 @@ const AdminDashboard = () => {
                                                     <tr id={`booking-row-${booking._id}`} key={booking._id} className="hover:bg-slate-50/30 transition-colors">
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">{booking.user_name}</div>
-                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_email}</div>
                                                         </td>
-                                                        <td className="px-6 py-5 text-slate-600 font-bold text-sm tracking-tight">{booking.user_contact}</td>
+                                                        <td className="px-6 py-5">
+                                                            <div className="text-slate-600 font-bold text-sm tracking-tight">{booking.user_email}</div>
+                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_contact}</div>
+                                                        </td>
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">
                                                                 {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
@@ -242,6 +269,9 @@ const AdminDashboard = () => {
                                                                     {booking.car?.condition === 'New' ? 'New' : 'Pre-Owned'}
                                                                 </Badge>
                                                             </div>
+                                                        </td>
+                                                        <td className="px-6 py-5">
+                                                            <FinancingBadge emiDetails={booking.emi_details} />
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-500 text-[11px] font-black uppercase tracking-tighter">
                                                             {new Date(booking.createdAt).toLocaleDateString()}
