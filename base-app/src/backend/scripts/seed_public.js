@@ -868,7 +868,7 @@ const seedPublic = async () => {
                 const sample = acceptedSamples[acceptedIndex % acceptedSamples.length];
                 bookingToCreate = {
                     ...sample,
-                    user_email: `${car.name.toLowerCase().replace(/\s+/g, '.')}.${sample.user_email}`,
+                    user_email: sample.user_email,
                     car_id: car._id,
                     selected_color: car.available_colors?.[0] || 'Black',
                     createdAt: new Date(Date.now() - Math.floor(Math.random() * 2000000000))
@@ -879,7 +879,7 @@ const seedPublic = async () => {
                 const sample = otherSamples[otherIndex % otherSamples.length];
                 bookingToCreate = {
                     ...sample,
-                    user_email: `${car.name.toLowerCase().replace(/\s+/g, '.')}.${sample.user_email}`,
+                    user_email: sample.user_email,
                     car_id: car._id,
                     selected_color: car.available_colors?.[0] || 'Black',
                     createdAt: new Date(Date.now() - Math.floor(Math.random() * 1000000000))

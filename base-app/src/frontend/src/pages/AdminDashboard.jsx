@@ -209,7 +209,7 @@ const AdminDashboard = () => {
                                         <table className="w-full text-left border-collapse">
                                             <thead className="text-[10px] text-slate-400 bg-slate-50/50 uppercase tracking-[0.2em] border-b border-slate-100">
                                                 <tr>
-                                                    <th className="px-6 py-4 font-black">Customer Profile</th>
+                                                    <th className="px-6 py-4 font-black">Customer Name</th>
                                                     <th className="px-6 py-4 font-black">Contact Info</th>
                                                     <th className="px-6 py-4 font-black">Vehicle Choice</th>
                                                     <th className="px-6 py-4 font-black">Timestamp</th>
@@ -224,9 +224,11 @@ const AdminDashboard = () => {
                                                         <tr id={`booking-row-${booking._id}`} key={booking._id} className="hover:bg-slate-50/30 transition-colors">
                                                             <td className="px-6 py-5">
                                                                 <div className="font-black text-slate-900 text-sm">{booking.user_name}</div>
-                                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_email}</div>
                                                             </td>
-                                                            <td className="px-6 py-5 text-slate-600 font-bold text-sm tracking-tight">{booking.user_contact}</td>
+                                                            <td className="px-6 py-5">
+                                                                <div className="text-slate-600 font-bold text-sm tracking-tight">{booking.user_email}</div>
+                                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_contact}</div>
+                                                            </td>
                                                             <td className="px-6 py-5">
                                                                 <div className="font-black text-slate-900 text-sm">
                                                                     {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
@@ -328,61 +330,7 @@ const AdminDashboard = () => {
                                     </div>
                                 )}
                             </>
-                        ) : (
-                            <div className="animate-in fade-in duration-500">
-                                <div className="bg-white px-6 py-5 border-b border-slate-100 flex justify-between items-center">
-                                    <h2 className="text-base font-black uppercase tracking-widest text-slate-400">Successful Transactions</h2>
-                                </div>
-
-                                {bookings.filter(b => b.status === 'Accepted').length === 0 ? (
-                                    <div className="p-20 text-center">
-                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No sales recorded yet.</p>
-                                    </div>
-                                ) : (
-                                    <div className="overflow-x-auto">
-                                        <table id="sales-ledger-table" className="w-full text-left border-collapse">
-                                            <thead className="text-[10px] text-slate-400 bg-slate-50/50 uppercase tracking-[0.2em] border-b border-slate-100">
-                                                <tr>
-                                                    <th className="px-6 py-4 font-black">Transaction ID</th>
-                                                    <th className="px-6 py-4 font-black">Buyer Name</th>
-                                                    <th className="px-6 py-4 font-black">Vehicle Model</th>
-                                                    <th className="px-6 py-4 font-black">Sale Date</th>
-                                                    <th className="px-6 py-4 text-right font-black">Final Price</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-50">
-                                                {bookings.filter(b => b.status === 'Accepted').map(booking => (
-                                                    <tr key={booking._id} className={`hover:bg-slate-50/30 transition-all duration-700 ${lastAcceptedId === booking._id ? 'bg-blue-50/50 ring-1 ring-inset ring-blue-200' : ''}`}>
-                                                        <td className="px-6 py-5">
-                                                            <div className="font-mono text-[10px] font-bold text-slate-400">#TRB-{booking._id.slice(-6).toUpperCase()}</div>
-                                                        </td>
-                                                        <td className="px-6 py-5">
-                                                            <div className="font-black text-slate-900 text-sm">{booking.user_name}</div>
-                                                        </td>
-                                                        <td className="px-6 py-5">
-                                                            <div className="flex flex-col gap-1">
-                                                                <div className="font-black text-slate-900 text-sm">
-                                                                    {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
-                                                                </div>
-                                                                <span id="condition-badge" className={`w-fit text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${booking.car?.condition === 'New' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
-                                                                    {booking.car?.condition === 'New' ? 'Brand New' : 'Pre-Owned'}
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-5 text-slate-500 text-[11px] font-black uppercase tracking-tighter">
-                                                            {new Date(booking.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                                        </td>
-                                                        <td className="px-6 py-5 text-right font-black text-slate-900">
-                                                            ${(booking.final_price || booking.car?.price || 0).toLocaleString()}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        ) : null}
                     </CardContent>
                 </Card>
             </div>
