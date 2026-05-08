@@ -108,35 +108,56 @@ const ManageCataloguePage = () => {
                                         paginatedCars.map((car) => (
                                             <tr key={car._id} className="hover:bg-slate-50/50 transition-colors">
                                                 <td className="px-6 py-4 text-slate-400 font-mono text-xs">...{car._id.substring(car._id.length - 6)}</td>
-                                                <td className="px-6 py-4 font-bold text-slate-900">{car.name}</td>
+                                                <td className="px-6 py-4 font-bold text-slate-900">
+                                                    <div>{car.name}</div>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <Badge variant={car.condition === 'New' ? 'new' : 'used'} className="text-[8px] px-1.5 py-0 h-4">
+                                                            {car.condition === 'New' ? 'New' : 'Pre-Owned'}
+                                                        </Badge>
+                                                    </div>
+                                                </td>
                                                 <td className="px-6 py-4 text-slate-600 font-medium">{car.brand}</td>
                                                 <td className="px-6 py-4 text-slate-600 font-medium">${car.price}</td>
                                                 <td className="px-6 py-4">
-                                                    <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'}>
+                                                    <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'} className="w-fit">
                                                         {car.availability_status}
                                                     </Badge>
                                                 </td>
                                                 <td className="px-6 py-4 text-right relative">
-                                                    <div className="relative inline-block text-left">
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => setActiveDropdown(activeDropdown === car._id ? null : car._id)}
-                                                            className="h-8 text-xs font-semibold px-3"
-                                                        >
-                                                            Options ▼
-                                                        </Button>
-                                                        {activeDropdown === car._id && (
-                                                            <>
-                                                                <div onClick={() => setActiveDropdown(null)} className="fixed inset-0 z-40 bg-transparent"></div>
-                                                                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-50 p-1 divide-y divide-slate-100 font-medium text-sm text-left">
-                                                                    <div className="py-1">
-                                                                        <button onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-car/${car._id}?fromPage=${currentPage}`); }} className="w-full text-left px-3 py-2 text-blue-600 hover:bg-slate-50 transition-colors rounded-md">✎ Edit Vehicle</button>
+                                                    {(car.availability_status === 'Available' || (car.availability_status === 'Sold' && car.condition === 'New')) && (
+                                                        <div className="relative inline-block text-left">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => setActiveDropdown(activeDropdown === car._id ? null : car._id)}
+                                                                className="h-8 text-xs font-semibold px-3"
+                                                            >
+                                                                Options ▼
+                                                            </Button>
+                                                            {activeDropdown === car._id && (
+                                                                <>
+                                                                    <div onClick={() => setActiveDropdown(null)} className="fixed inset-0 z-40 bg-transparent"></div>
+                                                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-50 p-1 divide-y divide-slate-100 font-medium text-sm text-left">
+                                                                        <div className="py-1">
+                                                                            <button 
+                                                                                onClick={() => { 
+                                                                                    setActiveDropdown(null); 
+                                                                                    if (car.availability_status === 'Sold') {
+                                                                                        navigate('/admin/add-car', { state: { copyFrom: car } });
+                                                                                    } else {
+                                                                                        navigate(`/admin/edit-car/${car._id}`); 
+                                                                                    }
+                                                                                }} 
+                                                                                className="w-full text-left px-3 py-2 text-blue-600 hover:bg-slate-50 transition-colors rounded-md"
+                                                                            >
+                                                                                {car.availability_status === 'Sold' ? '⧉ Make a Copy' : '✎ Edit Vehicle'}
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            </>
-                                                        )}
-                                                    </div>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))

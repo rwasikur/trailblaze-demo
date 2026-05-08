@@ -1,4 +1,5 @@
 const Car = require('../models/Car');
+const Booking = require('../models/Booking');
 
 const getAllCars = async (req, res) => {
     try {
@@ -13,8 +14,25 @@ const updateCarStatus = async (req, res) => {
     try {
         const car = await Car.findByPk(req.params.id);
         if (car) {
-            car.availability_status = req.body.status || car.availability_status;
+            const oldStatus = car.availability_status;
+            const newStatus = req.body.status || car.availability_status;
+
+            car.availability_status = newStatus;
             await car.save();
+
+            // Sync bookings based on manual status change
+            if (oldStatus === 'Sold' && newStatus === 'Available') {
+                await Booking.update(
+                    { status: 'Pending' },
+                    { where: { car_id: car._id, status: 'Accepted' } }
+                );
+            } else if (oldStatus === 'Available' && newStatus === 'Sold') {
+                await Booking.update(
+                    { status: 'Rejected' },
+                    { where: { car_id: car._id, status: 'Pending' } }
+                );
+            }
+
             res.json(car);
         } else {
             res.status(404).json({ message: 'Car not found' });
@@ -33,6 +51,9 @@ const updateCar = async (req, res) => {
                 return res.status(400).json({ message: "Name, Brand, and Main Image cannot be empty." });
             }
 
+            const oldStatus = car.availability_status;
+            const newStatus = req.body.availability_status || car.availability_status;
+
             car.name = req.body.name || car.name;
             car.brand = req.body.brand || car.brand;
             car.model_year = req.body.model_year ? parseInt(req.body.model_year) : car.model_year;
@@ -44,8 +65,7 @@ const updateCar = async (req, res) => {
             car.body_type = req.body.body_type || car.body_type;
             car.mileage = req.body.mileage !== undefined ? req.body.mileage : car.mileage;
             car.total_distance_covered = req.body.total_distance_covered !== undefined ? req.body.total_distance_covered : car.total_distance_covered;
-            car.exterior_color = req.body.exterior_color || car.exterior_color;
-            car.interior_color = req.body.interior_color || car.interior_color;
+            car.available_colors = req.body.available_colors || car.available_colors;
 
             // Sanitize number_of_owners
             if (req.body.condition === 'New' || (req.body.condition === undefined && car.condition === 'New')) {
@@ -59,10 +79,24 @@ const updateCar = async (req, res) => {
             car.description = req.body.description || car.description;
             car.image_url = req.body.image_url || car.image_url;
             car.secondary_images = req.body.secondary_images !== undefined ? req.body.secondary_images : car.secondary_images;
-            car.availability_status = req.body.availability_status || car.availability_status;
+            car.availability_status = newStatus;
             car.condition = req.body.condition || car.condition;
 
             const updatedCar = await car.save();
+
+            // Sync bookings based on manual status change
+            if (oldStatus === 'Sold' && newStatus === 'Available') {
+                await Booking.update(
+                    { status: 'Pending' },
+                    { where: { car_id: car._id, status: 'Accepted' } }
+                );
+            } else if (oldStatus === 'Available' && newStatus === 'Sold') {
+                await Booking.update(
+                    { status: 'Rejected' },
+                    { where: { car_id: car._id, status: 'Pending' } }
+                );
+            }
+
             res.json(updatedCar);
         } else {
             res.status(404).json({ message: 'Car not found' });

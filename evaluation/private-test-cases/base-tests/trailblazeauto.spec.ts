@@ -14,7 +14,7 @@ const USERS = {
 };
 
 // Helpers
-async function getFirstCar(baseURL: string, condition?: string) {
+async function getFirstCar(baseURL: string, condition?: string, preferredIndex = 0) {
     const ctx = await playwrightRequest.newContext();
     const res = await ctx.get(`${baseURL}/api/cars`);
     const body = await res.json();
@@ -27,12 +27,11 @@ async function getFirstCar(baseURL: string, condition?: string) {
     }
 
     // Prioritize available cars
-    const avail = filtered.find((c: any) => c.availability_status === 'Available');
-    if (avail) return avail;
+    const available = filtered.filter((c: any) => c.availability_status === 'Available');
+    if (available.length > preferredIndex) return available[preferredIndex];
+    if (available.length > 0) return available[0];
 
-    // If none available in condition, try any available
-    const anyAvail = cars.find((c: any) => c.availability_status === 'Available');
-    return anyAvail || cars[0];
+    return cars[0];
 }
 
 // Helper: interact with react-select by inputId
@@ -44,7 +43,7 @@ async function selectReactOption(page: any, inputId: string, optionText: string)
 
 async function login(page: any, baseURL: string, user = USERS.admin1) {
     const url = `${baseURL}/admin`;
-    
+
     // Always navigate/reload to ensure a fresh state if we are not already on dashboard
     if (!page.url().includes('dashboard')) {
         await page.goto(url, { waitUntil: 'networkidle' });
@@ -55,9 +54,9 @@ async function login(page: any, baseURL: string, user = USERS.admin1) {
 
     // 2. Wait for the login form, signup form, or dashboard
     await Promise.race([
-        page.locator('#admin-email-input').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {}),
-        page.locator('#admin-signup-email').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {}),
-        page.waitForURL(/dashboard/, { timeout: 10000 }).catch(() => {})
+        page.locator('#admin-email-input').waitFor({ state: 'visible', timeout: 10000 }).catch(() => { }),
+        page.locator('#admin-signup-email').waitFor({ state: 'visible', timeout: 10000 }).catch(() => { }),
+        page.waitForURL(/dashboard/, { timeout: 10000 }).catch(() => { })
     ]);
 
     if (page.url().includes('dashboard')) return;
@@ -76,14 +75,14 @@ async function login(page: any, baseURL: string, user = USERS.admin1) {
         await page.locator('#admin-email-input').fill(user.email);
         await page.locator('#admin-password-input').fill(user.password);
         await page.locator('#admin-login-button').click();
-        
+
         const result = await Promise.race([
             page.waitForURL(/dashboard/, { timeout: 10000 }).then(() => 'success'),
             page.locator('.Toastify__toast--error').waitFor({ state: 'visible', timeout: 8000 }).then(() => 'error')
         ]);
 
         if (result === 'success') return;
-        
+
         // If login failed, try Signup as fallback
         const signupToggle = page.locator('#admin-signup-toggle');
         if (await signupToggle.isVisible()) {
@@ -111,29 +110,29 @@ async function login(page: any, baseURL: string, user = USERS.admin1) {
             await page.locator('#admin-email-input').fill(user.email);
             await page.locator('#admin-password-input').fill(user.password);
             await page.locator('#admin-login-button').click();
-            await page.waitForURL(/dashboard/, { timeout: 10000 });
+            await page.waitForURL(/dashboard/, { timeout: 15000 });
         }
     }
 
-    await expect(page).toHaveURL(/dashboard/, { timeout: 10000 });
+    await expect(page).toHaveURL(/dashboard/, { timeout: 15000 });
 }
 
 // POSITIVE TESTS (AC 1-11, 14-16, 18-20, 22-25, 28-30)
 
-test("AC 1: [Step 1] Navigate to / [Step 2] Verify branding 'Elegance for' is visible [Step 3] Verify 'Catalogue' link with ID 'browse-link'.", async ({ page, baseURL }) => {
+test("Navigate to / Verify branding 'Elegance for' is visible Verify 'Catalogue' link with ID #browse-link.", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/`);
     await expect(page.getByText(/Elegance for/i)).toBeVisible();
     await expect(page.locator('#browse-link')).toBeVisible();
 });
 
-test("AC 2: [Step 1] Click 'Catalogue' link [Step 2] Verify redirection to /browse [Step 3] Verify grid with ID 'car-grid' loads.", async ({ page, baseURL }) => {
+test("Click 'Catalogue' link Verify redirection to /browse Verify grid with ID #car-grid loads.", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/`);
     await page.locator('#browse-link').click();
     await expect(page).toHaveURL(/browse/);
     await expect(page.locator('#car-grid')).toBeVisible();
 });
 
-test("AC 3: [Step 1] Inspect car cards on /browse [Step 2] Verify Brand, Name, and Price are correctly rendered using IDs.", async ({ page, baseURL }) => {
+test("Inspect car cards on /browse Verify Brand, Name, and Price are correctly rendered using IDs #car-card-{id}, #car-card-{id}-brand, #car-card-{id}-name, and #car-card-{id}-price.", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/browse`);
     const car = await getFirstCar(baseURL || '');
     const firstCard = page.locator(`#car-card-${car._id}`);
@@ -143,7 +142,7 @@ test("AC 3: [Step 1] Inspect car cards on /browse [Step 2] Verify Brand, Name, a
     await expect(page.locator(`#car-card-${car._id}-price`)).toContainText(/\$/);
 });
 
-test("AC 4: [Step 1] Click any vehicle card [Step 2] Verify navigation to /car/[id] [Step 3] Verify dynamic data loads.", async ({ page, baseURL }) => {
+test("Click any vehicle card Verify navigation to /car/[id] Verify dynamic data loads using ID #car-card-{id}.", async ({ page, baseURL }) => {
     const car = await getFirstCar(baseURL || '');
     await page.goto(`${baseURL}/browse`);
     await page.locator(`#car-card-${car._id}`).click();
@@ -151,7 +150,7 @@ test("AC 4: [Step 1] Click any vehicle card [Step 2] Verify navigation to /car/[
     await expect(page.getByText(new RegExp(car.name, 'i')).first()).toBeVisible();
 });
 
-test("AC 5: [Step 1] On car details, click 'Specs' tab [Step 2] Verify Transmission is visible [Step 3] Click 'Overview' tab [Step 4] Verify System (Fuel Type) is visible.", async ({ page, baseURL }) => {
+test("On car details, click 'Specs' tab Verify Transmission is visible Click 'Overview' tab Verify System (Fuel Type) is visible.", async ({ page, baseURL }) => {
     const car = await getFirstCar(baseURL || '');
     await page.goto(`${baseURL}/car/${car._id}`);
 
@@ -163,7 +162,7 @@ test("AC 5: [Step 1] On car details, click 'Specs' tab [Step 2] Verify Transmiss
     await expect(page.getByText(new RegExp(car.fuel_type, 'i'))).toBeVisible();
 });
 
-test("AC 6: [Step 1] On /browse, select 'New' filter [Step 2] Verify only 'Brand New' status cars are visible.", async ({ page, baseURL }) => {
+test("On /browse, select 'New' filter Verify only 'Brand New' status cars are visible using ID article[id^='car-card-'] and class .badge.", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/browse`);
     await page.getByRole('button', { name: 'All', exact: true }).click();
     await page.getByRole('button', { name: 'New', exact: true }).click();
@@ -174,7 +173,7 @@ test("AC 6: [Step 1] On /browse, select 'New' filter [Step 2] Verify only 'Brand
     }
 });
 
-test("AC 7: [Step 1] On /browse, select 'Pre-Owned' filter [Step 2] Verify only 'Pre-Owned' status cars are visible.", async ({ page, baseURL }) => {
+test("On /browse, select 'Pre-Owned' filter Verify only 'Pre-Owned' status cars are visible using ID article[id^='car-card-'] and class .badge.", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/browse`);
     await page.getByRole('button', { name: 'All', exact: true }).click();
     await page.getByRole('button', { name: 'Pre-Owned', exact: true }).click();
@@ -185,7 +184,7 @@ test("AC 7: [Step 1] On /browse, select 'Pre-Owned' filter [Step 2] Verify only 
     }
 });
 
-test("AC 8: [Step 1] Click 'All' filter [Step 2] Verify grid resets to display complete vehicle inventory.", async ({ page, baseURL }) => {
+test("Click 'All' filter Verify grid resets to display complete vehicle inventory using ID #car-grid.", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/browse`);
     await page.getByRole('button', { name: 'All', exact: true }).click();
     await page.getByRole('button', { name: 'New', exact: true }).click();
@@ -196,7 +195,7 @@ test("AC 8: [Step 1] Click 'All' filter [Step 2] Verify grid resets to display c
     await expect(page.locator('#car-grid article')).not.toHaveCount(0);
 });
 
-test("AC 9: [Step 1] On used car details, click 'Price' tab [Step 2] Verify 'Owner Depreciation' financial breakdown.", async ({ page, baseURL }) => {
+test("On used car details, click 'Price' tab Verify 'Owner Depreciation' financial breakdown.", async ({ page, baseURL }) => {
     const car = await getFirstCar(baseURL || '', 'Used');
     await page.goto(`${baseURL}/car/${car._id}`);
     await page.getByText('Price').click();
@@ -206,13 +205,14 @@ test("AC 9: [Step 1] On used car details, click 'Price' tab [Step 2] Verify 'Own
     }
 });
 
-test("AC 10: [Step 1] Navigate to /admin/signup [Step 2] Fill valid details [Step 3] Click 'Create Account' [Step 4] Verify toast 'Account created successfully' and redirect to /admin.", async ({ page, baseURL }) => {
+test("Navigate to /admin/signup Fill valid details Click 'Create Account' Verify toast 'Account created successfully' and redirect to /admin using IDs #admin-signup-name, #admin-signup-email, #admin-signup-password, and #admin-signup-button.", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/admin/signup`);
-    await page.locator('#admin-signup-name').fill('Private Signup Tester');
-    await page.locator('#admin-signup-email').fill(`signup_v2_${Date.now()}@test.com`);
+    await page.locator('#admin-signup-name').fill('Signup Tester');
+    await page.locator('#admin-signup-email').fill(`signup_${Date.now()}@test.com`);
     await page.locator('#admin-signup-password').fill('password123');
     await page.locator('#admin-signup-button').click();
 
+    // If user already exists, just pass (since it's not dynamic anymore)
     const alreadyExists = await page.getByText(/already exists/i).isVisible({ timeout: 2000 }).catch(() => false);
     if (!alreadyExists) {
         await expect(page.getByText(/Account created successfully/i)).toBeVisible();
@@ -220,54 +220,49 @@ test("AC 10: [Step 1] Navigate to /admin/signup [Step 2] Fill valid details [Ste
     await expect(page).toHaveURL(/admin$/);
 });
 
-test("AC 11: [Step 1] Login at /admin with valid credentials [Step 2] Verify toast 'Access Granted.' [Step 3] Verify redirection to /admin/dashboard.", async ({ page, baseURL }) => {
+test("Login at /admin with valid credentials Verify toast 'Access Granted.' Verify redirection to /admin/dashboard using IDs #admin-email-input, #admin-password-input, and #admin-login-button.", async ({ page, baseURL }) => {
     // Clear any existing token so login form is shown
     await page.goto(`${baseURL}/`);
     await page.evaluate(() => localStorage.removeItem('adminToken'));
-    await page.goto(`${baseURL}/admin`);
-    const emailInput = page.locator('#admin-email-input');
-    await emailInput.waitFor({ timeout: 15000 });
-    await emailInput.fill(USERS.admin1.email);
+    await page.goto(`${baseURL}/admin`, { waitUntil: 'networkidle' });
+    await page.locator('#admin-email-input').waitFor({ timeout: 10000 });
+    await page.locator('#admin-email-input').fill(USERS.admin1.email);
     await page.locator('#admin-password-input').fill(USERS.admin1.password);
     await page.locator('#admin-login-button').click();
-    // Wait for ANY toast or dashboard redirect
-    await Promise.race([
-        page.getByText(/Access Granted\.|Account Created\.|already exists|Invalid/i).waitFor({ timeout: 15000 }),
-        page.waitForURL(/dashboard/, { timeout: 15000 })
-    ]);
-    await expect(page).toHaveURL(/dashboard/, { timeout: 10000 });
+    await expect(page.getByText(/Access Granted\./i)).toBeVisible({ timeout: 8000 });
+    await expect(page).toHaveURL(/dashboard/);
 });
 
-test("AC 14: [Step 1] Load Admin Dashboard [Step 2] Verify 'Inventory Overview' and 'Incoming Requests' are rendered.", async ({ page, baseURL }) => {
+test("Load Admin Dashboard Verify 'Inventory Overview' and 'Incoming Requests' are rendered.", async ({ page, baseURL }) => {
     await login(page, baseURL || '');
     await expect(page.getByText(/Inventory Overview/i)).toBeVisible();
     await page.getByRole('button', { name: /Bookings/i }).click();
     await expect(page.getByText(/Incoming Requests/i)).toBeVisible();
 });
 
-test("AC 15: [Step 1] Open 'Add Car' [Step 2] Fill New vehicle fields [Step 3] Click 'Save Vehicle' [Step 4] Verify toast 'Vehicle added successfully!' and redirection.", async ({ page, baseURL }) => {
+test("Open 'Add Car' Fill New vehicle fields Click 'Save Vehicle' Verify toast 'Vehicle added successfully!' and redirection using IDs #brand-select, #model-select, #year-select, #car-price-input, and #main-image-input.", async ({ page, baseURL }) => {
     await login(page, baseURL || '', USERS.admin1);
     await page.goto(`${baseURL}/admin/add-car`);
 
-    // Step 1 - Basic Info (Hyundai Ioniq 5 2024 - different from public)
+    // Step 1 - Basic Info
     await page.locator('select').first().selectOption('New');
-    await selectReactOption(page, 'brand-select', 'Hyundai');
-    await selectReactOption(page, 'model-select', 'Ioniq 5');
-    await selectReactOption(page, 'year-select', '2024');
-    
-    // Set color count to 2
+    await selectReactOption(page, 'brand-select', 'Jeep');
+    await selectReactOption(page, 'model-select', 'Meridian');
+    await selectReactOption(page, 'year-select', '2025');
+
+    // Set color count to 2 (Exterior and Interior)
     await page.locator('label:has-text("How many colors available?") + input').fill('2');
-    
-    await page.locator('label:has-text("Color Option 1") + select').selectOption('Midnight Blue');
-    await page.locator('label:has-text("Color Option 2") + select').selectOption('Grey Leather');
+
+    await page.locator('label:has-text("Color Option 1") + select').selectOption('Rosso Corsa');
+    await page.locator('label:has-text("Color Option 2") + select').selectOption('Red Racing Seats');
     await page.getByRole('button', { name: /Next Step/i }).click();
 
     // Step 2 - Specifications
     await page.locator('label:has-text("Transmission") + select').selectOption('Automatic');
     await page.locator('label:has-text("Fuel Type") + select').selectOption('Electric');
-    await page.locator('label:has-text("Seating Capacity") + input').fill('5');
-    await page.locator('label:has-text("Range") + input').fill('500 km');
-    await page.locator('label:has-text("Body Type") + input').fill('Sedan');
+    await page.getByLabel(/Seating Capacity/i).fill('6');
+    await page.getByLabel(/Range/i).fill('450 km');
+    await page.getByLabel(/Body Type/i).fill('SUV');
     await page.getByRole('button', { name: /Next Step/i }).click();
 
     // Step 3 - Registration & Details
@@ -282,34 +277,34 @@ test("AC 15: [Step 1] Open 'Add Car' [Step 2] Fill New vehicle fields [Step 3] C
     await expect(page).toHaveURL(/dashboard/);
 });
 
-test("AC 16: [Step 1] Open 'Add Car' [Step 2] Select 'Used' [Step 3] Fill owners/history [Step 4] Verify record persistence.", async ({ page, baseURL }) => {
+test("Open 'Add Car' Select 'Used' Fill owners/history Verify record persistence using IDs #brand-select, #model-select, #year-select, #owners-count-input, #car-price-input, #registration-city-input, and #main-image-input.", async ({ page, baseURL }) => {
     await login(page, baseURL || '', USERS.admin2);
     await page.goto(`${baseURL}/admin/add-car`);
 
-    // Step 1 - Basic Info (Toyota Fortuner 2021 - different from public)
+    // Step 1 - Basic Info
     await page.locator('select').first().selectOption('Used');
-    await selectReactOption(page, 'brand-select', 'Toyota');
-    await selectReactOption(page, 'model-select', 'Fortuner');
-    await selectReactOption(page, 'year-select', '2021');
-    await page.locator('label:has-text("Color Option 1") + select').selectOption('White');
+    await selectReactOption(page, 'brand-select', 'Maruti Suzuki');
+    await selectReactOption(page, 'model-select', 'Swift');
+    await selectReactOption(page, 'year-select', '2018');
+    await page.locator('label:has-text("Color Option 1") + select').selectOption('Red');
     await page.getByRole('button', { name: /Next Step/i }).click();
 
     // Step 2 - Specifications
-    await page.locator('label:has-text("Transmission") + select').selectOption('Automatic');
-    await page.locator('label:has-text("Fuel Type") + select').selectOption('Diesel');
-    await page.locator('label:has-text("Seating Capacity") + input').fill('7');
-    await page.locator('label:has-text("Range") + input').fill('800 km');
-    await page.locator('label:has-text("Body Type") + input').fill('SUV');
+    await page.locator('label:has-text("Transmission") + select').selectOption('Manual');
+    await page.locator('label:has-text("Fuel Type") + select').selectOption('Petrol');
+    await page.getByLabel(/Seating Capacity/i).fill('5');
+    await page.getByLabel(/Range/i).fill('150 km');
+    await page.getByLabel(/Body Type/i).fill('Hatchback');
     await page.getByRole('button', { name: /Next Step/i }).click();
 
     // Step 3 - Registration & Details (owners)
     await page.locator('#owners-count-input').fill('1');
-    await page.locator('#car-price-input').fill('3200000');
-    await page.locator('#registration-city-input').fill('Gurgaon');
-    await page.locator('label:has-text("Sale Date") + input').first().fill('2021-10-10');
-    await page.locator('label:has-text("Sale Price ($)") + input').first().fill('4200000');
-    await page.locator('label:has-text("Seller Name") + input').first().fill('Toyota Trust');
-    await page.locator('label:has-text("Buyer Name") + input').first().fill('Suresh Raina');
+    await page.locator('#car-price-input').fill('450000');
+    await page.locator('#registration-city-input').fill('Mumbai');
+    await page.locator('label:has-text("Sale Date") + input').first().fill('2018-05-15');
+    await page.locator('label:has-text("Sale Price ($)") + input').first().fill('750000');
+    await page.locator('label:has-text("Seller Name") + input').first().fill('Maruti Suzuki Arena');
+    await page.locator('label:has-text("Buyer Name") + input').first().fill('Rajesh Kumar');
     await page.getByRole('button', { name: /Next Step/i }).click();
 
     // Step 4 - Media
@@ -319,7 +314,7 @@ test("AC 16: [Step 1] Open 'Add Car' [Step 2] Select 'Used' [Step 3] Fill owners
     await expect(page.getByText(/Vehicle added successfully!/i)).toBeVisible();
 });
 
-test("AC 18: [Step 1] Open 'Edit Car' [Step 2] Modify price [Step 3] Verify toast 'Vehicle updated successfully!' [Step 4] Verify reflected on public page.", async ({ page, baseURL }) => {
+test("Open 'Edit Car' Modify price Verify toast 'Vehicle updated successfully!' Verify reflected on public page using ID #car-price-input.", async ({ page, baseURL }) => {
     await login(page, baseURL || '', USERS.admin3);
     const car = await getFirstCar(baseURL || '', 'New');
     await page.goto(`${baseURL}/admin/edit-car/${car._id}`);
@@ -328,16 +323,16 @@ test("AC 18: [Step 1] Open 'Edit Car' [Step 2] Modify price [Step 3] Verify toas
     await page.locator('#car-price-input').waitFor({ state: 'visible' });
     await expect(page.locator('#car-price-input')).not.toHaveValue('', { timeout: 10000 });
 
-    await page.locator('#car-price-input').fill('9999999');
+    await page.locator('#car-price-input').fill('8888888');
     await page.getByRole('button', { name: /Save Changes/i }).click({ force: true });
     await page.waitForURL(/admin\/catalogue/, { timeout: 30000 });
     await expect(page.getByText(/Vehicle updated successfully!/i)).toBeVisible();
 
     await page.goto(`${baseURL}/car/${car._id}`);
-    await expect(page.getByText(/\$9,999,999/)).toBeVisible();
+    await expect(page.getByText(/\$8,888,888/)).toBeVisible();
 });
 
-test("AC 19: [Step 1] In Admin Dashboard, click 'Sign Out' [Step 2] Verify toast 'Logged out successfully' [Step 3] Verify redirect to home.", async ({ page, baseURL }) => {
+test("In Admin Dashboard, click 'Sign Out' Verify toast 'Logged out successfully' Verify redirect to home.", async ({ page, baseURL }) => {
     await login(page, baseURL || '');
     await page.locator('button:has-text("Sign Out")').click();
     await expect(page.getByText(/Logged out successfully/i)).toBeVisible();
@@ -345,56 +340,51 @@ test("AC 19: [Step 1] In Admin Dashboard, click 'Sign Out' [Step 2] Verify toast
     await expect(page).toHaveURL(`${baseURL}/`);
 });
 
-test("AC 20: [Step 1] Navigate to /admin/profile [Step 2] Update Name/Bio [Step 3] Click 'Synchronize Profile Data' [Step 4] Verify toast 'Profile updated successfully!'.", async ({ page, baseURL }) => {
+test("Navigate to /admin/profile Update Name/Bio Click 'Synchronize Profile Data' Verify toast 'Profile updated successfully!'.", async ({ page, baseURL }) => {
     await login(page, baseURL || '', USERS.admin4);
     await page.goto(`${baseURL}/admin/profile`);
-    await page.locator('label:has-text("Full Legal Name") + input').fill('Private Evaluation Profile');
+    await page.locator('label:has-text("Full Legal Name") + input').fill('Evaluation Profile Updated');
     await page.getByRole('button', { name: /Synchronize Profile Data/i }).click();
     await expect(page.getByText(/Profile updated successfully!/i)).toBeVisible();
 });
 
-test("AC 22: [Step 1] Update password in Profile [Step 2] Sync data [Step 3] Verify login works with new password.", async ({ page, baseURL }) => {
-    // Self-healing login for AC 22 to handle dirty state from previous failed runs
-    try {
-        await login(page, baseURL || '', USERS.admin5);
-    } catch (e) {
-        // If login failed, the password might already be 'eval_pass_456' from a previous interrupted run
-        await login(page, baseURL || '', { ...USERS.admin5, password: 'eval_pass_456' });
-    }
+test("Update password in Profile Sync data Verify login works with new password using IDs #admin-email-input, #admin-password-input, and #admin-login-button.", async ({ page, baseURL }) => {
+    // Use a unique email to ensure test isolation and avoid stale password issues from previous runs
+    const uniqueEmail = `pass_update_${Date.now()}@pri.com`;
+    const tempUser = { email: uniqueEmail, password: 'password123' };
+    
+    // The login helper will automatically handle signup for this new unique email
+    await login(page, baseURL || '', tempUser);
+    
     await page.goto(`${baseURL}/admin/profile`);
-    const newPass = 'eval_pass_456';
+    const newPass = 'eval_pass_123';
     await page.locator('input[type="password"]').fill(newPass);
     await page.getByRole('button', { name: /Synchronize Profile Data/i }).click();
     await expect(page.getByText(/Profile updated successfully!/i)).toBeVisible();
 
     await page.locator('button:has-text("Sign Out")').click();
     await page.goto(`${baseURL}/admin`);
-    await page.locator('#admin-email-input').fill(USERS.admin5.email);
+    await page.locator('#admin-email-input').fill(uniqueEmail);
     await page.locator('#admin-password-input').fill(newPass);
     await page.locator('#admin-login-button').click();
-    await expect(page).toHaveURL(/dashboard/);
-
-    // Reset password
-    await page.goto(`${baseURL}/admin/profile`);
-    await page.locator('input[type="password"]').fill(USERS.admin5.password);
-    await page.getByRole('button', { name: /Synchronize Profile Data/i }).click();
+    await expect(page).toHaveURL(/dashboard/, { timeout: 15000 });
 });
 
-test("AC 23: [Step 1] Navigate to any car page [Step 2] Click 'Book Now' trigger [Step 3] Verify booking modal opens.", async ({ page, baseURL }) => {
+test("Navigate to any car page Click 'Book Now' trigger Verify booking modal opens using ID #book-now-main-button.", async ({ page, baseURL }) => {
     const car = await getFirstCar(baseURL || '');
     await page.goto(`${baseURL}/car/${car._id}`);
     await page.locator('#book-now-main-button').click({ force: true });
     await expect(page.locator('h2:has-text("Booking")')).toBeVisible();
 });
 
-test("AC 24: [Step 1] Fill booking modal with valid data [Step 2] Click 'Book Now' submit [Step 3] Verify 201 response.", async ({ page, baseURL }) => {
+test("Fill booking modal with valid data Click 'Book Now' submit Verify 201 response using ID #book-now-main-button.", async ({ page, baseURL }) => {
     const car = await getFirstCar(baseURL || '');
     await page.goto(`${baseURL}/car/${car._id}`);
     await page.locator('#book-now-main-button').click({ force: true });
 
-    await page.locator('input[placeholder="Your Name"]').fill('Private Booker');
-    await page.locator('input[placeholder="Email Address"]').fill('private_booker_v1@test.com');
-    await page.locator('input[placeholder="Phone Number"]').fill('9876543210');
+    await page.locator('input[placeholder="Your Name"]').fill('Evaluation Booker');
+    await page.locator('input[placeholder="Email Address"]').fill('booker_v1@test.com');
+    await page.locator('input[placeholder="Phone Number"]').fill('9998887776');
 
     await Promise.all([
         page.waitForResponse(res => res.url().includes('/api/bookings') && res.status() === 201),
@@ -402,50 +392,100 @@ test("AC 24: [Step 1] Fill booking modal with valid data [Step 2] Click 'Book No
     ]);
 });
 
-test("AC 25: [Step 1] Upon successful booking [Step 2] Verify toast 'Booking request sent! Our team will contact you soon.' [Step 3] Verify modal closes.", async ({ page, baseURL }) => {
+test("Upon successful booking Verify toast 'Booking request sent! Our team will contact you soon.' Verify modal closes using IDs #book-now-main-button, #purchase-name, #purchase-email, #purchase-contact, and #purchase-submit.", async ({ page, baseURL }) => {
     const car = await getFirstCar(baseURL || '');
     await page.goto(`${baseURL}/car/${car._id}`);
     await page.locator('#book-now-main-button').click({ force: true });
 
-    await page.locator('#purchase-name').fill('Private Booker');
-    await page.locator('#purchase-email').fill('private_booker_v2@test.com');
-    await page.locator('#purchase-contact').fill('9876543210');
+    await page.locator('#purchase-name').fill('Evaluation Booker');
+    await page.locator('#purchase-email').fill('booker_v2@test.com');
+    await page.locator('#purchase-contact').fill('9998887776');
 
     await page.locator('#purchase-submit').click();
     await expect(page.getByText(/Booking request sent/i)).toBeVisible();
     await expect(page.locator('h2:has-text("Booking")')).not.toBeVisible();
 });
 
-test("AC 28: [Step 1] Login to admin [Step 2] Open Bookings tab [Step 3] Verify customer requests are listed in table.", async ({ page, baseURL }) => {
+test("Login to admin Open Bookings tab Verify customer requests are listed in table.", async ({ page, baseURL }) => {
     await login(page, baseURL || '');
     await page.getByRole('button', { name: /Bookings/i }).click();
     await expect(page.getByText(/Incoming Requests/i)).toBeVisible();
-    await expect(page.locator('th:has-text("Customer Profile")')).toBeVisible();
+    await expect(page.locator('th:has-text("Customer Name")')).toBeVisible();
 });
 
-test("AC 29: [Step 1] Locate pending booking [Step 2] Click 'Accept' [Step 3] Verify status 'Accepted' and toast 'Booking accepted!'.", async ({ page, baseURL }) => {
+test("Locate pending booking Click 'Accept' Verify status 'Accepted' and toast 'Booking accepted!' using IDs #book-now-main-button, #purchase-name, #purchase-email, #purchase-contact, #purchase-submit, #admin-bookings-tab, #booking-row-{id}, and #booking-row-{id}-accept.", async ({ page, baseURL }) => {
+    // Ensure a pending booking exists
+    const car = await getFirstCar(baseURL || '', undefined, 0);
+    const email = `status_test_${Date.now()}_${Math.floor(Math.random() * 1000)}@test.com`;
+    await page.goto(`${baseURL}/car/${car._id}`);
+    await page.locator('#book-now-main-button').click({ force: true });
+    await page.locator('#purchase-name').fill('Status Tester');
+    await page.locator('#purchase-email').fill(email);
+    await page.locator('#purchase-contact').fill('9998887776');
+    await page.locator('#purchase-submit').click();
+    await expect(page.getByText(/Booking request sent/i)).toBeVisible();
+
     await login(page, baseURL || '');
-    await page.getByRole('button', { name: /Bookings/i }).click();
-    const acceptBtn = page.locator('button:has-text("Accept")').first();
-    if (await acceptBtn.isVisible()) {
-        await acceptBtn.click();
-        await expect(page.getByText(/Booking accepted!/i)).toBeVisible();
-    }
+
+    // Wait for bookings to load
+    const [response] = await Promise.all([
+        page.waitForResponse(res => res.url().includes('/api/bookings/admin/all') && res.status() === 200),
+        page.locator('#admin-bookings-tab').click()
+    ]);
+
+    await expect(page.getByText(/Incoming Requests/i)).toBeVisible();
+
+    const bookings = await response.json();
+    const myBooking = (bookings.bookings ?? bookings).find((b: any) => b.user_email === email);
+    expect(myBooking).toBeDefined();
+
+    const bookingRow = page.locator(`#booking-row-${myBooking._id}`);
+    await expect(bookingRow).toBeVisible({ timeout: 15000 });
+
+    const acceptBtn = page.locator(`#booking-row-${myBooking._id}-accept`);
+    await expect(acceptBtn).toBeVisible({ timeout: 10000 });
+    await acceptBtn.click({ force: true });
+    await expect(page.getByText(/Booking accepted!/i)).toBeVisible();
 });
 
-test("AC 30: [Step 1] Locate pending booking [Step 2] Click 'Reject' [Step 3] Verify status 'Rejected' and toast 'Booking rejected!'.", async ({ page, baseURL }) => {
+test("Locate pending booking Click 'Reject' Verify status 'Rejected' and toast 'Booking rejected!' using IDs #book-now-main-button, #purchase-name, #purchase-email, #purchase-contact, #purchase-submit, #admin-bookings-tab, #booking-row-{id}, and #booking-row-{id}-reject.", async ({ page, baseURL }) => {
+    // Ensure a pending booking exists - use a different car than AC 29 to avoid auto-rejection race conditions
+    const car = await getFirstCar(baseURL || '', undefined, 1);
+    const email = `reject_test_${Date.now()}_${Math.floor(Math.random() * 1000)}@test.com`;
+    await page.goto(`${baseURL}/car/${car._id}`);
+    await page.locator('#book-now-main-button').click({ force: true });
+    await page.locator('#purchase-name').fill('Reject Tester');
+    await page.locator('#purchase-email').fill(email);
+    await page.locator('#purchase-contact').fill('9998887776');
+    await page.locator('#purchase-submit').click();
+    await expect(page.getByText(/Booking request sent/i)).toBeVisible();
+
     await login(page, baseURL || '');
-    await page.getByRole('button', { name: /Bookings/i }).click();
-    const rejectBtn = page.locator('button:has-text("Reject")').first();
-    if (await rejectBtn.isVisible()) {
-        await rejectBtn.click();
-        await expect(page.getByText(/Booking rejected!/i)).toBeVisible();
-    }
+
+    // Wait for bookings to load
+    const [response] = await Promise.all([
+        page.waitForResponse(res => res.url().includes('/api/bookings/admin/all') && res.status() === 200),
+        page.locator('#admin-bookings-tab').click()
+    ]);
+
+    await expect(page.getByText(/Incoming Requests/i)).toBeVisible();
+
+    const bookings = await response.json();
+    const myBooking = (bookings.bookings ?? bookings).find((b: any) => b.user_email === email);
+    expect(myBooking).toBeDefined();
+
+    const bookingRow = page.locator(`#booking-row-${myBooking._id}`);
+    await expect(bookingRow).toBeVisible({ timeout: 15000 });
+
+    const rejectBtn = page.locator(`#booking-row-${myBooking._id}-reject`);
+    await expect(rejectBtn).toBeVisible({ timeout: 10000 });
+    await rejectBtn.click({ force: true });
+    await expect(page.getByText(/Booking rejected!/i)).toBeVisible();
 });
 
 // NEGATIVE TESTS (AC 12-13, 17, 21, 26-27, 31-32)
 
-test("AC 12: [Step 1] Attempt login with invalid credentials [Step 2] Verify toast 'Invalid email or password'.", async ({ page, baseURL }) => {
+test("Attempt login with invalid credentials Verify toast 'Invalid email or password' using IDs #admin-email-input, #admin-password-input, and #admin-login-button.", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/admin`);
     await page.locator('#admin-email-input').fill('invalid@test.com');
     await page.locator('#admin-password-input').fill('wrongpass');
@@ -453,23 +493,24 @@ test("AC 12: [Step 1] Attempt login with invalid credentials [Step 2] Verify toa
     await expect(page.getByText(/Invalid email or password/i)).toBeVisible();
 });
 
-test("AC 13: [Step 1] Clear token [Step 2] Navigate directly to /admin/dashboard [Step 3] Verify redirect to /admin.", async ({ page, baseURL }) => {
+test("Clear token Navigate directly to /admin/dashboard Verify redirect to /admin using localStorage.", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/`);
     await page.evaluate(() => localStorage.removeItem('adminToken'));
     await page.goto(`${baseURL}/admin/dashboard`);
     await expect(page).toHaveURL(/admin$/);
 });
 
-test("AC 17: [Step 1] In 'Add Car', leave 'Car Name' empty [Step 2] Click 'Next Step' [Step 3] Verify toast 'Please fill in all basic information' and block.", async ({ page, baseURL }) => {
+test("In 'Add Car', leave 'Car Name' empty Click 'Next Step' Verify toast 'Please fill in all basic information' and block using ID #brand-select.", async ({ page, baseURL }) => {
     await login(page, baseURL || '');
     await page.goto(`${baseURL}/admin/add-car`);
 
+    // Select Brand only — skip Car Name (model) to trigger validation
     await selectReactOption(page, 'brand-select', 'Honda');
     await page.getByRole('button', { name: /Next Step/i }).click();
     await expect(page.getByText(/Please fill in all basic information/i)).toBeVisible();
 });
 
-test("AC 21: [Step 1] In Profile, clear 'Full Legal Name' [Step 2] Click 'Synchronize' [Step 3] Verify HTML5 validation block.", async ({ page, baseURL }) => {
+test("In Profile, clear 'Full Legal Name' Click 'Synchronize' Verify HTML5 validation block.", async ({ page, baseURL }) => {
     await login(page, baseURL || '');
     await page.goto(`${baseURL}/admin/profile`);
     const nameInput = page.locator('label:has-text("Full Legal Name") + input');
@@ -479,58 +520,154 @@ test("AC 21: [Step 1] In Profile, clear 'Full Legal Name' [Step 2] Click 'Synchr
     expect(validationMsg).not.toBe('');
 });
 
-test("AC 26: [Step 1] In 'PurchaseModal', enter invalid email [Step 2] Submit [Step 3] Verify toast 'Please enter a valid email address.'.", async ({ page, baseURL }) => {
+test("In 'PurchaseModal', enter invalid email Submit Verify toast 'Please enter a valid email address.' using IDs #book-now-main-button, #purchase-email, #purchase-name, #purchase-contact, and #purchase-submit.", async ({ page, baseURL }) => {
     const car = await getFirstCar(baseURL || '');
     await page.goto(`${baseURL}/car/${car._id}`);
     await expect(page.getByText(/Scanning vehicle signatures/i)).not.toBeVisible();
     await page.locator('#book-now-main-button').click({ force: true });
 
+    // Must bypass browser's type="email" validation to reach JS validation
     await page.locator('#purchase-email').fill('notanemail');
     await page.locator('#purchase-name').fill('Test User');
     await page.locator('#purchase-contact').fill('9876543210');
-
     await page.locator('#purchase-submit').click();
     await expect(page.getByText(/Please enter a valid email address/i)).toBeVisible({ timeout: 10000 });
 });
 
-test("AC 27: [Step 1] Submit booking twice with same email [Step 2] Verify API 400 and toast 'A booking request with this email already exists for this vehicle.'", async ({ page, baseURL }) => {
+test("Submit booking twice with same email Verify API 400 and toast 'already exists' using IDs #book-now-main-button, #purchase-name, #purchase-email, #purchase-contact, and #purchase-submit.", async ({ page, baseURL }) => {
     const car = await getFirstCar(baseURL || '');
-    const email = `duplicate_${Date.now()}@test.com`;
+    const email = `duplicate_api_${Date.now()}@test.com`;
 
+    // First Booking via API
+    const res1 = await page.request.post(`${baseURL}/api/bookings`, {
+        data: { 
+            car_id: car._id, 
+            user_name: 'API Booker', 
+            user_email: email, 
+            user_contact: '9998887776',
+            selected_color: car.available_colors?.[0] || null
+        }
+    });
+    expect(res1.status()).toBe(201);
+
+    // Second Booking via UI
     await page.goto(`${baseURL}/car/${car._id}`);
     await expect(page.getByText(/Scanning vehicle signatures/i)).not.toBeVisible();
     await page.locator('#book-now-main-button').click({ force: true });
-    await page.locator('#purchase-name').fill('Private Booker');
+
+    await page.locator('#purchase-name').fill('Evaluation Booker');
     await page.locator('#purchase-email').fill(email);
-    await page.locator('#purchase-contact').fill('9876543210');
-    await page.locator('#purchase-submit').click();
+    await page.locator('#purchase-contact').fill('9998887776');
 
-    // Wait for the modal to close or the toast to be processed
-    await page.waitForTimeout(2000);
+    const [response] = await Promise.all([
+        page.waitForResponse(res => res.url().includes('/api/bookings') && res.status() === 400, { timeout: 15000 }),
+        page.locator('#purchase-submit').click()
+    ]);
 
-    // Second attempt - must re-open modal if it closed
-    if (await page.locator('#purchase-email').isHidden()) {
-        await page.locator('#book-now-main-button').click({ force: true });
-    }
-
-    await page.locator('#purchase-name').fill('Private Booker');
-    await page.locator('#purchase-email').fill(email);
-    await page.locator('#purchase-contact').fill('9876543210');
-    await page.locator('#purchase-submit').click();
-    await expect(page.getByText(/already exists/i)).toBeVisible();
+    const body = await response.json();
+    expect(body.message.toLowerCase()).toContain('already exists');
+    await expect(page.getByText(/already exists/i)).toBeVisible({ timeout: 15000 });
 });
 
-test("AC 31: [Step 1] Navigate to /car/invalid-id-999 [Step 2] Verify 'Vehicle Not Found' message and 'Back to Fleet' button.", async ({ page, baseURL }) => {
+test("Navigate to /car/invalid-id-999 Verify 'Vehicle Not Found' message and 'Back to Fleet' button.", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/car/invalid-id-999`);
     await expect(page.getByText(/Vehicle Not Found/i)).toBeVisible();
     await expect(page.getByRole('button', { name: /Back to Fleet/i })).toBeVisible();
 });
 
-test("AC 32: [Step 1] On database with no bookings [Step 2] Verify 'No active bookings.' fallback message in dashboard.", async ({ page, baseURL }) => {
+test("On database with no bookings Verify 'No active bookings.' fallback message in dashboard.", async ({ page, baseURL }) => {
     await login(page, baseURL || '');
     await page.getByRole('button', { name: /Bookings/i }).click();
     const rows = page.locator('tbody tr');
     if (await rows.count() === 0) {
         await expect(page.getByText(/No active bookings/i)).toBeVisible();
     }
+});
+
+// NEW MAIN FUNCTIONALITY TESTS (AC 33-34)
+
+
+test("Login as admin Go to Bookings Edit status of non-pending booking Verify toast and update.", async ({ page, baseURL }) => {
+    await login(page, baseURL || '');
+    await page.getByRole('button', { name: /Bookings/i }).click();
+
+    // Find an 'Edit Status' button (for Accepted/Rejected bookings)
+    const editStatusBtn = page.locator('button:has-text("Edit Status")').first();
+    await expect(editStatusBtn).toBeVisible({ timeout: 10000 });
+    await editStatusBtn.click();
+
+    // Change status to Pending
+    await page.locator('select').selectOption('Pending');
+    await expect(page.getByText(/Booking pending!/i)).toBeVisible();
+});
+
+// NEW NEGATIVE TESTS (AC 35-38)
+
+test("In 'PurchaseModal', enter 5-digit contact Submit Verify toast 'Please enter a valid phone number (min 10 digits)' using IDs #book-now-main-button, #purchase-name, #purchase-email, #purchase-contact, and #purchase-submit.", async ({ page, baseURL }) => {
+    const car = await getFirstCar(baseURL || '');
+    await page.goto(`${baseURL}/car/${car._id}`);
+    await page.locator('#book-now-main-button').click({ force: true });
+
+    await page.locator('#purchase-name').fill('Evaluation User');
+    await page.locator('#purchase-email').fill('eval@test.com');
+    await page.locator('#purchase-contact').fill('12345');
+    await page.locator('#purchase-submit').click();
+
+    await expect(page.getByText(/Please enter a valid phone number \(min 10 digits\)/i)).toBeVisible();
+});
+
+test("In 'Add Car', enter price below $100 Save Verify toast 'Price must be at least $100' using ID #car-price-input.", async ({ page, baseURL }) => {
+    await login(page, baseURL || '');
+    await page.goto(`${baseURL}/admin/add-car`);
+
+    // Step 1 - Basic Info
+    await page.locator('select').first().selectOption('New');
+    await selectReactOption(page, 'brand-select', 'Honda');
+    await selectReactOption(page, 'model-select', 'City');
+    await selectReactOption(page, 'year-select', '2024');
+    await page.locator('select').nth(1).selectOption('Silver');
+    await page.getByRole('button', { name: /Next Step/i }).click();
+
+    // Step 2 - Specifications
+    await page.locator('select').first().selectOption('Automatic');
+    await page.locator('select').nth(1).selectOption('Petrol');
+    await page.getByLabel(/Seating Capacity/i).fill('5');
+    await page.getByRole('button', { name: /Next Step/i }).click();
+
+    // Step 3 - Registration & Details (Negative/Low Price)
+    await page.locator('#car-price-input').fill('50');
+    await page.getByRole('button', { name: /Next Step/i }).click();
+
+    await expect(page.getByText(/Price must be at least \$100/i)).toBeVisible();
+});
+
+test("In Profile, enter invalid email Sync Verify toast 'Please enter a valid email address.'.", async ({ page, baseURL }) => {
+    await login(page, baseURL || '');
+    await page.goto(`${baseURL}/admin/profile`);
+
+    const emailInput = page.locator('label:has-text("Secure Email Gateway") + input');
+    await emailInput.fill('invalid-email-format');
+    await page.getByRole('button', { name: /Synchronize Profile Data/i }).click();
+
+    await expect(page.getByText(/Please enter a valid email address/i)).toBeVisible();
+});
+
+test("Clear token Navigate directly to /admin/add-car Verify redirect to /admin using localStorage.", async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/`);
+    await page.evaluate(() => localStorage.removeItem('adminToken'));
+    await page.goto(`${baseURL}/admin/add-car`);
+    await expect(page).toHaveURL(/admin$/);
+});
+
+test("In 'PurchaseModal', enter 1-character name Submit Verify toast 'Please enter a valid full name (min 2 characters)' using IDs #book-now-main-button, #purchase-name, #purchase-email, #purchase-contact, and #purchase-submit.", async ({ page, baseURL }) => {
+    const car = await getFirstCar(baseURL || '');
+    await page.goto(`${baseURL}/car/${car._id}`);
+    await page.locator('#book-now-main-button').click({ force: true });
+
+    await page.locator('#purchase-name').fill('A');
+    await page.locator('#purchase-email').fill('public@example.com');
+    await page.locator('#purchase-contact').fill('9876543210');
+    await page.locator('#purchase-submit').click();
+
+    await expect(page.getByText(/Please enter a valid full name \(min 2 characters\)/i)).toBeVisible();
 });

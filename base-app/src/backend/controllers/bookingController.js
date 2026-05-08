@@ -3,22 +3,26 @@ const Car = require('../models/Car');
 
 const createBooking = async (req, res) => {
     try {
-        const { car_id, user_name, user_email, user_contact } = req.body;
+        const { car_id, user_name, user_email, user_contact, selected_color } = req.body;
 
         if (!car_id || !user_name || !user_email || !user_contact) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Check for duplicate booking
+        // Normalize color: treat empty strings/undefined as null for consistent matching
+        const normalizedColor = (selected_color && selected_color.trim() !== '') ? selected_color : null;
+
+        // Check for duplicate booking (same car, same email, same color)
         const existingBooking = await Booking.findOne({
             where: {
                 car_id,
-                user_email
+                user_email,
+                selected_color: normalizedColor
             }
         });
 
         if (existingBooking) {
-            return res.status(400).json({ message: 'A booking request with this email already exists for this vehicle.' });
+            return res.status(400).json({ message: 'A booking request with this email and color already exists for this vehicle.' });
         }
 
         // Email validation
@@ -41,7 +45,8 @@ const createBooking = async (req, res) => {
             car_id,
             user_name,
             user_email,
-            user_contact
+            user_contact,
+            selected_color: normalizedColor
         });
 
         res.status(201).json({ message: 'Booking submitted successfully', booking });
@@ -75,6 +80,7 @@ const updateBookingStatus = async (req, res) => {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
+        const oldStatus = booking.status;
         booking.status = status;
         await booking.save();
 
@@ -95,6 +101,14 @@ const updateBookingStatus = async (req, res) => {
                         _id: { [require('sequelize').Op.ne]: booking._id }
                     }
                 }
+            );
+        }
+
+        // If the booking was previously Accepted and now moved to Pending or Rejected, reset car status
+        if (oldStatus === 'Accepted' && (status === 'Pending' || status === 'Rejected') && booking.car) {
+            await Car.update(
+                { availability_status: 'Available' },
+                { where: { _id: booking.car_id } }
             );
         }
 

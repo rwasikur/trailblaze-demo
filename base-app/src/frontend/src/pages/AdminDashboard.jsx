@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Pagination } from '../components/ui/Pagination';
+import { getColorCode } from '../constants/colorMapping';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -17,6 +18,7 @@ const AdminDashboard = () => {
     const carPage = parseInt(searchParams.get('vPage') || '1');
     const bookingPage = parseInt(searchParams.get('bPage') || '1');
     const ITEMS_PER_PAGE = 10;
+    const [bookingFilter, setBookingFilter] = useState('All');
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
@@ -71,10 +73,14 @@ const AdminDashboard = () => {
         return cars.slice(startIndex, startIndex + ITEMS_PER_PAGE);
     }, [cars, carPage]);
 
+    const filteredBookings = useMemo(() => {
+        return bookings.filter(b => bookingFilter === 'All' || b.status === bookingFilter);
+    }, [bookings, bookingFilter]);
+
     const paginatedBookings = useMemo(() => {
         const startIndex = (bookingPage - 1) * ITEMS_PER_PAGE;
-        return bookings.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-    }, [bookings, bookingPage]);
+        return filteredBookings.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredBookings, bookingPage]);
 
     return (
         <div className="min-h-full bg-slate-50 py-10 px-4 md:px-6">
@@ -97,12 +103,14 @@ const AdminDashboard = () => {
                 {/* Tabs */}
                 <div className="flex gap-2 p-1.5 bg-slate-200/50 rounded-2xl w-fit">
                     <button
+                        id="admin-vehicles-tab"
                         onClick={() => setActiveTab('vehicles')}
                         className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'vehicles' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         Vehicles ({cars.length})
                     </button>
                     <button
+                        id="admin-bookings-tab"
                         onClick={() => setActiveTab('bookings')}
                         className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'bookings' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
@@ -142,16 +150,41 @@ const AdminDashboard = () => {
                                                                 {car.name.toLowerCase().startsWith(car.brand.toLowerCase()) ? car.name : `${car.brand} ${car.name}`}
                                                             </div>
                                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{car.fuel_type} • {car.transmission}</div>
+                                                            <div className="flex items-center gap-2 mt-1.5">
+                                                                <Badge variant={car.condition === 'New' ? 'new' : 'used'} className="text-[8px] px-1.5 py-0 h-4">
+                                                                    {car.condition === 'New' ? 'New' : 'Pre-Owned'}
+                                                                </Badge>
+                                                            </div>
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-600 font-bold text-sm">{car.model_year}</td>
                                                         <td className="px-6 py-5 text-slate-900 font-black text-sm">${car.price?.toLocaleString()}</td>
                                                         <td className="px-6 py-5">
-                                                            <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'}>
+                                                            <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'} className="w-fit">
                                                                 {car.availability_status}
                                                             </Badge>
                                                         </td>
                                                         <td className="px-6 py-5 text-right">
-                                                            <Button id={`car-row-${car._id}-edit`} variant="outline" size="sm" onClick={() => navigate(`/admin/edit-car/${car._id}?fromPage=${carPage}&from=dashboard`)} className="h-8 px-4 text-[10px] font-black uppercase tracking-widest border-slate-200 hover:border-slate-900 transition-all">Edit</Button>
+                                                            {car.availability_status === 'Available' ? (
+                                                                <Button 
+                                                                    id={`car-row-${car._id}-edit`} 
+                                                                    variant="outline" 
+                                                                    size="sm" 
+                                                                    onClick={() => navigate(`/admin/edit-car/${car._id}?fromPage=${carPage}&from=dashboard`)} 
+                                                                    className="h-8 px-4 text-[10px] font-black uppercase tracking-widest border-slate-200 hover:border-slate-900 transition-all"
+                                                                >
+                                                                    Edit
+                                                                </Button>
+                                                            ) : car.condition === 'New' ? (
+                                                                <Button 
+                                                                    id={`car-row-${car._id}-copy`} 
+                                                                    variant="outline" 
+                                                                    size="sm" 
+                                                                    onClick={() => navigate('/admin/add-car', { state: { copyFrom: car } })} 
+                                                                    className="h-8 px-4 text-[10px] font-black uppercase tracking-widest border-slate-200 hover:border-slate-900 transition-all"
+                                                                >
+                                                                    Make a Copy
+                                                                </Button>
+                                                            ) : null}
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -174,20 +207,31 @@ const AdminDashboard = () => {
                             </>
                         ) : (
                             <>
-                                <div className="bg-white px-6 py-5 border-b border-slate-100">
+                                <div className="bg-white px-6 py-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <h2 className="text-base font-black uppercase tracking-widest text-slate-400">Incoming Requests</h2>
+                                    <div className="flex gap-2">
+                                        {['All', 'Pending', 'Accepted', 'Rejected'].map(status => (
+                                            <button
+                                                key={status}
+                                                onClick={() => setBookingFilter(status)}
+                                                className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${bookingFilter === status ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                            >
+                                                {status}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
 
-                                {bookings.length === 0 ? (
+                                {bookings.filter(b => bookingFilter === 'All' || b.status === bookingFilter).length === 0 ? (
                                     <div className="p-20 text-center">
-                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No active bookings.</p>
+                                        <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No {bookingFilter.toLowerCase()} bookings found.</p>
                                     </div>
                                 ) : (
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left border-collapse">
                                             <thead className="text-[10px] text-slate-400 bg-slate-50/50 uppercase tracking-[0.2em] border-b border-slate-100">
                                                 <tr>
-                                                    <th className="px-6 py-4 font-black">Customer Profile</th>
+                                                    <th className="px-6 py-4 font-black">Customer Name</th>
                                                     <th className="px-6 py-4 font-black">Contact Info</th>
                                                     <th className="px-6 py-4 font-black">Vehicle Choice</th>
                                                     <th className="px-6 py-4 font-black">Timestamp</th>
@@ -197,19 +241,37 @@ const AdminDashboard = () => {
                                             </thead>
                                             <tbody className="divide-y divide-slate-50">
                                                 {paginatedBookings.map(booking => (
-                                                    <tr key={booking._id} className="hover:bg-slate-50/30 transition-colors">
+                                                    <tr id={`booking-row-${booking._id}`} key={booking._id} className="hover:bg-slate-50/30 transition-colors">
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">{booking.user_name}</div>
-                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_email}</div>
                                                         </td>
-                                                        <td className="px-6 py-5 text-slate-600 font-bold text-sm tracking-tight">{booking.user_contact}</td>
+                                                        <td className="px-6 py-5">
+                                                            <div className="text-slate-600 font-bold text-sm tracking-tight">{booking.user_email}</div>
+                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_contact}</div>
+                                                        </td>
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">
                                                                 {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
                                                             </div>
-                                                            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">
-                                                                ${booking.car?.price?.toLocaleString()}
-                                                                {booking.car?.condition === 'New' && ` • ${booking.selected_color || 'N/A'}`}
+                                                            <div className="flex items-center gap-1.5 mt-1">
+                                                                <div className="font-bold text-blue-600 text-[10px] uppercase tracking-widest">${booking.car?.price?.toLocaleString()}</div>
+                                                                {booking.car?.condition === 'New' && (
+                                                                    <>
+                                                                        <span className="text-slate-300 text-[10px]">•</span>
+                                                                        <div className="flex items-center gap-1">
+                                                                            <div 
+                                                                                className="w-2 h-2 rounded-full border border-slate-200" 
+                                                                                style={{ backgroundColor: getColorCode(booking.selected_color) }}
+                                                                            />
+                                                                            <div className="font-bold text-slate-500 text-[10px] uppercase tracking-widest">{booking.selected_color || 'N/A'}</div>
+                                                                        </div>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center gap-2 mt-1.5">
+                                                                <Badge variant={booking.car?.condition === 'New' ? 'new' : 'used'} className="text-[8px] px-1.5 py-0 h-4">
+                                                                    {booking.car?.condition === 'New' ? 'New' : 'Pre-Owned'}
+                                                                </Badge>
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-500 text-[11px] font-black uppercase tracking-tighter">
@@ -248,6 +310,7 @@ const AdminDashboard = () => {
                                                                         {booking.status === 'Pending' ? (
                                                                             <div className="flex justify-end gap-2">
                                                                                 <Button
+                                                                                    id={`booking-row-${booking._id}-accept`}
                                                                                     size="sm"
                                                                                     variant="slate"
                                                                                     className="h-8 px-4 text-[9px] bg-emerald-600 hover:bg-emerald-700 border-none font-black uppercase tracking-widest shadow-md shadow-emerald-600/10"
@@ -256,6 +319,7 @@ const AdminDashboard = () => {
                                                                                     Accept
                                                                                 </Button>
                                                                                 <Button
+                                                                                    id={`booking-row-${booking._id}-reject`}
                                                                                     size="sm"
                                                                                     variant="outline"
                                                                                     className="h-8 px-4 text-[9px] text-red-600 border-red-100 hover:bg-red-50 font-black uppercase tracking-widest"
@@ -266,6 +330,7 @@ const AdminDashboard = () => {
                                                                             </div>
                                                                         ) : (
                                                                             <Button
+                                                                                id={`booking-row-${booking._id}-edit-status`}
                                                                                 size="sm"
                                                                                 variant="outline"
                                                                                 className="h-8 px-4 text-[9px] font-black uppercase tracking-widest border-slate-200 hover:border-slate-900 transition-all"
@@ -284,7 +349,7 @@ const AdminDashboard = () => {
                                         </table>
                                         <div className="p-4 border-t border-slate-100">
                                             <Pagination
-                                                totalItems={bookings.length}
+                                                totalItems={filteredBookings.length}
                                                 itemsPerPage={ITEMS_PER_PAGE}
                                                 currentPage={bookingPage}
                                                 onPageChange={(page) => setSearchParams(prev => {

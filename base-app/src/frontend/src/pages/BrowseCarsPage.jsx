@@ -59,6 +59,7 @@ const BrowseCarsPage = () => {
     return (
         <div className="min-h-full bg-slate-50">
             <div className="mx-auto w-full max-w-7xl px-6 pt-4 pb-8">
+
                 {/* Search and Filter Section */}
                 <div className="mb-12 flex flex-col md:flex-row items-center justify-center gap-6">
                     <div className="w-full max-w-2xl flex items-center bg-white border-2 border-slate-100 rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] p-2 focus-within:ring-8 focus-within:ring-blue-600/10 focus-within:border-blue-600/20 transition-all duration-500 relative">
@@ -129,6 +130,7 @@ const BrowseCarsPage = () => {
                     </div>
                 </div>
 
+
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-32 text-center">
                         <div className="h-10 w-10 rounded-full border-4 border-blue-600 border-t-transparent animate-spin mb-6 shadow-blue-200 shadow-lg"></div>
@@ -172,5 +174,3 @@ const BrowseCarsPage = () => {
 };
 
 export default BrowseCarsPage;
-
-
