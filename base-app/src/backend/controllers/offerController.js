@@ -108,7 +108,10 @@ const validateOfferCar = async (carId, currentOfferId = null) => {
         return { error: 'Offers cannot be applied to sold vehicles.' };
     }
 
-    const duplicateWhere = { car_id: carId };
+    const duplicateWhere = {
+        car_id: carId,
+        expiry_date: { [Op.gte]: getCurrentMinute() },
+    };
     if (currentOfferId) {
         duplicateWhere._id = { [Op.ne]: currentOfferId };
     }

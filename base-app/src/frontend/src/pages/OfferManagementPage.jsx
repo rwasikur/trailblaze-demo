@@ -179,6 +179,7 @@ const OfferManagementPage = () => {
         return new Set(
             offers
                 .filter((offer) => !editingId || offer._id !== editingId)
+                .filter((offer) => offer.status !== 'Expired')
                 .map((offer) => String(getOfferCarId(offer)))
                 .filter(Boolean)
         );

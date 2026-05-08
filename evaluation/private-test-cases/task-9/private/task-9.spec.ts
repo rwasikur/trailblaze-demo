@@ -451,16 +451,34 @@ test(`AC 19: Load Offer Management with a sold vehicle in the fleet Verify the s
     expect(optionValues).not.toContain(soldCar._id);
 });
 
-test(`AC 20: Load Offer Management after a vehicle already has an offer Verify that offered vehicle is excluded from the vehicle select using ID #offer-car-select.`, async ({ page, request, baseURL }) => {
+test(`AC 20: Load Offer Management after one vehicle has a non-expired offer and another vehicle has only an expired offer Verify the non-expired offer vehicle is excluded and the expired offer vehicle remains available in the vehicle select using ID #offer-car-select.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const car = await createTestCar(request, baseURL || '', token);
-    const offer = await createOffer(request, baseURL || '', token, car);
+    const activeCar = await createTestCar(request, baseURL || '', token);
+    const expiredCar = await createTestCar(request, baseURL || '', token);
+    const offer = await createOffer(request, baseURL || '', token, activeCar);
+    const expiredOffer = {
+        _id: unique('expired-offer'),
+        title: unique('expired-title'),
+        badge_text: unique('expired-badge').slice(0, 24),
+        car_id: expiredCar._id,
+        car: expiredCar,
+        activation_date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        expiry_date: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        discount_percent: 10,
+        savings_amount: Math.round(expiredCar.price * 0.1),
+        discount_label: '10% off',
+        is_enabled: true,
+        status: 'Expired',
+    };
+    await page.route('**/api/offers/admin/all', (route) => route.fulfill({ json: [offer, expiredOffer] }));
+    await page.route('**/api/cars/admin/all', (route) => route.fulfill({ json: [activeCar, expiredCar] }));
     await openAdminOffers(page, baseURL || '', token);
 
     const optionValues = await page.locator('#offer-car-select option').evaluateAll((options) =>
         options.map((option) => (option as HTMLOptionElement).value)
     );
-    expect(optionValues).not.toContain(car._id);
+    expect(optionValues).not.toContain(activeCar._id);
+    expect(optionValues).toContain(expiredCar._id);
     await deleteOffer(request, baseURL || '', token, offer._id);
 });
 
@@ -611,7 +629,7 @@ test(`AC 33: Submit POST /api/offers for a sold vehicle Verify HTTP 400 and resp
     await expect(await response.json()).toMatchObject({ message: 'Offers cannot be applied to sold vehicles.' });
 });
 
-test(`AC 34: Submit POST /api/offers for a vehicle that already has an offer Verify HTTP 400 and response message 'This vehicle already has an offer.'.`, async ({ request, baseURL }) => {
+test(`AC 34: Submit POST /api/offers for a vehicle that already has a non-expired offer Verify HTTP 400 and response message 'This vehicle already has an offer.'.`, async ({ request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
     const car = await createTestCar(request, baseURL || '', token);
     const offer = await createOffer(request, baseURL || '', token, car);
