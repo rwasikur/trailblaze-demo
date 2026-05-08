@@ -8,13 +8,13 @@ test.describe('Catalogue Search Bar - Task 6 Suite (Private)', () => {
         await page.waitForLoadState('networkidle');
     });
 
-    test("Catalogue page must feature a search input with id 'search-input'.", async ({ page }: { page: Page }) => {
+    test("Catalogue page must feature a prominent search input with id 'search-input' and the placeholder 'Search by make, model, or details...'.", async ({ page }: { page: Page }) => {
         const searchInput = page.locator('#search-input');
         await expect(searchInput).toBeVisible();
         await expect(searchInput).toHaveAttribute('placeholder', 'Search by make, model, or details...');
     });
 
-    test("Search input must filter the car list in real-time by car name 'Baleno'.", async ({ page }: { page: Page }) => {
+    test("Search input with id 'search-input' must filter the car list in real-time as the user types, displaying results within the container id 'car-grid'.", async ({ page }: { page: Page }) => {
         const searchInput = page.locator('#search-input');
         await searchInput.fill('Baleno');
         
@@ -23,7 +23,7 @@ test.describe('Catalogue Search Bar - Task 6 Suite (Private)', () => {
         await expect(carCards.first()).toContainText('Baleno');
     });
 
-    test("Search must match the car's brand 'Maruti Suzuki'.", async ({ page }: { page: Page }) => {
+    test("The search functionality must match the car's 'brand' property (e.g., searching 'Maruti' should show Maruti Suzuki cars) within the car cards in id 'car-grid'.", async ({ page }: { page: Page }) => {
         const searchInput = page.locator('#search-input');
         await searchInput.fill('Maruti Suzuki');
         
@@ -35,7 +35,7 @@ test.describe('Catalogue Search Bar - Task 6 Suite (Private)', () => {
         }
     });
 
-    test("Search must match the car's body_type 'MUV'.", async ({ page }: { page: Page }) => {
+    test("The search functionality must match the car's 'body_type' property (e.g., searching 'SUV' should show SUV cars) within the car cards in id 'car-grid'.", async ({ page }: { page: Page }) => {
         const searchInput = page.locator('#search-input');
         await searchInput.fill('MUV');
         
@@ -45,7 +45,7 @@ test.describe('Catalogue Search Bar - Task 6 Suite (Private)', () => {
         // Carens and Triber are MUVs in private seed
     });
 
-    test("Search must match the car's fuel_type 'Diesel'.", async ({ page }: { page: Page }) => {
+    test("The search functionality must match the car's 'fuel_type' property (e.g., searching 'Diesel' should show diesel cars) within the car cards in id 'car-grid'.", async ({ page }: { page: Page }) => {
         const searchInput = page.locator('#search-input');
         await searchInput.fill('Diesel');
         
@@ -57,7 +57,7 @@ test.describe('Catalogue Search Bar - Task 6 Suite (Private)', () => {
         }
     });
 
-    test("Search must be case-insensitive (searching 'skoda' should show Skoda cars).", async ({ page }: { page: Page }) => {
+    test("All search operations performed via id 'search-input' must be case-insensitive to ensure a user-friendly experience.", async ({ page }: { page: Page }) => {
         const searchInput = page.locator('#search-input');
         await searchInput.fill('skoda');
         
@@ -69,7 +69,7 @@ test.describe('Catalogue Search Bar - Task 6 Suite (Private)', () => {
         }
     });
 
-    test("Search must match the car's description text fragment 'Big Daddy'.", async ({ page }: { page: Page }) => {
+    test("The search functionality must match the car's 'description' text fragment (e.g., searching 'scratchless' should show matching cars) within the car cards in id 'car-grid'.", async ({ page }: { page: Page }) => {
         const searchInput = page.locator('#search-input');
         await searchInput.fill('Big Daddy');
         
@@ -78,7 +78,7 @@ test.describe('Catalogue Search Bar - Task 6 Suite (Private)', () => {
         await expect(carCards.first()).toContainText('Scorpio-N');
     });
 
-    test("Search must work in combination with condition filters (Search 'Altroz' + 'Pre-Owned' condition).", async ({ page }: { page: Page }) => {
+    test("Search input id 'search-input' must work seamlessly in combination with the condition filters using ids 'filter-new' and 'filter-pre-owned'.", async ({ page }: { page: Page }) => {
         await page.locator('#filter-pre-owned').click();
         const searchInput = page.locator('#search-input');
         await searchInput.fill('Altroz');
@@ -88,7 +88,7 @@ test.describe('Catalogue Search Bar - Task 6 Suite (Private)', () => {
         await expect(carCards.first()).toContainText('Altroz');
     });
 
-    test("Clearing the search input must restore the full list of available cars.", async ({ page }: { page: Page }) => {
+    test("Clearing the search input id 'search-input' must immediately restore the full list of available cars in id 'car-grid', respecting any active condition filters.", async ({ page }: { page: Page }) => {
         const searchInput = page.locator('#search-input');
         await searchInput.fill('Baleno');
         await expect(page.locator('#car-grid article')).toHaveCount(1);
@@ -134,7 +134,7 @@ test.describe('Catalogue Search Bar - Task 6 Suite (Private)', () => {
         await expect(page.locator('#car-grid article')).toHaveCount(0);
     });
 
-    test("Search should match the car's registration_city 'Ghaziabad'.", async ({ page }: { page: Page }) => {
+    test("The search functionality must match the car's 'registration_city' or 'registration_state' properties within the car cards in id 'car-grid'.", async ({ page }: { page: Page }) => {
         const searchInput = page.locator('#search-input');
         await searchInput.fill('Ghaziabad');
         
@@ -144,6 +144,57 @@ test.describe('Catalogue Search Bar - Task 6 Suite (Private)', () => {
         for (let i = 0; i < count; i++) {
             await expect(carCards.nth(i)).toContainText(/Scorpio-N/i); // Scorpio-N is in Ghaziabad
         }
+    });
+
+    test.describe('Admin Dashboard Search Bar', () => {
+        test.beforeEach(async ({ page }) => {
+            await page.goto('/admin');
+            await page.evaluate(() => localStorage.clear());
+            await page.reload();
+            await page.locator('#admin-email-input').fill('admin1@pri.com');
+            await page.locator('#admin-password-input').fill('pri123');
+            await page.locator('#admin-login-button').click();
+            await expect(page).toHaveURL(/dashboard/, { timeout: 10000 });
+        });
+
+        test("Admin Dashboard must include a persistent search input with id 'admin-search-input' to filter administrative views.", async ({ page }) => {
+            const searchInput = page.locator('#admin-search-input');
+            await expect(searchInput).toBeVisible();
+        });
+
+        test("Admin search via id 'admin-search-input' must filter the vehicle inventory table in real-time and display results in the list with id 'dashboard-car-list'.", async ({ page }) => {
+            const searchInput = page.locator('#admin-search-input');
+            await searchInput.fill('Mahindra');
+            await page.waitForTimeout(500);
+
+            const rows = page.locator('#dashboard-car-list tr');
+            const count = await rows.count();
+            expect(count).toBeGreaterThan(0);
+            for (let i = 0; i < count; i++) {
+                await expect(rows.nth(i)).toContainText(/Mahindra/i);
+            }
+        });
+
+        test("Admin search via id 'admin-search-input' must filter the customer bookings table by customer name, email, or vehicle choice in the active view.", async ({ page }) => {
+            await page.locator('#admin-bookings-tab').click();
+            const searchInput = page.locator('#admin-search-input');
+            await searchInput.fill('Vikram');
+            await page.waitForTimeout(500);
+
+            const rows = page.locator('tbody tr');
+            const count = await rows.count();
+            expect(count).toBeGreaterThan(0);
+            for (let i = 0; i < count; i++) {
+                await expect(rows.nth(i)).toContainText(/Vikram/i);
+            }
+        });
+
+        test("The search input with id 'admin-search-input' must be programmatically cleared when switching between dashboard tabs 'Vehicles' (id 'admin-vehicles-tab') and 'Bookings' (id 'admin-bookings-tab').", async ({ page }) => {
+            const searchInput = page.locator('#admin-search-input');
+            await searchInput.fill('Swift');
+            await page.locator('#admin-bookings-tab').click();
+            await expect(searchInput).toHaveValue('');
+        });
     });
 
 });
