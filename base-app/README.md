@@ -17,6 +17,8 @@ A premium automotive Catalogue management platform that bridges the gap between 
 | :--- | :--- | :--- |
 | `GET` | `/api/cars` | List currently available car Catalogue. |
 | `GET` | `/api/cars/:id` | Retrieve detailed specifications for a specific car. |
+| `GET` | `/api/cars/health-check` | Diagnostic endpoint for car catalogue services. |
+| `POST` | `/api/bookings` | Submit a new purchase/enquiry request for a vehicle. |
 
 ### Administrative Routes
 | Method | Endpoint | Description |
@@ -26,12 +28,15 @@ A premium automotive Catalogue management platform that bridges the gap between 
 | `GET` | `/api/admin/profile` | Retrieve the logged-in administrator's profile. |
 | `PUT` | `/api/admin/profile` | Update administrator account details and password. |
 | `POST` | `/api/admin/profile/upload` | Upload and set a custom profile avatar. |
+| `DELETE` | `/api/admin/users/:email` | Remove an administrative account (System use). |
 | `GET` | `/api/cars/admin/all` | List all vehicles in fleet with full metadata (Admin only). |
 | `POST` | `/api/cars` | Register a new vehicle to the dealership (Admin only). |
 | `PUT` | `/api/cars/:id` | Modify an existing vehicle's attributes (Admin only). |
 | `PUT` | `/api/cars/:id/status` | Update vehicle availability (Available/Booked) (Admin only). |
 | `POST` | `/api/cars/upload` | Upload primary vehicle image (Admin only). |
 | `POST` | `/api/cars/upload-multiple` | Upload secondary images (Admin only). |
+| `GET` | `/api/bookings/admin/all` | Retrieve all customer enquiries and bookings (Admin only). |
+| `PUT` | `/api/bookings/admin/:id/status` | Update booking status (Pending/Accepted/Rejected) (Admin only). |
 
 ## 🛠️ Tech Stack
 
@@ -90,14 +95,24 @@ A premium automotive Catalogue management platform that bridges the gap between 
 | `total_distance_covered` | String | Total distance traveled (for Used vehicles) |
 | `range` | String | Operational range per charge/tank |
 | `body_type` | String | Body architecture (SUV/Sedan/Hatchback) |
-| `exterior_color` | String | Outer paint color |
-| `interior_color` | String | Cabin upholstery color |
+| `available_colors` | Array (String) | List of supported vehicle colors |
 | `description` | Text | Detailed vehicle pitch and features |
 | `image_url` | String | Primary high-resolution vehicle image |
 | `secondary_images` | Array | List of gallery image URLs |
 | `past_owners` | JSONB | History of previous sales and ownership |
 | `seller_name` | String | Registered dealership/seller entity |
 | `seller_email` | String | Contact email for the seller |
+
+### Table: `Booking` (managed via Sequelize)
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `_id` | UUID | Primary Key (Auto-generated) |
+| `car_id` | UUID | Reference to the booked vehicle |
+| `user_name` | String | Full name of the prospect |
+| `user_email` | String | Contact email for the booking |
+| `user_contact` | String | Contact phone number |
+| `selected_color` | String | Preferred vehicle color choice |
+| `status` | String | Enquiry status (Pending/Accepted/Rejected) |
 
 ## 🚀 Quick Start
 
