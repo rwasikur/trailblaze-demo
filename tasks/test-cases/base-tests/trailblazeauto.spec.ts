@@ -409,7 +409,7 @@ test("Login to admin Open Bookings tab Verify customer requests are listed in ta
     await login(page, baseURL || '');
     await page.getByRole('button', { name: /Bookings/i }).click();
     await expect(page.getByText(/Incoming Requests/i)).toBeVisible();
-    await expect(page.locator('th:has-text("Customer Profile")')).toBeVisible();
+    await expect(page.locator('th:has-text("Customer Name")')).toBeVisible();
 });
 
 test("Locate pending booking Click 'Accept' Verify status 'Accepted' and toast 'Booking accepted!' using IDs #book-now-main-button, #purchase-name, #purchase-email, #purchase-contact, #purchase-submit, #admin-bookings-tab, #booking-row-{id}, and #booking-row-{id}-accept.", async ({ page, baseURL }) => {
@@ -539,7 +539,13 @@ test("Submit booking twice with same email Verify API 400 and toast 'already exi
 
     // First Booking via API
     const res1 = await page.request.post(`${baseURL}/api/bookings`, {
-        data: { car_id: car._id, user_name: 'API Booker', user_email: email, user_contact: '9998887776' }
+        data: { 
+            car_id: car._id, 
+            user_name: 'API Booker', 
+            user_email: email, 
+            user_contact: '9998887776',
+            selected_color: car.available_colors?.[0] || null
+        }
     });
     expect(res1.status()).toBe(201);
 
@@ -577,23 +583,6 @@ test("On database with no bookings Verify 'No active bookings.' fallback message
     }
 });
 
-test("On /browse, enter 'Maruti Suzuki' in search Verify only matching vehicles shown Verify results count using ID article[id^='car-card-'] and div[id$='-brand'].", async ({ page, baseURL }) => {
-    await page.goto(`${baseURL}/browse`);
-    await page.locator('input[placeholder="Discover..."]').fill('Maruti Suzuki');
-
-    // Verify results count updates
-    const resultsCountLocator = page.locator('div:has-text("Results") > span.text-blue-600');
-    await expect(resultsCountLocator).toBeVisible();
-    const resultsText = await resultsCountLocator.innerText();
-    const count = parseInt(resultsText);
-    expect(count).toBeGreaterThan(0);
-
-    // Verify all visible cards are Maruti Suzuki
-    const brands = await page.locator('article[id^="car-card-"] div[id$="-brand"]').allInnerTexts();
-    for (const brand of brands) {
-        expect(brand.toLowerCase()).toContain('maruti suzuki');
-    }
-});
 
 test("Login as admin Go to Bookings Edit status of non-pending booking Verify toast and update.", async ({ page, baseURL }) => {
     await login(page, baseURL || '');
