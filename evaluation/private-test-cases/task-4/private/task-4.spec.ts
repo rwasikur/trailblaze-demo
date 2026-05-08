@@ -60,7 +60,7 @@ test.describe('Task 4: Recently Viewed - Private Validation Suite', () => {
 
         // Step 3: Click on 'Recent' (verify empty state)
         await recentButton.click();
-        await expect(page.getByText(/No matches found/i)).toBeVisible();
+        await expect(page.getByText(/No recent cars/i)).toBeVisible();
 
         // Step 4: Visit any car model details page
         await page.goto(`${baseURL || ''}/car/${targetCar._id}`);
@@ -156,7 +156,7 @@ test.describe('Task 4: Recently Viewed - Private Validation Suite', () => {
             window.dispatchEvent(new Event('recentCarsUpdated'));
         });
         await page.getByRole('button', { name: /^Recent$/i }).click();
-        await expect(page.getByText(/No matches found/i)).toBeVisible();
+        await expect(page.getByText(/No recent cars/i)).toBeVisible();
     });
 
     test('Resilience: Silent Suppression of Non-Existent Car IDs', async ({ page, baseURL }) => {
@@ -174,14 +174,36 @@ test.describe('Task 4: Recently Viewed - Private Validation Suite', () => {
         await expect(cards).toContainText(targetCar.name);
     });
 
-    test('Empty State: Displaying No Matches Found for New History', async ({ page, baseURL }) => {
+    test('Empty State: Displaying No recent cars for New History', async ({ page, baseURL }) => {
         await page.goto(`${baseURL || ''}/browse`);
         await page.evaluate(() => {
             localStorage.removeItem('recentCars');
             window.dispatchEvent(new Event('recentCarsUpdated'));
         });
         await page.getByRole('button', { name: /^Recent$/i }).click();
-        await expect(page.getByText(/No matches found/i)).toBeVisible();
+        await expect(page.getByText(/No recent cars/i)).toBeVisible();
+    });
+
+    test('Functionality: Clearing Recent History via UI', async ({ page, baseURL }) => {
+        const cars = await getCars(baseURL || '');
+        await page.goto(`${baseURL || ''}/car/${cars[0]._id}`);
+        await page.goto(`${baseURL || ''}/browse`);
+        await page.getByRole('button', { name: /^Recent$/i }).click();
+        
+        // Ensure storage is synced
+        await expect.poll(async () => {
+            return await page.evaluate(() => localStorage.getItem('recentCars'));
+        }).not.toBeNull();
+
+        const clearButton = page.locator('#clear-recent-button');
+        await expect(clearButton).toBeVisible();
+        await clearButton.click();
+        
+        await expect(page.getByText(/No recent cars/i)).toBeVisible();
+        await expect(clearButton).not.toBeVisible();
+        
+        const recent = await page.evaluate(() => JSON.parse(localStorage.getItem('recentCars') || '[]'));
+        expect(recent.length).toBe(0);
     });
 
     test('Security: Automatic Reset of Maliciously Expanded Data', async ({ page, baseURL }) => {
