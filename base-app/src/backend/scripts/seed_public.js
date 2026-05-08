@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const Car = require('../models/Car');
 const Admin = require('../models/Admin');
 const Booking = require('../models/Booking');
+const Sale = require('../models/Sale');
 
 const public_cars = [
     {
@@ -468,7 +469,7 @@ const public_cars = [
         mileage: "14.5 kmpl",
         body_type: "SUV",
         seating_capacity: 7,
-        available_colors: ["Cosmic Gold","Silver","Gray"],
+        available_colors: ["Cosmic Gold", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Jan 2027",
         insurance_type: "Comprehensive",
@@ -498,7 +499,7 @@ const public_cars = [
         mileage: "13 kmpl",
         body_type: "SUV",
         seating_capacity: 7,
-        available_colors: ["Midnight Black","Silver","Gray"],
+        available_colors: ["Midnight Black", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Jan 2027",
         insurance_type: "Comprehensive",
@@ -527,7 +528,7 @@ const public_cars = [
         mileage: "18.4 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        available_colors: ["Abyss Black","Silver","Gray"],
+        available_colors: ["Abyss Black", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Feb 2027",
         insurance_type: "Comprehensive",
@@ -556,7 +557,7 @@ const public_cars = [
         mileage: "27.97 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        available_colors: ["Nexa Blue","Silver","Gray"],
+        available_colors: ["Nexa Blue", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Mar 2027",
         insurance_type: "Comprehensive",
@@ -586,7 +587,7 @@ const public_cars = [
         mileage: "19.0 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        available_colors: ["White","Silver","Gray"],
+        available_colors: ["White", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Apr 2027",
         insurance_type: "Comprehensive",
@@ -615,7 +616,7 @@ const public_cars = [
         mileage: "14.4 kmpl",
         body_type: "SUV",
         seating_capacity: 7,
-        available_colors: ["Pearl White with Black Roof","Silver","Gray"],
+        available_colors: ["Pearl White with Black Roof", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Jan 2027",
         insurance_type: "Comprehensive",
@@ -645,7 +646,7 @@ const public_cars = [
         mileage: "13.5 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        available_colors: ["Aurora Silver","Silver","Gray"],
+        available_colors: ["Aurora Silver", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "May 2027",
         insurance_type: "Comprehensive",
@@ -675,7 +676,7 @@ const public_cars = [
         mileage: "18.73 kmpl",
         body_type: "Sedan",
         seating_capacity: 5,
-        available_colors: ["Crystal White","Silver","Gray"],
+        available_colors: ["Crystal White", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Feb 2027",
         insurance_type: "Comprehensive",
@@ -704,7 +705,7 @@ const public_cars = [
         mileage: "16.92 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        available_colors: ["Crimson Red","Silver","Gray"],
+        available_colors: ["Crimson Red", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Mar 2027",
         insurance_type: "Comprehensive",
@@ -734,7 +735,7 @@ const public_cars = [
         mileage: "20.09 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        available_colors: ["Tornado Blue","Silver","Gray"],
+        available_colors: ["Tornado Blue", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "May 2027",
         insurance_type: "Comprehensive",
@@ -812,6 +813,7 @@ const seedPublic = async () => {
         await connectDB();
         await Car.sync({ alter: true });
         await Booking.sync({ alter: true });
+        await Sale.sync({ alter: true });
 
         let created = 0;
         let updated = 0;
@@ -837,7 +839,6 @@ const seedPublic = async () => {
                 });
                 updated += 1;
 
-                updated += 1;
             } else {
                 const car = await Car.create({
                     ...carData,
@@ -847,14 +848,13 @@ const seedPublic = async () => {
                 });
                 created += 1;
 
-                created += 1;
             }
         }
 
         // Seed bookings with proper mapping to car status
         console.log("Seeding sample bookings...");
         const allCars = await Car.findAll();
-        
+
         let acceptedIndex = 0;
         let otherIndex = 0;
         const acceptedSamples = sample_bookings.filter(b => b.status === 'Accepted');
@@ -888,15 +888,53 @@ const seedPublic = async () => {
             }
 
             if (bookingToCreate) {
-                const existingBooking = await Booking.findOne({
+                // Generate completely different, logical EMI details randomly for a few bookings
+                if (Math.random() < 0.3) {
+                    const tenureOpts = [24, 36, 48, 60];
+                    const tenure = tenureOpts[Math.floor(Math.random() * tenureOpts.length)];
+                    const downPaymentPct = Math.floor(Math.random() * 21) + 10; // 10% to 30%
+                    const annualRate = parseFloat((8.5 + Math.random() * 3).toFixed(1)); // 8.5% to 11.5%
+
+                    const P = car.price * (1 - downPaymentPct / 100);
+                    const r = (annualRate / 100) / 12;
+                    const emi = Math.round((P * r * Math.pow(1 + r, tenure)) / (Math.pow(1 + r, tenure) - 1));
+
+                    bookingToCreate.emi_details = {
+                        opted: true,
+                        tenure,
+                        downPaymentPct,
+                        annualRate,
+                        monthlyEmi: emi
+                    };
+                }
+
+                let booking = await Booking.findOne({
                     where: {
                         user_email: bookingToCreate.user_email,
                         car_id: bookingToCreate.car_id
                     }
                 });
 
-                if (!existingBooking) {
-                    await Booking.create(bookingToCreate);
+                if (!booking) {
+                    booking = await Booking.create(bookingToCreate);
+                }
+
+                // ENSURE SALE RECORD EXISTS FOR ACCEPTED BOOKINGS
+                if (booking.status === 'Accepted') {
+                    const existingSale = await Sale.findOne({
+                        where: { booking_id: booking._id }
+                    });
+
+                    if (!existingSale) {
+                        await Sale.create({
+                            car_id: car._id,
+                            booking_id: booking._id,
+                            sale_price: car.price,
+                            sale_date: booking.createdAt,
+                            buyer_name: booking.user_name,
+                            buyer_email: booking.user_email
+                        });
+                    }
                 }
             }
         }
@@ -915,11 +953,15 @@ const seedPublic = async () => {
 
         console.log("Seeding public auxiliary accounts...");
         for (const userData of public_users) {
-            await Admin.findOrCreate({
+            const [admin, created] = await Admin.findOrCreate({
                 where: { email: userData.email },
                 defaults: userData,
                 individualHooks: true
             });
+            if (!created && admin.password !== userData.password) {
+                admin.password = userData.password;
+                await admin.save();
+            }
         }
         console.log("Public auxiliary accounts seeded!");
 
