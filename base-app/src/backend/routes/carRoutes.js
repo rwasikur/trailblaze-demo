@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getCars, getCarById, createCar, uploadCarImage, uploadMultipleImages } = require('../controllers/carController');
+const { getCars, getCarById, createCar, uploadCarImage, uploadMultipleImages, incrementCarView } = require('../controllers/carController');
 const { getAllCars, updateCarStatus, updateCar, getFleetAnalytics } = require('../controllers/adminController');
 const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
@@ -20,5 +20,6 @@ router.get('/analytics/summary', getFleetAnalytics);
 router.get('/:id', getCarById);
 router.put('/:id', protect, updateCar);
 router.put('/:id/status', protect, updateCarStatus);
+router.put('/:id/view', incrementCarView);
 
 module.exports = router;

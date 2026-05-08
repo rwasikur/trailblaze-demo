@@ -243,7 +243,8 @@ const getFleetAnalytics = async (req, res) => {
             city: car.registration_city || 'Unregistered',
             modelYear: car.model_year,
             price: money(car.price),
-            createdAt: car.createdAt
+            createdAt: car.createdAt,
+            views: car.views || 0
         }));
 
         const bookingRows = filteredBookings.map(booking => {
@@ -297,6 +298,7 @@ const getFleetAnalytics = async (req, res) => {
         const soldInventoryValue = sumBy(soldCars, car => car.price);
         const pendingPipelineValue = sumBy(pendingBookings, booking => getCarFromBooking(booking)?.price);
         const acceptedBookingValue = sumBy(acceptedBookings, booking => getCarFromBooking(booking)?.price);
+        const totalClientClicks = sumBy(filteredCars, car => car.views || 0);
 
         const totalSalesRevenue = sumBy(filteredSales, booking => getCarFromBooking(booking)?.price) || sumBy(soldCars, car => car.price);
         const previousSalesRevenue = sumBy(previousSales, booking => getCarFromBooking(booking)?.price);
@@ -426,6 +428,8 @@ const getFleetAnalytics = async (req, res) => {
 
             expiredInsuranceCount: insuranceDates.filter(date => date < now).length,
             insuranceExpiringSoonCount: insuranceDates.filter(date => date >= now && date <= soon).length,
+
+            totalClientClicks,
 
             totalBookings: filteredBookings.length,
             pendingBookings: pendingBookings.length,

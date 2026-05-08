@@ -310,3 +310,15 @@ test('AC 20: If a ranged booking or sale has an unparsable date, it must not be 
         expect(Number.isNaN(new Date(row.period).getTime())).toBeFalsy();
     }
 });
+
+test('AC 21: `carRows` must include a `views` property for each car representing the number of client clicks.', async ({ baseURL }) => {
+    const analytics = await getAnalytics(baseURL || '');
+    expect(analytics.carRows.length).toBeGreaterThan(0);
+    expect(analytics.carRows.every((row: any) => typeof row.views === 'number')).toBeTruthy();
+});
+
+test('AC 22: `totalClientClicks` must equal the sum of `views` across all filtered cars.', async ({ baseURL }) => {
+    const analytics = await getAnalytics(baseURL || '');
+    const expectedViews = analytics.carRows.reduce((sum: number, row: any) => sum + row.views, 0);
+    expect(analytics.totalClientClicks).toBe(expectedViews);
+});

@@ -84,7 +84,8 @@ const createCar = async (req, res) => {
                 seller_name,
                 seller_email,
                 condition,
-                past_owners: past_owners || []
+                past_owners: past_owners || [],
+                views: req.body.views || 0
             });
 
             res.status(201).json(createdCar);
@@ -122,4 +123,26 @@ const uploadMultipleImages = async (req, res) => {
     }
 };
 
-module.exports = { getCars, getCarById, createCar, uploadCarImage, uploadMultipleImages };
+const incrementCarView = async (req, res) => {
+    try {
+        const car = await Car.findByPk(req.params.id);
+        if (car) {
+            car.views = (car.views || 0) + 1;
+            await car.save();
+            res.json({ message: 'View incremented', views: car.views });
+        } else {
+            res.status(404).json({ message: 'Car not found' });
+        }
+    } catch (err) {
+        res.status(500).json({ message: 'Server error: ' + err.message });
+    }
+};
+
+module.exports = {
+    getCars,
+    getCarById,
+    createCar,
+    uploadCarImage,
+    uploadMultipleImages,
+    incrementCarView
+};

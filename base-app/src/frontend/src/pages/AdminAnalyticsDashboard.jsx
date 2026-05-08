@@ -476,6 +476,7 @@ const AdminAnalyticsDashboard = () => {
         { key: 'fuelType', label: 'Fuel' },
         { key: 'bodyType', label: 'Body' },
         { key: 'city', label: 'City' },
+        { key: 'views', label: 'Client Clicks', type: 'number', align: 'right', render: row => formatNumber(row.views), exportValue: row => row.views },
         { key: 'price', label: 'Price', type: 'number', align: 'right', render: row => formatCurrency(row.price), exportValue: row => row.price }
     ];
 
@@ -697,8 +698,9 @@ const AdminAnalyticsDashboard = () => {
                     <div className="space-y-6">
                         <section>
                             <SectionTitle>Inventory</SectionTitle>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                                 <MetricCard id="metric-total-fleet" label="Total Fleet" value={analytics?.totalFleet ?? 0} onClick={() => openMetricDetail('inventory', 'Total Fleet', analytics?.totalFleet ?? 0, 'Number of vehicles in the catalogue.')} />
+                                <MetricCard id="metric-total-client-clicks" label="Total Client Clicks" value={formatNumber(analytics?.totalClientClicks)} onClick={() => openMetricDetail('inventory', 'Total Client Clicks', formatNumber(analytics?.totalClientClicks), 'Total number of views/clicks across all vehicles.')} />
                                 <MetricCard id="metric-total-inventory-value" label="Inventory Value" value={formatCurrency(analytics?.totalInventoryValue)} onClick={() => openMetricDetail('inventory', 'Inventory Value', formatCurrency(analytics?.totalInventoryValue), 'Total listed value of all vehicles.')} />
                                 <MetricCard id="metric-available-inventory-value" label="Available Value" value={formatCurrency(analytics?.availableInventoryValue)} onClick={() => openMetricDetail('inventory', 'Available Value', formatCurrency(analytics?.availableInventoryValue), 'Total listed value of available vehicles.')} />
                                 <MetricCard id="metric-average-listing-price" label="Avg Listing Price" value={formatCurrency(analytics?.averageListingPrice)} onClick={() => openMetricDetail('inventory', 'Avg Listing Price', formatCurrency(analytics?.averageListingPrice), 'Average price of vehicles in the catalogue.')} />

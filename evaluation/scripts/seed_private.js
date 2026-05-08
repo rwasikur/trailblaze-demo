@@ -817,6 +817,7 @@ const seedPrivate = async () => {
                     price: carData.price,
                     image_url: carData.thumbnail_image,
                     secondary_images: carData.images || [],
+                    views: carData.views || 0,
                 });
                 updated += 1;
             } else {
@@ -825,6 +826,7 @@ const seedPrivate = async () => {
                     price: carData.price,
                     image_url: carData.thumbnail_image,
                     secondary_images: carData.images || [],
+                    views: carData.views || 0,
                 });
                 created += 1;
             }

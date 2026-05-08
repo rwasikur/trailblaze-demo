@@ -29,7 +29,9 @@
         "If `totalFleet` is `0`, `averageListingPrice` must return `0` and must not return `NaN`, `Infinity`, or `null`.",
         "If `totalBookings` is `0`, `bookingConversionRate` must return `0` and must not return `NaN`, `Infinity`, or `null`.",
         "If a comparison previous value is `0`, its `deltaPercentage` must be `null` and must not return `0`, `NaN`, or `Infinity`.",
-        "If a ranged booking or sale has an unparsable date, it must not be included in `bookingsByMonth`, `salesByMonth`, or ranged totals."
+        "If a ranged booking or sale has an unparsable date, it must not be included in `bookingsByMonth`, `salesByMonth`, or ranged totals.",
+        "`carRows` must include a `views` property for each car representing the number of client clicks.",
+        "`totalClientClicks` must equal the sum of `views` across all filtered cars."
       ]
     }
   ]
