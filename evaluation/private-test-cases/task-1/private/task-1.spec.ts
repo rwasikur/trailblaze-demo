@@ -106,7 +106,7 @@ test.describe('Trailblaze Auto - Vehicle Catalogue Filters (Private)', () => {
     test('Combining Brand and Fuel Type should narrow results correctly', async ({ page }: { page: Page }) => {
         await page.getByTestId('filter-toggle').click();
         await page.getByTestId('brand-filter').selectOption('Tata');
-        await page.getByTestId('fuel-filter-Electric').click();
+        await page.getByTestId('fuel-filter-Diesel').click();
         await page.waitForTimeout(500);
         
         const carCards = page.locator('.car-card');
@@ -114,7 +114,7 @@ test.describe('Trailblaze Auto - Vehicle Catalogue Filters (Private)', () => {
         expect(count).toBeGreaterThan(0);
         for (let i = 0; i < count; i++) {
             await expect(carCards.nth(i)).toContainText('Tata');
-            await expect(carCards.nth(i)).toContainText('Electric');
+            await expect(carCards.nth(i)).toContainText('Diesel');
         }
     });
 
@@ -156,10 +156,10 @@ test.describe('Trailblaze Auto - Vehicle Catalogue Filters (Private)', () => {
         await page.getByTestId('brand-filter').selectOption('Tata');
         await page.waitForTimeout(500);
         
-        // Punch is 'Sold' in public seed
-        await expect(page.locator('.car-card').filter({ hasText: 'Punch' })).not.toBeVisible();
+        // Harrier is 'Sold' in private seed
+        await expect(page.locator('.car-card').filter({ hasText: 'Harrier' })).not.toBeVisible();
         // Verify other available Tata cars are visible
-        await expect(page.locator('.car-card').filter({ hasText: 'Safari' }).first()).toBeVisible();
+        await expect(page.locator('.car-card').filter({ hasText: 'Altroz' }).first()).toBeVisible();
     });
 
     // AC-14: Reset - Clear All Filters
