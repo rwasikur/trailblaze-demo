@@ -888,6 +888,26 @@ const seedPublic = async () => {
             }
 
             if (bookingToCreate) {
+                // Generate completely different, logical EMI details randomly for a few bookings
+                if (Math.random() < 0.3) {
+                    const tenureOpts = [24, 36, 48, 60];
+                    const tenure = tenureOpts[Math.floor(Math.random() * tenureOpts.length)];
+                    const downPaymentPct = Math.floor(Math.random() * 21) + 10; // 10% to 30%
+                    const annualRate = parseFloat((8.5 + Math.random() * 3).toFixed(1)); // 8.5% to 11.5%
+
+                    const P = car.price * (1 - downPaymentPct / 100);
+                    const r = (annualRate / 100) / 12;
+                    const emi = Math.round((P * r * Math.pow(1 + r, tenure)) / (Math.pow(1 + r, tenure) - 1));
+
+                    bookingToCreate.emi_details = {
+                        opted: true,
+                        tenure,
+                        downPaymentPct,
+                        annualRate,
+                        monthlyEmi: emi
+                    };
+                }
+
                 let booking = await Booking.findOne({
                     where: {
                         user_email: bookingToCreate.user_email,
@@ -920,6 +940,132 @@ const seedPublic = async () => {
         }
 
         console.log(`Public car sync complete. Created: ${created}, Updated: ${updated}`);
+
+        console.log("Seeding sample offers...");
+        const Offer = require('../models/Offer');
+        await Offer.sync({ alter: true });
+
+        // Clear existing offers to avoid duplicates
+        await Offer.destroy({ where: {} });
+
+        // Fetch some available cars to apply offers to
+        const dzireCar = await Car.findOne({ where: { name: "Dzire" } });
+        const i20Car = await Car.findOne({ where: { name: "Elite i20" } });
+        const nexonCar = await Car.findOne({ where: { name: "Nexon EV" } });
+        const cityCar = await Car.findOne({ where: { name: "City ZX" } });
+        const innovaCar = await Car.findOne({ where: { name: "Innova Crysta" } });
+        const safariCar = await Car.findOne({ where: { name: "Safari Accomplished" } });
+
+        const now = new Date();
+        const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+        const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+        const oneDayLater = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        const twoDaysLater = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+        const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+
+        const sampleOffers = [];
+
+        if (dzireCar) {
+            sampleOffers.push({
+                title: "Dzire Special Launch Offer",
+                badge_text: "SPECIAL DEAL",
+                description: "Get the popular Dzire with a limited time launch offer.",
+                car_id: dzireCar._id,
+                discount_percent: 10,
+                savings_amount: Math.round(dzireCar.price * 0.10),
+                discount_label: `Save $${Math.round(dzireCar.price * 0.10).toLocaleString('en-US')}`,
+                activation_date: oneDayAgo,
+                expiry_date: twoDaysLater,
+                theme: 'Signature',
+                is_enabled: true
+            });
+        }
+
+        if (i20Car) {
+            sampleOffers.push({
+                title: "Elite i20 Hot Deal",
+                badge_text: "HOT DEAL",
+                description: "Exclusive discount on Elite i20.",
+                car_id: i20Car._id,
+                discount_percent: 15,
+                savings_amount: Math.round(i20Car.price * 0.15),
+                discount_label: `Save $${Math.round(i20Car.price * 0.15).toLocaleString('en-US')}`,
+                activation_date: twoDaysAgo,
+                expiry_date: threeDaysLater,
+                theme: 'Summer',
+                is_enabled: true
+            });
+        }
+
+        if (nexonCar) {
+            sampleOffers.push({
+                title: "Nexon EV Go Green Sale",
+                badge_text: "GO GREEN",
+                description: "Save more on our flagship electric vehicle.",
+                car_id: nexonCar._id,
+                discount_percent: 5,
+                savings_amount: Math.round(nexonCar.price * 0.05),
+                discount_label: `Save $${Math.round(nexonCar.price * 0.05).toLocaleString('en-US')}`,
+                activation_date: oneDayAgo,
+                expiry_date: oneDayLater,
+                theme: 'Electric',
+                is_enabled: true
+            });
+        }
+
+        if (cityCar) {
+            sampleOffers.push({
+                title: "Honda City Flash Sale",
+                badge_text: "FLASH SALE",
+                description: "Temporarily paused flash sale for City ZX.",
+                car_id: cityCar._id,
+                discount_percent: 12,
+                savings_amount: Math.round(cityCar.price * 0.12),
+                discount_label: `Save $${Math.round(cityCar.price * 0.12).toLocaleString('en-US')}`,
+                activation_date: oneDayAgo,
+                expiry_date: threeDaysLater,
+                theme: 'Anniversary',
+                is_enabled: false
+            });
+        }
+
+        if (innovaCar) {
+            sampleOffers.push({
+                title: "Innova Crysta Premium Travel Deal",
+                badge_text: "PRE-SEASON",
+                description: "Pre-season booking discount for Innova Crysta.",
+                car_id: innovaCar._id,
+                discount_percent: 8,
+                savings_amount: Math.round(innovaCar.price * 0.08),
+                discount_label: `Save $${Math.round(innovaCar.price * 0.08).toLocaleString('en-US')}`,
+                activation_date: oneDayLater,
+                expiry_date: threeDaysLater,
+                theme: 'Signature',
+                is_enabled: true
+            });
+        }
+
+        if (safariCar) {
+            sampleOffers.push({
+                title: "Safari Clearance Event",
+                badge_text: "CLEARANCE",
+                description: "This clearance event has now ended.",
+                car_id: safariCar._id,
+                discount_percent: 20,
+                savings_amount: Math.round(safariCar.price * 0.20),
+                discount_label: `Save $${Math.round(safariCar.price * 0.20).toLocaleString('en-US')}`,
+                activation_date: threeDaysAgo,
+                expiry_date: oneDayAgo,
+                theme: 'Clearance',
+                is_enabled: true
+            });
+        }
+
+        for (const offerData of sampleOffers) {
+            await Offer.create(offerData);
+        }
+        console.log(`Seeded ${sampleOffers.length} sample offers successfully!`);
 
         // Seed Additional Admins and Users (Append)
         const public_users = [
