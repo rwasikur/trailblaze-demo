@@ -145,7 +145,7 @@ const ManageCataloguePage = () => {
                                                                                     if (car.availability_status === 'Sold') {
                                                                                         navigate('/admin/add-car', { state: { copyFrom: car } });
                                                                                     } else {
-                                                                                        navigate(`/admin/edit-car/${car._id}`); 
+                                                                                        navigate(`/admin/edit-car/${car._id}?fromPage=${currentPage}`); 
                                                                                     }
                                                                                 }} 
                                                                                 className="w-full text-left px-3 py-2 text-blue-600 hover:bg-slate-50 transition-colors rounded-md"
