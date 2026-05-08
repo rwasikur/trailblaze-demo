@@ -9,6 +9,7 @@ type Car = {
     name: string;
     price: number;
     availability_status?: string;
+    activeOffers?: Offer[];
 };
 
 type Offer = {
@@ -21,7 +22,7 @@ type Offer = {
 };
 
 const activeWindow = () => ({
-    activation_date: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    activation_date: getCurrentMinute().toISOString(),
     expiry_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
 });
 
@@ -41,8 +42,25 @@ function inputDate(value: string) {
     return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 }
 
+function getCurrentMinute() {
+    const now = new Date();
+    now.setSeconds(0, 0);
+    return now;
+}
+
+function pastWindow() {
+    return {
+        activation_date: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        expiry_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    };
+}
+
 function money(value: number) {
     return `$${Math.round(value).toLocaleString('en-US')}`;
+}
+
+function discountedPrice(price: number, discountPercent: number) {
+    return price - Math.round(price * (discountPercent / 100));
 }
 
 function unique(prefix: string) {
@@ -78,12 +96,76 @@ async function getCars(request: APIRequestContext, baseURL: string) {
     return (body.cars ?? body) as Car[];
 }
 
+async function getAdminCars(request: APIRequestContext, baseURL: string, token: string) {
+    const response = await request.get(`${baseURL}/api/cars/admin/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(response.ok()).toBeTruthy();
+    return (await response.json()) as Car[];
+}
+
+async function getAdminOffers(request: APIRequestContext, baseURL: string, token: string) {
+    const response = await request.get(`${baseURL}/api/offers/admin/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(response.ok()).toBeTruthy();
+    return (await response.json()) as Offer[];
+}
+
 async function getCar(request: APIRequestContext, baseURL: string, index = 0) {
     const cars = await getCars(request, baseURL);
     const availableCars = cars.filter((car) => car.availability_status === 'Available');
     const selectableCars = availableCars.length > 0 ? availableCars : cars;
     expect(selectableCars.length).toBeGreaterThan(0);
     return selectableCars[index % selectableCars.length];
+}
+
+async function createTestCar(request: APIRequestContext, baseURL: string, token: string, overrides: Record<string, unknown> = {}) {
+    const suffix = unique('car');
+    const response = await request.post(`${baseURL}/api/cars`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: {
+            name: `Offer Test ${suffix}`,
+            brand: 'Trailblaze',
+            model_year: 2026,
+            transmission: 'Automatic',
+            fuel_type: 'Electric',
+            seating_capacity: 5,
+            price: 45000,
+            range: '320 km',
+            body_type: 'SUV',
+            mileage: '0',
+            total_distance_covered: '0 km',
+            available_colors: ['Black'],
+            number_of_owners: 0,
+            registration_city: 'Test City',
+            insurance_validity: '2027-12-31',
+            description: 'Automated offer test vehicle',
+            image_url: '/uploads/cars/test-car.jpg',
+            secondary_images: [],
+            availability_status: 'Available',
+            condition: 'New',
+            past_owners: [],
+            ...overrides,
+        },
+    });
+    expect(response.status()).toBe(201);
+    return (await response.json()) as Car;
+}
+
+async function getSoldCar(request: APIRequestContext, baseURL: string, token: string, index = 0) {
+    const cars = await getAdminCars(request, baseURL, token);
+    const soldCars = cars.filter((car) => car.availability_status === 'Sold');
+    expect(soldCars.length).toBeGreaterThan(0);
+    return soldCars[index % soldCars.length];
+}
+
+async function updateCarStatus(request: APIRequestContext, baseURL: string, token: string, carId: string, status: string) {
+    const response = await request.put(`${baseURL}/api/cars/${carId}/status`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { status },
+    });
+    expect(response.ok()).toBeTruthy();
 }
 
 async function createOffer(
@@ -125,12 +207,12 @@ async function createIsolatedOffer(
     carIndex: number,
     overrides: Record<string, unknown> = {}
 ) {
-    const car = await getCar(request, baseURL, carIndex);
+    const car = await createTestCar(request, baseURL, token, { price: 45000 + carIndex });
     const offer = await createOffer(request, baseURL, token, car, overrides);
     return { car, offer };
 }
 
-// POSITIVE TESTS (AC 1-18)
+// POSITIVE TESTS (AC 1-22)
 
 test(`AC 1: Authenticate with seeded admin credentials Navigate to /admin/offers Verify the Offer Management route renders the form container ID #offer-form and page heading ID #offers-heading.`, async ({ page, baseURL }) => {
     await loginUi(page, baseURL || '');
@@ -139,14 +221,14 @@ test(`AC 1: Authenticate with seeded admin credentials Navigate to /admin/offers
     await expect(page.locator('#offers-heading')).toContainText('Offer Management');
 });
 
-test(`AC 2: In Offer Management, submit an enabled offer with title, badge text, selected vehicle, discount_percent, activation_date, and expiry_date Verify HTTP 201 and toast 'Offer scheduled' using IDs #offer-title-input, #offer-badge-input, #offer-car-select, #offer-discount-percent-input, #offer-activation-input, #offer-expiry-input, #offer-enabled-toggle, and #offer-submit-button.`, async ({ page, request, baseURL }) => {
+test(`AC 2: In Offer Management, submit an enabled offer with title, badge text, selected vehicle, discount_percent, activation_date not before the current minute, and expiry_date after activation_date Verify HTTP 201 and toast 'Offer scheduled' using IDs #offer-title-input, #offer-badge-input, #offer-car-select, #offer-discount-percent-input, #offer-activation-input, #offer-expiry-input, #offer-enabled-toggle, and #offer-submit-button.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const car = await getCar(request, baseURL || '', 11);
+    const car = await createTestCar(request, baseURL || '', token);
     await openAdminOffers(page, baseURL || '', token);
 
     const title = unique('ui-create');
     const badge = unique('ui-badge').slice(0, 24);
-    const dates = activeWindow();
+    const dates = scheduledWindow();
     await page.locator('#offer-title-input').fill(title);
     await page.locator('#offer-badge-input').fill(badge);
     await page.locator('#offer-car-select').selectOption(car._id);
@@ -165,9 +247,9 @@ test(`AC 2: In Offer Management, submit an enabled offer with title, badge text,
     await deleteOffer(request, baseURL || '', token, created._id);
 });
 
-test(`AC 3: Select a seeded vehicle and enter discount_percent Verify the client-side savings preview computes price multiplied by discount_percent using ID #offer-savings-preview.`, async ({ page, request, baseURL }) => {
+test(`AC 3: Select a vehicle and enter discount_percent Verify the client-side savings preview computes price multiplied by discount_percent using ID #offer-savings-preview.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const car = await getCar(request, baseURL || '', 1);
+    const car = await createTestCar(request, baseURL || '', token);
     await openAdminOffers(page, baseURL || '', token);
 
     await page.locator('#offer-car-select').selectOption(car._id);
@@ -200,15 +282,15 @@ test(`AC 5: After offer creation through the API, load Offer Management Verify r
     await deleteOffer(request, baseURL || '', token, offer._id);
 });
 
-test(`AC 6: Create offers in Active, Scheduled, Paused, and Expired states Verify the Offer Management metrics panel displays all four status labels.`, async ({ page, request, baseURL }) => {
+test(`AC 6: Create offers in Active, Scheduled, and Paused states with an existing Expired offer present Verify the Offer Management metrics panel displays all four status labels.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const cars = (await getCars(request, baseURL || '')).filter((car) => car.availability_status === 'Available');
-    expect(cars.length).toBeGreaterThan(0);
+    const activeCar = await createTestCar(request, baseURL || '', token);
+    const scheduledCar = await createTestCar(request, baseURL || '', token);
+    const pausedCar = await createTestCar(request, baseURL || '', token);
     const created = [
-        await createOffer(request, baseURL || '', token, cars[14 % cars.length], activeWindow()),
-        await createOffer(request, baseURL || '', token, cars[15 % cars.length], scheduledWindow()),
-        await createOffer(request, baseURL || '', token, cars[16 % cars.length], { ...activeWindow(), is_enabled: false }),
-        await createOffer(request, baseURL || '', token, cars[17 % cars.length], expiredWindow()),
+        await createOffer(request, baseURL || '', token, activeCar, activeWindow()),
+        await createOffer(request, baseURL || '', token, scheduledCar, scheduledWindow()),
+        await createOffer(request, baseURL || '', token, pausedCar, { ...activeWindow(), is_enabled: false }),
     ];
     await openAdminOffers(page, baseURL || '', token);
 
@@ -221,8 +303,8 @@ test(`AC 6: Create offers in Active, Scheduled, Paused, and Expired states Verif
 
 test(`AC 7: Select the Active campaign filter Verify an Active offer row remains visible and a Scheduled offer row is hidden in the campaign timeline.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const active = await createOffer(request, baseURL || '', token, await getCar(request, baseURL || '', 18), activeWindow());
-    const scheduled = await createOffer(request, baseURL || '', token, await getCar(request, baseURL || '', 19), scheduledWindow());
+    const active = await createOffer(request, baseURL || '', token, await createTestCar(request, baseURL || '', token), activeWindow());
+    const scheduled = await createOffer(request, baseURL || '', token, await createTestCar(request, baseURL || '', token), scheduledWindow());
     await openAdminOffers(page, baseURL || '', token);
 
     await page.getByRole('button', { name: 'Active' }).click();
@@ -234,8 +316,8 @@ test(`AC 7: Select the Active campaign filter Verify an Active offer row remains
 
 test(`AC 8: Select the Scheduled campaign filter Verify a Scheduled offer row remains visible and an Active offer row is hidden in the campaign timeline.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const active = await createOffer(request, baseURL || '', token, await getCar(request, baseURL || '', 11), activeWindow());
-    const scheduled = await createOffer(request, baseURL || '', token, await getCar(request, baseURL || '', 12), scheduledWindow());
+    const active = await createOffer(request, baseURL || '', token, await createTestCar(request, baseURL || '', token), activeWindow());
+    const scheduled = await createOffer(request, baseURL || '', token, await createTestCar(request, baseURL || '', token), scheduledWindow());
     await openAdminOffers(page, baseURL || '', token);
 
     await page.getByRole('button', { name: 'Scheduled' }).click();
@@ -291,7 +373,7 @@ test(`AC 12: Click the delete action for an offer Verify toast 'Offer removed' a
 
 test(`AC 13: Open /browse with an active enabled offer Verify the matching vehicle card renders badge_text using ID #car-card-{id}-offer-badge.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 0, { activation_date: '1970-01-01T00:00:00.000Z', expiry_date: '2099-01-01T00:00:00.000Z' });
+    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 0);
     await page.goto(`${baseURL}/browse`);
 
     await expect(page.locator(`#car-card-${car._id}-offer-badge`)).toContainText(offer.badge_text);
@@ -300,7 +382,7 @@ test(`AC 13: Open /browse with an active enabled offer Verify the matching vehic
 
 test(`AC 14: Open /car/{id} with an active enabled offer Verify the vehicle detail offer banner renders badge_text, title, discount_percent, and savings_amount using ID #car-detail-offer-badge.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 1, { discount_percent: 15, activation_date: '1970-01-01T00:00:00.000Z', expiry_date: '2099-01-01T00:00:00.000Z' });
+    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 1, { discount_percent: 15 });
     await page.goto(`${baseURL}/car/${car._id}`);
 
     const banner = page.locator('#car-detail-offer-badge');
@@ -313,11 +395,11 @@ test(`AC 14: Open /car/{id} with an active enabled offer Verify the vehicle deta
 
 test(`AC 15: Open /browse for a vehicle with an active percentage discount Verify discounted price, original strikethrough price, and savings label render using IDs #car-card-{id}-price, #car-card-{id}-original-price, and #car-card-{id}-savings.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 2, { discount_percent: 10, activation_date: '1970-01-01T00:00:00.000Z', expiry_date: '2099-01-01T00:00:00.000Z' });
+    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 2, { discount_percent: 10 });
     await page.goto(`${baseURL}/browse`);
     await expect(page.locator(`#car-card-${car._id}`)).toBeVisible();
 
-    await expect(page.locator(`#car-card-${car._id}-price`)).toContainText(money(car.price * 0.9));
+    await expect(page.locator(`#car-card-${car._id}-price`)).toContainText(money(discountedPrice(car.price, 10)));
     await expect(page.locator(`#car-card-${car._id}-original-price`)).toContainText(money(car.price));
     await expect(page.locator(`#car-card-${car._id}-savings`)).toContainText(money(car.price * 0.1).replace('$', 'Save $'));
     await deleteOffer(request, baseURL || '', token, offer._id);
@@ -325,22 +407,22 @@ test(`AC 15: Open /browse for a vehicle with an active percentage discount Verif
 
 test(`AC 16: Open /car/{id} Overview for a vehicle with an active percentage discount Verify discounted acquisition price and original strikethrough price render using IDs #car-detail-current-price and #car-detail-original-price.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 3, { discount_percent: 10, activation_date: '1970-01-01T00:00:00.000Z', expiry_date: '2099-01-01T00:00:00.000Z' });
+    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 3, { discount_percent: 10 });
     await page.goto(`${baseURL}/car/${car._id}`);
 
-    await expect(page.locator('#car-detail-current-price')).toContainText(money(car.price * 0.9));
+    await expect(page.locator('#car-detail-current-price')).toContainText(money(discountedPrice(car.price, 10)));
     await expect(page.locator('#car-detail-original-price')).toContainText(money(car.price));
     await deleteOffer(request, baseURL || '', token, offer._id);
 });
 
 test(`AC 17: On /car/{id}, select the Price tab Verify the financial breakdown includes active offer discount values using IDs #car-price-tab-current-price, #car-price-tab-original-price, and #car-price-tab-savings.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 4, { discount_percent: 10, activation_date: '1970-01-01T00:00:00.000Z', expiry_date: '2099-01-01T00:00:00.000Z' });
+    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 4, { discount_percent: 10 });
     await page.goto(`${baseURL}/car/${car._id}`);
 
     await page.getByRole('button', { name: 'Price' }).click();
     await expect(page.getByText('Active Offer Discount')).toBeVisible();
-    await expect(page.locator('#car-price-tab-current-price')).toContainText(money(car.price * 0.9));
+    await expect(page.locator('#car-price-tab-current-price')).toContainText(money(discountedPrice(car.price, 10)));
     await expect(page.locator('#car-price-tab-original-price')).toContainText(money(car.price));
     await expect(page.locator('#car-price-tab-savings')).toContainText(money(car.price * 0.1).replace('$', '$'));
     await deleteOffer(request, baseURL || '', token, offer._id);
@@ -348,26 +430,75 @@ test(`AC 17: On /car/{id}, select the Price tab Verify the financial breakdown i
 
 test(`AC 18: Open PurchaseModal for a vehicle with an active percentage discount Verify the modal price panel displays discounted price and original strikethrough price after clicking ID #book-now-main-button.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 5, { discount_percent: 10, activation_date: '1970-01-01T00:00:00.000Z', expiry_date: '2099-01-01T00:00:00.000Z' });
+    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 5, { discount_percent: 10 });
     await page.goto(`${baseURL}/car/${car._id}`);
 
     await page.locator('#book-now-main-button').click();
     const modal = page.locator('h2:has-text("Booking")').locator('..').locator('..').locator('..');
-    await expect(modal).toContainText(money(car.price * 0.9));
+    await expect(modal).toContainText(money(discountedPrice(car.price, 10)));
     await expect(modal).toContainText(money(car.price));
     await deleteOffer(request, baseURL || '', token, offer._id);
 });
 
-// NEGATIVE TESTS (AC 19-27)
+test(`AC 19: Load Offer Management with a sold vehicle in the fleet Verify the sold vehicle is excluded from the vehicle select using ID #offer-car-select.`, async ({ page, request, baseURL }) => {
+    const token = await loginApi(request, baseURL || '');
+    const soldCar = await getSoldCar(request, baseURL || '', token);
+    await openAdminOffers(page, baseURL || '', token);
 
-test(`AC 19: Remove adminToken from localStorage Navigate directly to /admin/offers Verify route guard redirects to /admin.`, async ({ page, baseURL }) => {
+    const optionValues = await page.locator('#offer-car-select option').evaluateAll((options) =>
+        options.map((option) => (option as HTMLOptionElement).value)
+    );
+    expect(optionValues).not.toContain(soldCar._id);
+});
+
+test(`AC 20: Load Offer Management after a vehicle already has an offer Verify that offered vehicle is excluded from the vehicle select using ID #offer-car-select.`, async ({ page, request, baseURL }) => {
+    const token = await loginApi(request, baseURL || '');
+    const car = await createTestCar(request, baseURL || '', token);
+    const offer = await createOffer(request, baseURL || '', token, car);
+    await openAdminOffers(page, baseURL || '', token);
+
+    const optionValues = await page.locator('#offer-car-select option').evaluateAll((options) =>
+        options.map((option) => (option as HTMLOptionElement).value)
+    );
+    expect(optionValues).not.toContain(car._id);
+    await deleteOffer(request, baseURL || '', token, offer._id);
+});
+
+test(`AC 21: Open /browse for a sold vehicle with an otherwise active offer Verify the matching vehicle card excludes that offer badge_text.`, async ({ page, request, baseURL }) => {
+    const token = await loginApi(request, baseURL || '');
+    const car = await createTestCar(request, baseURL || '', token);
+    const offer = await createOffer(request, baseURL || '', token, car);
+    await updateCarStatus(request, baseURL || '', token, car._id, 'Sold');
+    await page.goto(`${baseURL}/browse`);
+
+    await expect(page.locator(`#car-card-${car._id}-offer-badge`)).toHaveCount(0);
+    await updateCarStatus(request, baseURL || '', token, car._id, 'Available');
+    await deleteOffer(request, baseURL || '', token, offer._id);
+});
+
+test(`AC 22: Request GET /api/cars for a sold vehicle with an otherwise active offer Verify the sold vehicle response includes an empty activeOffers array.`, async ({ request, baseURL }) => {
+    const token = await loginApi(request, baseURL || '');
+    const car = await createTestCar(request, baseURL || '', token);
+    const offer = await createOffer(request, baseURL || '', token, car);
+    await updateCarStatus(request, baseURL || '', token, car._id, 'Sold');
+
+    const cars = await getCars(request, baseURL || '');
+    const soldCar = cars.find((item) => item._id === car._id);
+    expect(soldCar?.activeOffers ?? []).toHaveLength(0);
+    await updateCarStatus(request, baseURL || '', token, car._id, 'Available');
+    await deleteOffer(request, baseURL || '', token, offer._id);
+});
+
+// NEGATIVE TESTS (AC 23-35)
+
+test(`AC 23: Remove adminToken from localStorage Navigate directly to /admin/offers Verify route guard redirects to /admin.`, async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/`);
     await page.evaluate(() => localStorage.removeItem('adminToken'));
     await page.goto(`${baseURL}/admin/offers`);
     await expect(page).toHaveURL(/\/admin$/);
 });
 
-test(`AC 20: Submit the offer form without selecting a vehicle Verify browser HTML5 required validation blocks submission using ID #offer-car-select.`, async ({ page, request, baseURL }) => {
+test(`AC 24: Submit the offer form without selecting a vehicle Verify browser HTML5 required validation blocks submission using ID #offer-car-select.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
     const dates = activeWindow();
     await openAdminOffers(page, baseURL || '', token);
@@ -382,7 +513,7 @@ test(`AC 20: Submit the offer form without selecting a vehicle Verify browser HT
     expect(validation).not.toBe('');
 });
 
-test(`AC 21: Submit POST /api/offers without car_id Verify HTTP 400 and response message 'Please choose a vehicle for this offer.'.`, async ({ request, baseURL }) => {
+test(`AC 25: Submit POST /api/offers without car_id Verify HTTP 400 and response message 'Please choose a vehicle for this offer.'.`, async ({ request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
     const response = await request.post(`${baseURL}/api/offers`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -392,9 +523,9 @@ test(`AC 21: Submit POST /api/offers without car_id Verify HTTP 400 and response
     await expect(await response.json()).toMatchObject({ message: 'Please choose a vehicle for this offer.' });
 });
 
-test(`AC 22: Submit POST /api/offers with discount_percent greater than 95 Verify HTTP 400 and response message 'Discount percent must be between 0 and 95.'.`, async ({ request, baseURL }) => {
+test(`AC 26: Submit POST /api/offers with discount_percent greater than 95 Verify HTTP 400 and response message 'Discount percent must be between 0 and 95.'.`, async ({ request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const car = await getCar(request, baseURL || '', 0);
+    const car = await createTestCar(request, baseURL || '', token);
     const response = await request.post(`${baseURL}/api/offers`, {
         headers: { Authorization: `Bearer ${token}` },
         data: { title: unique('bad-discount'), badge_text: unique('badge').slice(0, 24), car_id: car._id, discount_percent: 96, ...activeWindow() },
@@ -403,19 +534,19 @@ test(`AC 22: Submit POST /api/offers with discount_percent greater than 95 Verif
     await expect(await response.json()).toMatchObject({ message: 'Discount percent must be between 0 and 95.' });
 });
 
-test(`AC 23: Submit POST /api/offers with expiry_date equal to activation_date Verify HTTP 400 and response message 'Expiry date must be after activation date.'.`, async ({ request, baseURL }) => {
+test(`AC 27: Submit POST /api/offers with expiry_date equal to activation_date Verify HTTP 400 and response message 'Expiry date and time must be after activation date and time.'.`, async ({ request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const car = await getCar(request, baseURL || '', 1);
+    const car = await createTestCar(request, baseURL || '', token);
     const date = new Date().toISOString();
     const response = await request.post(`${baseURL}/api/offers`, {
         headers: { Authorization: `Bearer ${token}` },
         data: { title: unique('same-date'), badge_text: unique('badge').slice(0, 24), car_id: car._id, discount_percent: 10, activation_date: date, expiry_date: date },
     });
     expect(response.status()).toBe(400);
-    await expect(await response.json()).toMatchObject({ message: 'Expiry date must be after activation date.' });
+    await expect(await response.json()).toMatchObject({ message: 'Expiry date and time must be after activation date and time.' });
 });
 
-test(`AC 24: Create an offer with activation_date in the future Open /browse before activation_date Verify the matching vehicle card excludes that offer badge_text.`, async ({ page, request, baseURL }) => {
+test(`AC 28: Create an offer with activation_date in the future Open /browse before activation_date Verify the matching vehicle card excludes that offer badge_text.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
     const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 6, scheduledWindow());
     await page.goto(`${baseURL}/browse`);
@@ -424,17 +555,20 @@ test(`AC 24: Create an offer with activation_date in the future Open /browse bef
     await deleteOffer(request, baseURL || '', token, offer._id);
 });
 
-test(`AC 25: Create an offer with expiry_date in the past Open /car/{id} after expiry_date Verify the vehicle detail page excludes that offer badge_text and title.`, async ({ page, request, baseURL }) => {
+test(`AC 29: Submit POST /api/offers with expiry_date before the current minute Verify HTTP 400 and response message 'Expiry date and time cannot be in the past.'.`, async ({ request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 7, expiredWindow());
-    await page.goto(`${baseURL}/car/${car._id}`);
-
-    await expect(page.locator('main')).not.toContainText(offer.badge_text);
-    await expect(page.locator('main')).not.toContainText(offer.title);
-    await deleteOffer(request, baseURL || '', token, offer._id);
+    const car = await createTestCar(request, baseURL || '', token);
+    const activation = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    const expiry = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const response = await request.post(`${baseURL}/api/offers`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { title: unique('past-expiry'), badge_text: unique('badge').slice(0, 24), car_id: car._id, discount_percent: 10, activation_date: activation, expiry_date: expiry },
+    });
+    expect(response.status()).toBe(400);
+    await expect(await response.json()).toMatchObject({ message: 'Expiry date and time cannot be in the past.' });
 });
 
-test(`AC 26: Create a disabled offer inside its activation window Open /browse Verify the matching vehicle card excludes that offer badge_text.`, async ({ page, request, baseURL }) => {
+test(`AC 30: Create a disabled offer inside its activation window Open /browse Verify the matching vehicle card excludes that offer badge_text.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
     const { car, offer } = await createIsolatedOffer(request, baseURL || '', token, 8, { is_enabled: false });
     await page.goto(`${baseURL}/browse`);
@@ -443,14 +577,62 @@ test(`AC 26: Create a disabled offer inside its activation window Open /browse V
     await deleteOffer(request, baseURL || '', token, offer._id);
 });
 
-test(`AC 27: Create an active offer assigned to one vehicle Open /browse Verify a different vehicle card excludes that offer badge_text.`, async ({ page, request, baseURL }) => {
+test(`AC 31: Create an active offer assigned to one vehicle Open /browse Verify a different vehicle card excludes that offer badge_text.`, async ({ page, request, baseURL }) => {
     const token = await loginApi(request, baseURL || '');
-    const targetCar = await getCar(request, baseURL || '', 9);
-    const otherCar = await getCar(request, baseURL || '', 10);
-    const offer = await createOffer(request, baseURL || '', token, targetCar, { activation_date: '1970-01-01T00:00:00.000Z', expiry_date: '2099-01-01T00:00:00.000Z' });
+    const targetCar = await createTestCar(request, baseURL || '', token);
+    const otherCar = await createTestCar(request, baseURL || '', token);
+    const offer = await createOffer(request, baseURL || '', token, targetCar);
     await page.goto(`${baseURL}/browse`);
 
     await expect(page.locator(`#car-card-${targetCar._id}`)).toContainText(offer.badge_text);
     await expect(page.locator(`#car-card-${otherCar._id}`)).not.toContainText(offer.badge_text);
     await deleteOffer(request, baseURL || '', token, offer._id);
+});
+
+test(`AC 32: Submit POST /api/offers with activation_date before the current minute Verify HTTP 400 and response message 'Activation date and time cannot be in the past.'.`, async ({ request, baseURL }) => {
+    const token = await loginApi(request, baseURL || '');
+    const car = await createTestCar(request, baseURL || '', token);
+    const response = await request.post(`${baseURL}/api/offers`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { title: unique('past-activation'), badge_text: unique('badge').slice(0, 24), car_id: car._id, discount_percent: 10, ...pastWindow() },
+    });
+    expect(response.status()).toBe(400);
+    await expect(await response.json()).toMatchObject({ message: 'Activation date and time cannot be in the past.' });
+});
+
+test(`AC 33: Submit POST /api/offers for a sold vehicle Verify HTTP 400 and response message 'Offers cannot be applied to sold vehicles.'.`, async ({ request, baseURL }) => {
+    const token = await loginApi(request, baseURL || '');
+    const soldCar = await createTestCar(request, baseURL || '', token, { availability_status: 'Sold' });
+    const response = await request.post(`${baseURL}/api/offers`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { title: unique('sold-car'), badge_text: unique('badge').slice(0, 24), car_id: soldCar._id, discount_percent: 10, ...activeWindow() },
+    });
+    expect(response.status()).toBe(400);
+    await expect(await response.json()).toMatchObject({ message: 'Offers cannot be applied to sold vehicles.' });
+});
+
+test(`AC 34: Submit POST /api/offers for a vehicle that already has an offer Verify HTTP 400 and response message 'This vehicle already has an offer.'.`, async ({ request, baseURL }) => {
+    const token = await loginApi(request, baseURL || '');
+    const car = await createTestCar(request, baseURL || '', token);
+    const offer = await createOffer(request, baseURL || '', token, car);
+    const response = await request.post(`${baseURL}/api/offers`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { title: unique('duplicate'), badge_text: unique('badge').slice(0, 24), car_id: car._id, discount_percent: 12, ...activeWindow() },
+    });
+    expect(response.status()).toBe(400);
+    await expect(await response.json()).toMatchObject({ message: 'This vehicle already has an offer.' });
+    await deleteOffer(request, baseURL || '', token, offer._id);
+});
+
+test(`AC 35: Submit POST /api/offers with expiry_date before activation_date Verify HTTP 400 and response message 'Expiry date and time must be after activation date and time.'.`, async ({ request, baseURL }) => {
+    const token = await loginApi(request, baseURL || '');
+    const car = await createTestCar(request, baseURL || '', token);
+    const activation = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+    const expiry = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    const response = await request.post(`${baseURL}/api/offers`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { title: unique('bad-expiry'), badge_text: unique('badge').slice(0, 24), car_id: car._id, discount_percent: 10, activation_date: activation, expiry_date: expiry },
+    });
+    expect(response.status()).toBe(400);
+    await expect(await response.json()).toMatchObject({ message: 'Expiry date and time must be after activation date and time.' });
 });

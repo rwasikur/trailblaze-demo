@@ -1,5 +1,6 @@
 const Offer = require('../models/Offer');
 const Car = require('../models/Car');
+const { Op } = require('sequelize');
 
 const serializeOffer = (offer) => offer.toJSON ? offer.toJSON() : offer;
 
@@ -44,12 +45,26 @@ const decorateOffersWithStatus = (offers) => {
     }));
 };
 
-const validateOfferPayload = (body) => {
+const getCurrentMinute = () => {
+    const now = new Date();
+    now.setSeconds(0, 0);
+    return now;
+};
+
+const getMinuteTime = (date) => {
+    const minuteDate = new Date(date);
+    minuteDate.setSeconds(0, 0);
+    return minuteDate.getTime();
+};
+
+const validateOfferPayload = (body, options = {}) => {
+    const { requireFutureActivation = true, requireFutureExpiry = true } = options;
     const title = (body.title || '').trim();
     const badgeText = (body.badge_text || '').trim();
     const activationDate = new Date(body.activation_date);
     const expiryDate = new Date(body.expiry_date);
     const discountPercent = Number(body.discount_percent);
+    const now = getCurrentMinute();
 
     if (!title || !badgeText) {
         return 'Offer title and badge text are required.';
@@ -64,14 +79,46 @@ const validateOfferPayload = (body) => {
     }
 
     if (Number.isNaN(activationDate.getTime()) || Number.isNaN(expiryDate.getTime())) {
-        return 'Activation and expiry dates must be valid dates.';
+        return 'Activation and expiry dates must be valid dates and times.';
+    }
+
+    if (requireFutureActivation && getMinuteTime(activationDate) < getMinuteTime(now)) {
+        return 'Activation date and time cannot be in the past.';
+    }
+
+    if (requireFutureExpiry && getMinuteTime(expiryDate) < getMinuteTime(now)) {
+        return 'Expiry date and time cannot be in the past.';
     }
 
     if (activationDate >= expiryDate) {
-        return 'Expiry date must be after activation date.';
+        return 'Expiry date and time must be after activation date and time.';
     }
 
     return null;
+};
+
+const validateOfferCar = async (carId, currentOfferId = null) => {
+    const car = await Car.findByPk(carId);
+
+    if (!car) {
+        return { error: 'Selected vehicle was not found.' };
+    }
+
+    if (car.availability_status === 'Sold') {
+        return { error: 'Offers cannot be applied to sold vehicles.' };
+    }
+
+    const duplicateWhere = { car_id: carId };
+    if (currentOfferId) {
+        duplicateWhere._id = { [Op.ne]: currentOfferId };
+    }
+
+    const existingOffer = await Offer.findOne({ where: duplicateWhere });
+    if (existingOffer) {
+        return { error: 'This vehicle already has an offer.' };
+    }
+
+    return { car };
 };
 
 const getAdminOffers = async (req, res) => {
@@ -95,7 +142,9 @@ const getActiveOffers = async (req, res) => {
             include: [{ model: Car, as: 'car' }],
             order: [['activation_date', 'ASC']]
         });
-        res.json(decorateOffersWithStatus(offers.filter((offer) => isActiveOffer(offer))));
+        res.json(decorateOffersWithStatus(
+            offers.filter((offer) => isActiveOffer(offer) && offer.car?.availability_status !== 'Sold')
+        ));
     } catch (err) {
         res.status(500).json({ message: 'Server error: ' + err.message });
     }
@@ -108,9 +157,9 @@ const createOffer = async (req, res) => {
             return res.status(400).json({ message: validationError });
         }
 
-        const car = await Car.findByPk(req.body.car_id);
-        if (!car) {
-            return res.status(404).json({ message: 'Selected vehicle was not found.' });
+        const { car, error } = await validateOfferCar(req.body.car_id);
+        if (error) {
+            return res.status(error === 'Selected vehicle was not found.' ? 404 : 400).json({ message: error });
         }
 
         const discount = calculateOfferDiscount(car, req.body.discount_percent);
@@ -149,15 +198,21 @@ const updateOffer = async (req, res) => {
             return res.status(404).json({ message: 'Offer not found' });
         }
 
-        const validationError = validateOfferPayload({ ...serializeOffer(offer), ...req.body });
+        const validationError = validateOfferPayload(
+            { ...serializeOffer(offer), ...req.body },
+            {
+                requireFutureActivation: req.body.activation_date !== undefined,
+                requireFutureExpiry: req.body.expiry_date !== undefined,
+            }
+        );
         if (validationError) {
             return res.status(400).json({ message: validationError });
         }
 
         const nextCarId = req.body.car_id !== undefined ? req.body.car_id : offer.car_id;
-        const car = await Car.findByPk(nextCarId);
-        if (!car) {
-            return res.status(404).json({ message: 'Selected vehicle was not found.' });
+        const { car, error } = await validateOfferCar(nextCarId, offer._id);
+        if (error) {
+            return res.status(error === 'Selected vehicle was not found.' ? 404 : 400).json({ message: error });
         }
 
         const discount = calculateOfferDiscount(
