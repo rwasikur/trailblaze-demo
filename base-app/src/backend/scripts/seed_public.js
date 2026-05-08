@@ -894,11 +894,11 @@ const seedPublic = async () => {
                     const tenure = tenureOpts[Math.floor(Math.random() * tenureOpts.length)];
                     const downPaymentPct = Math.floor(Math.random() * 21) + 10; // 10% to 30%
                     const annualRate = parseFloat((8.5 + Math.random() * 3).toFixed(1)); // 8.5% to 11.5%
-                    
+
                     const P = car.price * (1 - downPaymentPct / 100);
                     const r = (annualRate / 100) / 12;
                     const emi = Math.round((P * r * Math.pow(1 + r, tenure)) / (Math.pow(1 + r, tenure) - 1));
-                    
+
                     bookingToCreate.emi_details = {
                         opted: true,
                         tenure,

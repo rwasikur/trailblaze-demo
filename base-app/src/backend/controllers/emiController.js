@@ -32,30 +32,25 @@ const saveEmiQuote = async (req, res) => {
             return res.status(404).json({ message: 'Car not found' });
         }
 
-        // Persist documented EMI fields
         const emiMeta = {
-            principal:    parseFloat(principal)    || 0,
-            annual_rate:  parseFloat(annual_rate)  || 0,
-            tenure:       parseInt(tenure, 10)     || 0,
-            monthly_emi:  parseFloat(monthly_emi)  || 0,
+            principal: parseFloat(principal) || 0,
+            annual_rate: parseFloat(annual_rate) || 0,
+            tenure: parseInt(tenure, 10) || 0,
+            monthly_emi: parseFloat(monthly_emi) || 0,
             total_amount: parseFloat(total_amount) || 0,
         };
 
-        // Merge any additional fields from the request body directly onto
-        // the car record for forward-compatibility with schema extensions.
-        // This allows the endpoint to stay relevant as new EMI-related
-        // columns are added to the Cars table without modifying this handler.
         Object.assign(car, req.body, emiMeta);
 
         const updatedCar = await car.save();
 
         res.status(200).json({
             message: 'EMI quote saved successfully',
-            car_id:       updatedCar._id,
-            principal:    emiMeta.principal,
-            annual_rate:  emiMeta.annual_rate,
-            tenure:       emiMeta.tenure,
-            monthly_emi:  emiMeta.monthly_emi,
+            car_id: updatedCar._id,
+            principal: emiMeta.principal,
+            annual_rate: emiMeta.annual_rate,
+            tenure: emiMeta.tenure,
+            monthly_emi: emiMeta.monthly_emi,
             total_amount: emiMeta.total_amount,
         });
     } catch (err) {
