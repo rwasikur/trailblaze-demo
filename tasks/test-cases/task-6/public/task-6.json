@@ -3,9 +3,12 @@
         {
             "task_id": "task-6",
             "difficulty": "medium",
-             "description": "Implement a search bar in both the Catalogue page and the Admin Dashboard. The search bar should filter vehicles in the catalogue and allow administrators to filter both inventory and customer bookings. Ensure a premium UI and responsive filtering.",
+            "description": "Implement a search bar in both the Catalogue page and the Admin Dashboard. The search bar should filter vehicles in the catalogue and allow administrators to filter both inventory and customer bookings. Ensure a premium UI and responsive filtering.",
             "branch": "task-6",
-            "test_case_location": "test-cases/task-6/",
+            "test_case_location": [
+                "tasks/test-cases/task-6/public/task-6.spec.ts",
+                "evaluation/private-test-cases/task-6/private/task-6.spec.ts"
+            ],
             "acceptance_criteria": [
                 "Catalogue page must feature a prominent search input with id 'search-input' and the placeholder 'Search by make, model, or details...'.",
                 "Search input with id 'search-input' must filter the car list in real-time as the user types, displaying results within the container id 'car-grid'.",
