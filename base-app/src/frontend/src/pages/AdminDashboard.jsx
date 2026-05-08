@@ -206,7 +206,7 @@ const AdminDashboard = () => {
                                         <table className="w-full text-left border-collapse">
                                             <thead className="text-[10px] text-slate-400 bg-slate-50/50 uppercase tracking-[0.2em] border-b border-slate-100">
                                                 <tr>
-                                                    <th className="px-6 py-4 font-black">Customer Profile</th>
+                                                    <th className="px-6 py-4 font-black">Customer Name</th>
                                                     <th className="px-6 py-4 font-black">Contact Info</th>
                                                     <th className="px-6 py-4 font-black">Vehicle Choice</th>
                                                     <th className="px-6 py-4 font-black">Timestamp</th>
@@ -221,9 +221,11 @@ const AdminDashboard = () => {
                                                     <tr id={`booking-row-${booking._id}`} key={booking._id} className="hover:bg-slate-50/30 transition-colors">
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">{booking.user_name}</div>
-                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_email}</div>
                                                         </td>
-                                                        <td className="px-6 py-5 text-slate-600 font-bold text-sm tracking-tight">{booking.user_contact}</td>
+                                                        <td className="px-6 py-5">
+                                                            <div className="text-slate-600 font-bold text-sm tracking-tight">{booking.user_email}</div>
+                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_contact}</div>
+                                                        </td>
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">
                                                                 {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
