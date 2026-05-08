@@ -10,16 +10,18 @@ const attachActiveOffers = async (cars) => {
         const serializedCar = car.toJSON ? car.toJSON() : car;
         return {
             ...serializedCar,
-            activeOffers: activeOffers
-                .filter((offer) => offerMatchesCar(offer, serializedCar))
-                .map((offer) => {
-                    const serializedOffer = offer.toJSON ? offer.toJSON() : offer;
-                    const savingsAmount = Number(serializedOffer.savings_amount) || 0;
-                    return {
-                        ...serializedOffer,
-                        discounted_price: Math.max((Number(serializedCar.price) || 0) - savingsAmount, 0),
-                    };
-                }),
+            activeOffers: serializedCar.availability_status === 'Sold'
+                ? []
+                : activeOffers
+                    .filter((offer) => offerMatchesCar(offer, serializedCar))
+                    .map((offer) => {
+                        const serializedOffer = offer.toJSON ? offer.toJSON() : offer;
+                        const savingsAmount = Number(serializedOffer.savings_amount) || 0;
+                        return {
+                            ...serializedOffer,
+                            discounted_price: Math.max((Number(serializedCar.price) || 0) - savingsAmount, 0),
+                        };
+                    }),
         };
     });
 };

@@ -44,6 +44,31 @@ const toInputDate = (value) => {
     return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 };
 
+const getCurrentMinute = () => {
+    const now = new Date();
+    now.setSeconds(0, 0);
+    return now;
+};
+
+const getMinuteTime = (date) => {
+    const minuteDate = new Date(date);
+    minuteDate.setSeconds(0, 0);
+    return minuteDate.getTime();
+};
+
+const getNextMinute = () => {
+    const nextMinute = getCurrentMinute();
+    nextMinute.setMinutes(nextMinute.getMinutes() + 1);
+    return nextMinute;
+};
+
+const addMinutesToInputDate = (value, minutes) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    date.setMinutes(date.getMinutes() + minutes);
+    return toInputDate(date);
+};
+
 const formatScheduleDate = (value) => {
     if (!value) return { date: 'Not set', time: '' };
     const parsedDate = new Date(value);
@@ -150,6 +175,29 @@ const OfferManagementPage = () => {
         return cars.find((car) => String(car._id) === String(form.car_id)) || null;
     }, [cars, form.car_id]);
 
+    const carsWithOfferIds = useMemo(() => {
+        return new Set(
+            offers
+                .filter((offer) => !editingId || offer._id !== editingId)
+                .filter((offer) => offer.status !== 'Expired')
+                .map((offer) => String(getOfferCarId(offer)))
+                .filter(Boolean)
+        );
+    }, [offers, editingId]);
+
+    const availableOfferCars = useMemo(() => {
+        return cars.filter((car) => {
+            if (car.availability_status === 'Sold') return false;
+            if (carsWithOfferIds.has(String(car._id))) return false;
+            return true;
+        });
+    }, [cars, carsWithOfferIds]);
+
+    const minimumScheduleDate = toInputDate(getCurrentMinute());
+    const minimumExpiryDate = form.activation_date && addMinutesToInputDate(form.activation_date, 1) > minimumScheduleDate
+        ? addMinutesToInputDate(form.activation_date, 1)
+        : minimumScheduleDate;
+
     const calculatedSavings = useMemo(() => {
         const percent = Number(form.discount_percent);
         if (!selectedCar || !Number.isFinite(percent) || percent <= 0) return 0;
@@ -158,6 +206,34 @@ const OfferManagementPage = () => {
 
     const updateField = (field, value) => {
         setForm((current) => ({ ...current, [field]: value }));
+    };
+
+    const updateActivationDate = (value) => {
+        if (value && value < minimumScheduleDate) {
+            toast.error('Activation date and time cannot be in the past.');
+            setForm((current) => ({ ...current, activation_date: '', expiry_date: '' }));
+            return;
+        }
+
+        const nextMinimumExpiryDate = value && addMinutesToInputDate(value, 1) > minimumScheduleDate
+            ? addMinutesToInputDate(value, 1)
+            : minimumScheduleDate;
+
+        setForm((current) => ({
+            ...current,
+            activation_date: value,
+            expiry_date: current.expiry_date && current.expiry_date < nextMinimumExpiryDate ? '' : current.expiry_date,
+        }));
+    };
+
+    const updateExpiryDate = (value) => {
+        if (value && value < minimumExpiryDate) {
+            toast.error('Expiry date and time must be after activation date and time.');
+            setForm((current) => ({ ...current, expiry_date: '' }));
+            return;
+        }
+
+        setForm((current) => ({ ...current, expiry_date: value }));
     };
 
     const resetForm = () => {
@@ -181,6 +257,41 @@ const OfferManagementPage = () => {
 
     const submitOffer = async (event) => {
         event.preventDefault();
+
+        const activationDate = new Date(form.activation_date);
+        const expiryDate = new Date(form.expiry_date);
+        const now = getCurrentMinute();
+
+        if (Number.isNaN(activationDate.getTime()) || Number.isNaN(expiryDate.getTime())) {
+            toast.error('Please enter valid activation and expiry date/time.');
+            return;
+        }
+
+        if (!editingId && getMinuteTime(activationDate) < getMinuteTime(now)) {
+            toast.error('Activation date and time cannot be in the past.');
+            return;
+        }
+
+        if (getMinuteTime(expiryDate) < getMinuteTime(now)) {
+            toast.error('Expiry date and time cannot be in the past.');
+            return;
+        }
+
+        if (activationDate >= expiryDate) {
+            toast.error('Expiry date and time must be after activation date and time.');
+            return;
+        }
+
+        if (selectedCar?.availability_status === 'Sold') {
+            toast.error('Offers cannot be applied to sold vehicles.');
+            return;
+        }
+
+        if (!editingId && carsWithOfferIds.has(String(form.car_id))) {
+            toast.error('This vehicle already has an offer.');
+            return;
+        }
+
         setSaving(true);
         try {
             const payload = {
@@ -330,8 +441,8 @@ const OfferManagementPage = () => {
                                 onChange={(event) => updateField('car_id', event.target.value)}
                                 className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-bold outline-none transition focus:border-slate-900"
                             >
-                                <option value="">{cars.length === 0 ? 'No vehicles loaded' : 'Select a vehicle'}</option>
-                                {cars.map((car) => (
+                                <option value="">{availableOfferCars.length === 0 ? 'No available vehicles for offers' : 'Select a vehicle'}</option>
+                                {availableOfferCars.map((car) => (
                                     <option key={car._id} value={car._id}>
                                         {car.brand} {car.name} - ${car.price?.toLocaleString()} - {car.condition === 'Used' ? 'Pre-Owned' : car.condition}
                                     </option>
@@ -373,9 +484,10 @@ const OfferManagementPage = () => {
                                     id="offer-activation-input"
                                     required
                                     type="datetime-local"
+                                    min={minimumScheduleDate}
                                     value={form.activation_date}
-                                    onChange={(event) => updateField('activation_date', event.target.value)}
-                                className="h-11 w-full rounded-md border border-slate-200 px-3 text-xs font-bold outline-none transition focus:border-slate-900"
+                                    onChange={(event) => updateActivationDate(event.target.value)}
+                                    className="h-11 w-full rounded-md border border-slate-200 px-3 text-xs font-bold outline-none transition focus:border-slate-900"
                                 />
                             </label>
                             <label className="block">
@@ -384,8 +496,9 @@ const OfferManagementPage = () => {
                                     id="offer-expiry-input"
                                     required
                                     type="datetime-local"
+                                    min={minimumExpiryDate}
                                     value={form.expiry_date}
-                                    onChange={(event) => updateField('expiry_date', event.target.value)}
+                                    onChange={(event) => updateExpiryDate(event.target.value)}
                                     className="h-11 w-full rounded-md border border-slate-200 px-3 text-xs font-bold outline-none transition focus:border-slate-900"
                                 />
                             </label>

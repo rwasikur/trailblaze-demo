@@ -11,11 +11,11 @@
             ],
       "acceptance_criteria": [
         "Authenticate with seeded admin credentials Navigate to /admin/offers Verify the Offer Management route renders the form container ID #offer-form and page heading ID #offers-heading.",
-        "In Offer Management, submit an enabled offer with title, badge text, selected vehicle, discount_percent, activation_date, and expiry_date Verify HTTP 201 and toast 'Offer scheduled' using IDs #offer-title-input, #offer-badge-input, #offer-car-select, #offer-discount-percent-input, #offer-activation-input, #offer-expiry-input, #offer-enabled-toggle, and #offer-submit-button.",
-        "Select a seeded vehicle and enter discount_percent Verify the client-side savings preview computes price multiplied by discount_percent using ID #offer-savings-preview.",
+        "In Offer Management, submit an enabled offer with title, badge text, selected vehicle, discount_percent, activation_date not before the current minute, and expiry_date after activation_date Verify HTTP 201 and toast 'Offer scheduled' using IDs #offer-title-input, #offer-badge-input, #offer-car-select, #offer-discount-percent-input, #offer-activation-input, #offer-expiry-input, #offer-enabled-toggle, and #offer-submit-button.",
+        "Select a vehicle and enter discount_percent Verify the client-side savings preview computes price multiplied by discount_percent using ID #offer-savings-preview.",
         "After offer creation through the API, load Offer Management Verify the campaign timeline contains row ID #offer-row-{id}.",
         "After offer creation through the API, load Offer Management Verify row ID #offer-row-{id} displays badge_text, title, associated vehicle name, activation_date, expiry_date, discount_label, and Active status.",
-        "Create offers in Active, Scheduled, Paused, and Expired states Verify the Offer Management metrics panel displays all four status labels.",
+        "Create offers in Active, Scheduled, and Paused states with an existing Expired offer present Verify the Offer Management metrics panel displays all four status labels.",
         "Select the Active campaign filter Verify an Active offer row remains visible and a Scheduled offer row is hidden in the campaign timeline.",
         "Select the Scheduled campaign filter Verify a Scheduled offer row remains visible and an Active offer row is hidden in the campaign timeline.",
         "Open an existing offer in edit mode Modify title Submit the form Verify toast 'Offer updated' and preserved row ID #offer-row-{id} using IDs #offer-row-{id}-edit, #offer-title-input, and #offer-submit-button.",
@@ -28,15 +28,23 @@
         "Open /car/{id} Overview for a vehicle with an active percentage discount Verify discounted acquisition price and original strikethrough price render using IDs #car-detail-current-price and #car-detail-original-price.",
         "On /car/{id}, select the Price tab Verify the financial breakdown includes active offer discount values using IDs #car-price-tab-current-price, #car-price-tab-original-price, and #car-price-tab-savings.",
         "Open PurchaseModal for a vehicle with an active percentage discount Verify the modal price panel displays discounted price and original strikethrough price after clicking ID #book-now-main-button.",
+        "Load Offer Management with a sold vehicle in the fleet Verify the sold vehicle is excluded from the vehicle select using ID #offer-car-select.",
+        "Load Offer Management after one vehicle has a non-expired offer and another vehicle has only an expired offer Verify the non-expired offer vehicle is excluded and the expired offer vehicle remains available in the vehicle select using ID #offer-car-select.",
+        "Open /browse for a sold vehicle with an otherwise active offer Verify the matching vehicle card excludes that offer badge_text.",
+        "Request GET /api/cars for a sold vehicle with an otherwise active offer Verify the sold vehicle response includes an empty activeOffers array.",
         "Remove adminToken from localStorage Navigate directly to /admin/offers Verify route guard redirects to /admin.",
         "Submit the offer form without selecting a vehicle Verify browser HTML5 required validation blocks submission using ID #offer-car-select.",
         "Submit POST /api/offers without car_id Verify HTTP 400 and response message 'Please choose a vehicle for this offer.'.",
         "Submit POST /api/offers with discount_percent greater than 95 Verify HTTP 400 and response message 'Discount percent must be between 0 and 95.'.",
-        "Submit POST /api/offers with expiry_date equal to activation_date Verify HTTP 400 and response message 'Expiry date must be after activation date.'.",
+        "Submit POST /api/offers with expiry_date equal to activation_date Verify HTTP 400 and response message 'Expiry date and time must be after activation date and time.'.",
         "Create an offer with activation_date in the future Open /browse before activation_date Verify the matching vehicle card excludes that offer badge_text.",
-        "Create an offer with expiry_date in the past Open /car/{id} after expiry_date Verify the vehicle detail page excludes that offer badge_text and title.",
+        "Submit POST /api/offers with expiry_date before the current minute Verify HTTP 400 and response message 'Expiry date and time cannot be in the past.'.",
         "Create a disabled offer inside its activation window Open /browse Verify the matching vehicle card excludes that offer badge_text.",
-        "Create an active offer assigned to one vehicle Open /browse Verify a different vehicle card excludes that offer badge_text."
+        "Create an active offer assigned to one vehicle Open /browse Verify a different vehicle card excludes that offer badge_text.",
+        "Submit POST /api/offers with activation_date before the current minute Verify HTTP 400 and response message 'Activation date and time cannot be in the past.'.",
+        "Submit POST /api/offers for a sold vehicle Verify HTTP 400 and response message 'Offers cannot be applied to sold vehicles.'.",
+        "Submit POST /api/offers for a vehicle that already has a non-expired offer Verify HTTP 400 and response message 'This vehicle already has an offer.'.",
+        "Submit POST /api/offers with expiry_date before activation_date Verify HTTP 400 and response message 'Expiry date and time must be after activation date and time.'."
       ]
     }
   ]
