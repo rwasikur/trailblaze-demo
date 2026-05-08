@@ -468,7 +468,7 @@ const public_cars = [
         mileage: "14.5 kmpl",
         body_type: "SUV",
         seating_capacity: 7,
-        available_colors: ["Cosmic Gold","Silver","Gray"],
+        available_colors: ["Cosmic Gold", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Jan 2027",
         insurance_type: "Comprehensive",
@@ -498,7 +498,7 @@ const public_cars = [
         mileage: "13 kmpl",
         body_type: "SUV",
         seating_capacity: 7,
-        available_colors: ["Midnight Black","Silver","Gray"],
+        available_colors: ["Midnight Black", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Jan 2027",
         insurance_type: "Comprehensive",
@@ -527,7 +527,7 @@ const public_cars = [
         mileage: "18.4 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        available_colors: ["Abyss Black","Silver","Gray"],
+        available_colors: ["Abyss Black", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Feb 2027",
         insurance_type: "Comprehensive",
@@ -556,7 +556,7 @@ const public_cars = [
         mileage: "27.97 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        available_colors: ["Nexa Blue","Silver","Gray"],
+        available_colors: ["Nexa Blue", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Mar 2027",
         insurance_type: "Comprehensive",
@@ -586,7 +586,7 @@ const public_cars = [
         mileage: "19.0 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        available_colors: ["White","Silver","Gray"],
+        available_colors: ["White", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Apr 2027",
         insurance_type: "Comprehensive",
@@ -615,7 +615,7 @@ const public_cars = [
         mileage: "14.4 kmpl",
         body_type: "SUV",
         seating_capacity: 7,
-        available_colors: ["Pearl White with Black Roof","Silver","Gray"],
+        available_colors: ["Pearl White with Black Roof", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Jan 2027",
         insurance_type: "Comprehensive",
@@ -645,7 +645,7 @@ const public_cars = [
         mileage: "13.5 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        available_colors: ["Aurora Silver","Silver","Gray"],
+        available_colors: ["Aurora Silver", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "May 2027",
         insurance_type: "Comprehensive",
@@ -675,7 +675,7 @@ const public_cars = [
         mileage: "18.73 kmpl",
         body_type: "Sedan",
         seating_capacity: 5,
-        available_colors: ["Crystal White","Silver","Gray"],
+        available_colors: ["Crystal White", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Feb 2027",
         insurance_type: "Comprehensive",
@@ -704,7 +704,7 @@ const public_cars = [
         mileage: "16.92 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        available_colors: ["Crimson Red","Silver","Gray"],
+        available_colors: ["Crimson Red", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "Mar 2027",
         insurance_type: "Comprehensive",
@@ -734,7 +734,7 @@ const public_cars = [
         mileage: "20.09 kmpl",
         body_type: "SUV",
         seating_capacity: 5,
-        available_colors: ["Tornado Blue","Silver","Gray"],
+        available_colors: ["Tornado Blue", "Silver", "Gray"],
         registration_number: null,
         insurance_validity: "May 2027",
         insurance_type: "Comprehensive",
@@ -760,7 +760,8 @@ const sample_bookings = [
         user_email: "rahul.sharma@example.com",
         user_contact: "9876543210",
         status: "Accepted",
-        selected_color: "White"
+        selected_color: "White",
+        emi_details: { opted: true, tenure: 48, downPaymentPct: 20, annualRate: 8.5 }
     },
     {
         user_name: "Anjali Verma",
@@ -788,7 +789,8 @@ const sample_bookings = [
         user_email: "karan.j@example.com",
         user_contact: "9123456789",
         status: "Pending",
-        selected_color: "Blue"
+        selected_color: "Blue",
+        emi_details: { opted: true, tenure: 36, downPaymentPct: 30, annualRate: 9.0 }
     },
     {
         user_name: "Meera Das",
@@ -854,7 +856,7 @@ const seedPublic = async () => {
         // Seed bookings with proper mapping to car status
         console.log("Seeding sample bookings...");
         const allCars = await Car.findAll();
-        
+
         let acceptedIndex = 0;
         let otherIndex = 0;
         const acceptedSamples = sample_bookings.filter(b => b.status === 'Accepted');
@@ -888,6 +890,14 @@ const seedPublic = async () => {
             }
 
             if (bookingToCreate) {
+                if (bookingToCreate.emi_details) {
+                    const P = car.price * (1 - bookingToCreate.emi_details.downPaymentPct / 100);
+                    const r = (bookingToCreate.emi_details.annualRate / 100) / 12;
+                    const n = bookingToCreate.emi_details.tenure;
+                    const emi = Math.round((P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
+                    bookingToCreate.emi_details = { ...bookingToCreate.emi_details, monthlyEmi: emi };
+                }
+
                 const existingBooking = await Booking.findOne({
                     where: {
                         user_email: bookingToCreate.user_email,
