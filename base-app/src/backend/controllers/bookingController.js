@@ -1,5 +1,7 @@
 const Booking = require('../models/Booking');
 const Car = require('../models/Car');
+const Sale = require('../models/Sale');
+const { Op } = require('sequelize');
 
 const createBooking = async (req, res) => {
     try {
@@ -9,16 +11,20 @@ const createBooking = async (req, res) => {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Check for duplicate booking
+        // Normalize color: treat empty strings/undefined as null for consistent matching
+        const normalizedColor = (selected_color && selected_color.trim() !== '') ? selected_color : null;
+
+        // Check for duplicate booking (same car, same email, same color)
         const existingBooking = await Booking.findOne({
             where: {
                 car_id,
-                user_email
+                user_email,
+                selected_color: normalizedColor
             }
         });
 
         if (existingBooking) {
-            return res.status(400).json({ message: 'A booking request with this email already exists for this vehicle.' });
+            return res.status(400).json({ message: 'A booking request with this email and color already exists for this vehicle.' });
         }
 
         // Email validation
@@ -42,7 +48,7 @@ const createBooking = async (req, res) => {
             user_name,
             user_email,
             user_contact,
-            selected_color
+            selected_color: normalizedColor
         });
 
         res.status(201).json({ message: 'Booking submitted successfully', booking });
@@ -76,6 +82,7 @@ const updateBookingStatus = async (req, res) => {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
+        const oldStatus = booking.status;
         booking.status = status;
         await booking.save();
 
@@ -86,17 +93,40 @@ const updateBookingStatus = async (req, res) => {
                 { where: { _id: booking.car_id } }
             );
 
+            // CREATE SALE RECORD
+            await Sale.create({
+                car_id: booking.car_id,
+                booking_id: booking._id,
+                sale_price: booking.car.price,
+                sale_date: new Date(),
+                buyer_name: booking.user_name,
+                buyer_email: booking.user_email
+            });
+
             // Auto-reject other pending bookings for the same car
+
             await Booking.update(
                 { status: 'Rejected' },
                 {
                     where: {
                         car_id: booking.car_id,
                         status: 'Pending',
-                        _id: { [require('sequelize').Op.ne]: booking._id }
+                        _id: { [Op.ne]: booking._id }
                     }
                 }
             );
+        }
+
+        // If the booking was previously Accepted and now moved to Pending or Rejected, reset car status
+        if (oldStatus === 'Accepted' && (status === 'Pending' || status === 'Rejected') && booking.car) {
+            await Car.update(
+                { availability_status: 'Available' },
+                { where: { _id: booking.car_id } }
+            );
+
+            await Sale.destroy({
+                where: { booking_id: booking._id }
+            });
         }
 
         res.json({ message: `Booking ${status.toLowerCase()} successfully`, booking });

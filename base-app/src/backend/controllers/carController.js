@@ -28,9 +28,9 @@ const createCar = async (req, res) => {
     try {
         const {
             name, brand, model_year, transmission, fuel_type, seating_capacity,
-            price, range, body_type, mileage, total_distance_covered, exterior_color, interior_color,
+            price, range, body_type, mileage, total_distance_covered, available_colors,
             number_of_owners, registration_city, insurance_validity, description,
-            image_url, secondary_images, availability_status, condition, past_owners, available_colors
+            image_url, secondary_images, availability_status, condition, past_owners
         } = req.body;
 
         const seller_name = req.admin ? req.admin.full_name : 'TrailblazeAuto Dealership';
@@ -73,8 +73,7 @@ const createCar = async (req, res) => {
                 body_type,
                 mileage,
                 total_distance_covered,
-                exterior_color,
-                interior_color,
+                available_colors: available_colors || [],
                 number_of_owners: sanitizedOwners,
                 registration_city,
                 insurance_validity,
@@ -85,8 +84,7 @@ const createCar = async (req, res) => {
                 seller_name,
                 seller_email,
                 condition,
-                past_owners: past_owners || [],
-                available_colors: available_colors || []
+                past_owners: past_owners || []
             });
 
             res.status(201).json(createdCar);
