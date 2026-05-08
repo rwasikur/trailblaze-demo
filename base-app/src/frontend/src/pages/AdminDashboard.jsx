@@ -11,6 +11,7 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const [cars, setCars] = useState([]);
     const [bookings, setBookings] = useState([]);
+    const [offers, setOffers] = useState([]);
     const [activeTab, setActiveTab] = useState('vehicles');
     const [editingBookingId, setEditingBookingId] = useState(null);
     const [bookingFilter, setBookingFilter] = useState('All');
@@ -21,6 +22,7 @@ const AdminDashboard = () => {
         else {
             fetchCars(token);
             fetchBookings(token);
+            fetchOffers(token);
         }
     }, [navigate]);
 
@@ -48,6 +50,18 @@ const AdminDashboard = () => {
         }
     };
 
+    const fetchOffers = async (token) => {
+        try {
+            const { data } = await api.get('/api/offers/admin/all', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setOffers(data || []);
+        } catch (err) {
+            console.error('Failed to fetch offers:', err);
+            setOffers([]);
+        }
+    };
+
     const handleBookingStatus = async (bookingId, status) => {
         try {
             const token = localStorage.getItem('adminToken');
@@ -56,11 +70,39 @@ const AdminDashboard = () => {
             });
             toast.success(`Booking ${status.toLowerCase()}!`);
             // Simultaneous refresh to ensure UI is in sync
-            await Promise.all([fetchBookings(token), fetchCars(token)]);
+            await Promise.all([fetchBookings(token), fetchCars(token), fetchOffers(token)]);
         } catch (err) {
             toast.error('Failed to update booking status');
             console.error(err);
         }
+    };
+
+    const getActiveOffer = (car) => {
+        if (!car?._id) return null;
+        if (Array.isArray(car.activeOffers) && car.activeOffers.length > 0) return car.activeOffers[0];
+
+        const now = new Date();
+        return offers.find((offer) => {
+            const activation = new Date(offer.activation_date);
+            const expiry = new Date(offer.expiry_date);
+
+            return String(offer.car_id || offer.car?._id || '') === String(car._id) &&
+                offer.is_enabled &&
+                activation <= now &&
+                expiry >= now;
+        }) || null;
+    };
+
+    const getOfferPricing = (car) => {
+        const activeOffer = getActiveOffer(car);
+        const originalPrice = Number(car?.price) || 0;
+        const savingsAmount = Number(activeOffer?.savings_amount) || 0;
+        const discountedPrice = activeOffer
+            ? Number(activeOffer.discounted_price ?? Math.max(originalPrice - savingsAmount, 0))
+            : originalPrice;
+        const hasDiscount = activeOffer && savingsAmount > 0 && discountedPrice < originalPrice;
+
+        return { activeOffer, discountedPrice, hasDiscount, originalPrice, savingsAmount };
     };
 
     return (
@@ -124,7 +166,10 @@ const AdminDashboard = () => {
                                                 </tr>
                                             </thead>
                                             <tbody id="dashboard-car-list" className="divide-y divide-slate-50">
-                                                {cars.map(car => (
+                                                {cars.map(car => {
+                                                    const pricing = getOfferPricing(car);
+
+                                                    return (
                                                     <tr id={`car-row-${car._id}`} key={car._id} className="hover:bg-slate-50/30 transition-colors group">
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">
@@ -138,7 +183,16 @@ const AdminDashboard = () => {
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-5 text-slate-600 font-bold text-sm">{car.model_year}</td>
-                                                        <td className="px-6 py-5 text-slate-900 font-black text-sm">${car.price?.toLocaleString()}</td>
+                                                        <td className="px-6 py-5">
+                                                            {pricing.hasDiscount ? (
+                                                                <div>
+                                                                    <div className="text-emerald-700 font-black text-sm">${pricing.discountedPrice.toLocaleString()}</div>
+                                                                    <div className="text-[10px] font-black text-slate-400 line-through">${pricing.originalPrice.toLocaleString()}</div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="text-slate-900 font-black text-sm">${car.price?.toLocaleString()}</div>
+                                                            )}
+                                                        </td>
                                                         <td className="px-6 py-5">
                                                             <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'} className="w-fit">
                                                                 {car.availability_status}
@@ -168,7 +222,8 @@ const AdminDashboard = () => {
                                                             ) : null}
                                                         </td>
                                                     </tr>
-                                                ))}
+                                                    );
+                                                })}
                                             </tbody>
                                         </table>
                                     </div>
@@ -200,7 +255,7 @@ const AdminDashboard = () => {
                                         <table className="w-full text-left border-collapse">
                                             <thead className="text-[10px] text-slate-400 bg-slate-50/50 uppercase tracking-[0.2em] border-b border-slate-100">
                                                 <tr>
-                                                    <th className="px-6 py-4 font-black">Customer Profile</th>
+                                                    <th className="px-6 py-4 font-black">Customer Name</th>
                                                     <th className="px-6 py-4 font-black">Contact Info</th>
                                                     <th className="px-6 py-4 font-black">Vehicle Choice</th>
                                                     <th className="px-6 py-4 font-black">Timestamp</th>
@@ -211,19 +266,31 @@ const AdminDashboard = () => {
                                             <tbody className="divide-y divide-slate-50">
                                                 {bookings
                                                     .filter(b => bookingFilter === 'All' || b.status === bookingFilter)
-                                                    .map(booking => (
+                                                    .map(booking => {
+                                                        const pricing = getOfferPricing(booking.car);
+
+                                                        return (
                                                     <tr id={`booking-row-${booking._id}`} key={booking._id} className="hover:bg-slate-50/30 transition-colors">
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">{booking.user_name}</div>
-                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_email}</div>
                                                         </td>
-                                                        <td className="px-6 py-5 text-slate-600 font-bold text-sm tracking-tight">{booking.user_contact}</td>
+                                                        <td className="px-6 py-5">
+                                                            <div className="text-slate-600 font-bold text-sm tracking-tight">{booking.user_email}</div>
+                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_contact}</div>
+                                                        </td>
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">
                                                                 {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
                                                             </div>
                                                             <div className="flex items-center gap-1.5 mt-1">
-                                                                <div className="font-bold text-blue-600 text-[10px] uppercase tracking-widest">${booking.car?.price?.toLocaleString()}</div>
+                                                                {pricing.hasDiscount ? (
+                                                                    <div>
+                                                                        <div className="font-black text-emerald-700 text-[10px] uppercase tracking-widest">${pricing.discountedPrice.toLocaleString()}</div>
+                                                                        <div className="font-black text-slate-400 text-[9px] uppercase tracking-widest line-through">${pricing.originalPrice.toLocaleString()}</div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="font-bold text-blue-600 text-[10px] uppercase tracking-widest">${booking.car?.price?.toLocaleString()}</div>
+                                                                )}
                                                                 {booking.car?.condition === 'New' && (
                                                                     <>
                                                                         <span className="text-slate-300 text-[10px]">•</span>
@@ -313,7 +380,8 @@ const AdminDashboard = () => {
                                                             </div>
                                                         </td>
                                                     </tr>
-                                                ))}
+                                                        );
+                                                    })}
                                             </tbody>
                                         </table>
                                     </div>

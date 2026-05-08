@@ -1,5 +1,6 @@
 const Booking = require('../models/Booking');
 const Car = require('../models/Car');
+const { attachActiveOffers } = require('./carController');
 
 const createBooking = async (req, res) => {
     try {
@@ -9,11 +10,15 @@ const createBooking = async (req, res) => {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Check for duplicate booking (same car, same email)
+        // Normalize color: treat empty strings/undefined as null for consistent matching
+        const normalizedColor = (selected_color && selected_color.trim() !== '') ? selected_color : null;
+
+        // Check for duplicate booking (same car, same email, same color)
         const existingBooking = await Booking.findOne({
             where: {
                 car_id,
-                user_email
+                user_email,
+                selected_color: normalizedColor
             }
         });
 
@@ -42,7 +47,7 @@ const createBooking = async (req, res) => {
             user_name,
             user_email,
             user_contact,
-            selected_color
+            selected_color: normalizedColor
         });
 
         res.status(201).json({ message: 'Booking submitted successfully', booking });
@@ -58,7 +63,21 @@ const getBookings = async (req, res) => {
             include: [{ model: Car, as: 'car' }],
             order: [['createdAt', 'DESC']]
         });
-        res.json(bookings);
+        const serializedBookings = bookings.map((booking) => booking.toJSON ? booking.toJSON() : booking);
+        const decoratedCars = await attachActiveOffers(
+            serializedBookings
+                .filter((booking) => booking.car)
+                .map((booking) => booking.car)
+        );
+        const carsById = decoratedCars.reduce((acc, car) => {
+            acc[String(car._id)] = car;
+            return acc;
+        }, {});
+
+        res.json(serializedBookings.map((booking) => ({
+            ...booking,
+            car: booking.car ? carsById[String(booking.car._id)] || booking.car : booking.car,
+        })));
     } catch (error) {
         console.error('Error fetching bookings:', error);
         res.status(500).json({ message: 'Server error' });
