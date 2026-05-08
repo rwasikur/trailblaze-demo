@@ -2,10 +2,13 @@
     "tasks": [
         {
             "task_id": "task-1",
-            "difficulty": "medium",
+            "difficulty": "easy",
             "description": "Implement a comprehensive vehicle filtering system for the Trailblaze Auto catalogue, including multi-dimensional filters for condition, brand, body style, fuel type, transmission, and price range with a clean reset mechanism.",
             "branch": "task-1",
-            "test_case_location": "test-cases/task-1/",
+            "test_case_location": [
+                "tasks/test-cases/task-1/public/task-1.spec.ts",
+                "evaluation/private-test-cases/task-1/private/task-1.spec.ts"
+            ],
             "acceptance_criteria": [
                 "The Condition filter using data-testid='condition-filter-New' must correctly show only 'Brand New' vehicles.",
                 "The Condition filter using data-testid='condition-filter-Pre-Owned' must correctly show only 'Pre-Owned' vehicles.",
