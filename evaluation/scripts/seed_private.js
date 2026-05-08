@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const Car = require('../models/Car');
 const Admin = require('../models/Admin');
 const Booking = require('../models/Booking');
+const Sale = require('../models/Sale');
 
 const private_cars = [
     {
@@ -739,8 +740,7 @@ const sample_bookings = [
         user_email: "amit.sharma@example.com",
         user_contact: "9876543210",
         status: "Accepted",
-        selected_color: "Black",
-        emi_details: { opted: true, tenure: 48, downPaymentPct: 20, annualRate: 8.5 }
+        selected_color: "Black"
     },
     {
         user_name: "Priya Patel",
@@ -768,8 +768,7 @@ const sample_bookings = [
         user_email: "anjali.v@gmail.com",
         user_contact: "8765432109",
         status: "Pending",
-        selected_color: "Grey",
-        emi_details: { opted: true, tenure: 36, downPaymentPct: 30, annualRate: 9.0 }
+        selected_color: "Grey"
     },
     {
         user_name: "Sandeep Gupta",
@@ -795,7 +794,7 @@ const seedPrivate = async () => {
         // Sync tables
         await Car.sync({ alter: true });
         await Booking.sync({ alter: true });
-
+        await Sale.sync({ alter: true });
 
         let created = 0;
         let updated = 0;
@@ -820,8 +819,6 @@ const seedPrivate = async () => {
                     secondary_images: carData.images || [],
                 });
                 updated += 1;
-
-
             } else {
                 const car = await Car.create({
                     ...carData,
@@ -830,8 +827,6 @@ const seedPrivate = async () => {
                     secondary_images: carData.images || [],
                 });
                 created += 1;
-
-
             }
         }
 
@@ -872,23 +867,53 @@ const seedPrivate = async () => {
             }
 
             if (bookingToCreate) {
-                if (bookingToCreate.emi_details) {
-                    const P = car.price * (1 - bookingToCreate.emi_details.downPaymentPct / 100);
-                    const r = (bookingToCreate.emi_details.annualRate / 100) / 12;
-                    const n = bookingToCreate.emi_details.tenure;
-                    const emi = Math.round((P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
-                    bookingToCreate.emi_details = { ...bookingToCreate.emi_details, monthlyEmi: emi };
+                // Generate completely different, logical EMI details randomly for a few bookings
+                if (Math.random() < 0.3) {
+                    const tenureOpts = [24, 36, 48, 60];
+                    const tenure = tenureOpts[Math.floor(Math.random() * tenureOpts.length)];
+                    const downPaymentPct = Math.floor(Math.random() * 21) + 10; // 10% to 30%
+                    const annualRate = parseFloat((8.5 + Math.random() * 3).toFixed(1)); // 8.5% to 11.5%
+
+                    const P = car.price * (1 - downPaymentPct / 100);
+                    const r = (annualRate / 100) / 12;
+                    const emi = Math.round((P * r * Math.pow(1 + r, tenure)) / (Math.pow(1 + r, tenure) - 1));
+
+                    bookingToCreate.emi_details = {
+                        opted: true,
+                        tenure,
+                        downPaymentPct,
+                        annualRate,
+                        monthlyEmi: emi
+                    };
                 }
 
-                const existingBooking = await Booking.findOne({
+                let booking = await Booking.findOne({
                     where: {
                         user_email: bookingToCreate.user_email,
                         car_id: bookingToCreate.car_id
                     }
                 });
 
-                if (!existingBooking) {
-                    await Booking.create(bookingToCreate);
+                if (!booking) {
+                    booking = await Booking.create(bookingToCreate);
+                }
+
+                // ENSURE SALE RECORD EXISTS FOR ACCEPTED BOOKINGS
+                if (booking.status === 'Accepted') {
+                    const existingSale = await Sale.findOne({
+                        where: { booking_id: booking._id }
+                    });
+
+                    if (!existingSale) {
+                        await Sale.create({
+                            car_id: car._id,
+                            booking_id: booking._id,
+                            sale_price: car.price,
+                            sale_date: booking.createdAt,
+                            buyer_name: booking.user_name,
+                            buyer_email: booking.user_email
+                        });
+                    }
                 }
             }
         }
