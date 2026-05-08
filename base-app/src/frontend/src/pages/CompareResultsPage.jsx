@@ -101,17 +101,17 @@ const CompareResultsPage = () => {
                     <table className="w-full border-collapse min-w-[900px]">
                         <thead>
                             <tr>
-                                <th className="p-10 text-left border-b border-r border-white/5 bg-white/[0.03] w-72 sticky left-0 z-20 backdrop-blur-xl">
+                                <th className="p-10 text-left border-b border-r border-white/5 bg-slate-950 w-72 sticky left-0 z-30 shadow-[10px_0_15px_-3px_rgba(0,0,0,0.3)]">
                                     <div className="text-[11px] font-black uppercase tracking-[0.4em] text-blue-500/80">Parameters</div>
                                 </th>
                                 {cars.map(car => (
                                     <th key={car._id} className="p-8 border-b border-white/5 min-w-[320px] bg-white/[0.01]">
                                         <div className="space-y-6">
-                                            <div className="aspect-[16/10] rounded-[2rem] overflow-hidden border border-white/10 relative group shadow-2xl">
+                                            <div style={{ aspectRatio: '16/9' }} className="w-full max-w-[360px] mx-auto rounded-[2rem] overflow-hidden border border-white/10 relative group shadow-2xl">
                                                 <img src={car.image_url} alt={car.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
-                                                <div className="absolute bottom-4 left-4 right-4">
-                                                    <span className="inline-flex px-3 py-1 rounded-full bg-blue-600/90 text-[8px] font-black uppercase tracking-widest text-white backdrop-blur-md">
+                                                <div className="absolute bottom-4 left-4 right-4 flex justify-center">
+                                                    <span className="inline-flex px-4 py-1.5 rounded-full bg-blue-600/90 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-md">
                                                         {car.condition}
                                                     </span>
                                                 </div>
@@ -128,7 +128,7 @@ const CompareResultsPage = () => {
                         <tbody>
                             {specs.map((spec, idx) => (
                                 <tr key={spec.key} className="group hover:bg-white/[0.03] transition-colors">
-                                    <td className="p-6 text-left border-r border-white/5 font-black text-[10px] uppercase tracking-[0.3em] text-slate-500 sticky left-0 z-20 bg-slate-950/80 backdrop-blur-xl group-hover:text-blue-500 transition-colors">
+                                    <td className="p-6 text-left border-r border-white/5 font-black text-[10px] uppercase tracking-[0.3em] text-slate-500 sticky left-0 z-30 bg-slate-950 group-hover:text-blue-500 transition-colors shadow-[10px_0_15px_-3px_rgba(0,0,0,0.3)]">
                                         {spec.label}
                                     </td>
                                     {cars.map(car => (
@@ -141,7 +141,7 @@ const CompareResultsPage = () => {
                                 </tr>
                             ))}
                             <tr className="bg-white/[0.03]">
-                                <td className="p-8 border-r border-white/5 sticky left-0 z-20 bg-slate-900/40 backdrop-blur-xl"></td>
+                                <td className="p-8 border-r border-white/5 sticky left-0 z-30 bg-slate-950 shadow-[10px_0_15px_-3px_rgba(0,0,0,0.3)]"></td>
                                 {cars.map(car => (
                                     <td key={`actions-${car._id}`} className="p-8 text-center border-r last:border-r-0 border-white/5">
                                         <button
