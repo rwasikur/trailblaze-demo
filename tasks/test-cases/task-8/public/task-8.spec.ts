@@ -449,10 +449,19 @@ test('AC-22 | Open EMI modal; close it with the X button; verify modal is no lon
 test('AC-23 | Open EMI modal; click the backdrop (outside the modal card); verify modal closes.', async ({ page, baseURL }) => {
     await openEmiModal(page, baseURL!);
 
-    // Click the outermost backdrop div directly — position at far top-left corner
-    // Use force:true to ensure the click fires on the backdrop element itself
+    // The backdrop's onClick handler only fires when `e.target === e.currentTarget`.
+    // We can't simply click viewport coordinates because the Navbar (z-[1000]) sits
+    // ABOVE the modal backdrop (z-[200]) — clicking near the top of the page would
+    // hit the navbar (force:true bypasses Playwright actionability checks but NOT
+    // the browser's coordinate-based hit-testing), and clicking the modal card
+    // would set e.target to a child element (so the equality check fails and
+    // onClose is not invoked).
+    //
+    // Dispatch the click programmatically on the backdrop element itself via
+    // .click() in page context — this guarantees e.target === e.currentTarget
+    // and reliably triggers onClose regardless of any overlapping fixed elements.
     const backdrop = page.locator('div.fixed.inset-0.z-\\[200\\]').first();
-    await backdrop.click({ position: { x: 10, y: 10 }, force: true });
+    await backdrop.evaluate((el: HTMLElement) => el.click());
 
     await expect(page.getByText('EMI Calculator')).not.toBeVisible({ timeout: 5000 });
 });
