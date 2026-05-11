@@ -21,6 +21,13 @@ const CarCard = ({ car, featured = false }) => {
     const imageUrl = car.image_url || 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=800';
     const isAvailable = !car.availability_status || car.availability_status === 'Available';
     const priceLabel = car.price ? `$${car.price.toLocaleString()}` : 'Price on request';
+    const activeOffer = Array.isArray(car.activeOffers) && car.activeOffers.length > 0 ? car.activeOffers[0] : null;
+    const offerSavings = Number(activeOffer?.savings_amount) || 0;
+    const discountedPrice = activeOffer
+        ? Number(activeOffer.discounted_price ?? Math.max((Number(car.price) || 0) - offerSavings, 0))
+        : null;
+    const hasDiscount = activeOffer && offerSavings > 0 && discountedPrice !== null && discountedPrice < Number(car.price);
+    const discountedPriceLabel = hasDiscount ? `$${discountedPrice.toLocaleString()}` : priceLabel;
     const summary = car.description
         ? car.description.replace(/<[^>]*>/g, '').slice(0, featured ? 220 : 120)
         : 'A premium Trailblazer listing with complete detail panels and image-led browsing.';
@@ -51,6 +58,14 @@ const CarCard = ({ car, featured = false }) => {
                                 {car.condition === 'New' ? 'Brand New' : 'Pre-Owned'}
                             </span>
                         </div>
+
+                        {activeOffer && (
+                            <div className="absolute left-4 top-14 animate-in fade-in slide-in-from-left-2 duration-500">
+                                <span id={`car-card-${car._id}-offer-badge`} className="inline-flex max-w-[220px] items-center gap-2 rounded-full border border-white/25 bg-rose-600/95 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-xl shadow-rose-900/25 backdrop-blur-md">
+                                    {activeOffer.badge_text}
+                                </span>
+                            </div>
+                        )}
 
                         <div className="absolute top-4 right-4 animate-in fade-in zoom-in duration-500">
                             <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl backdrop-blur-md border border-white/20 ${fuelTheme(car.fuel_type)}`}>
@@ -109,7 +124,17 @@ const CarCard = ({ car, featured = false }) => {
                             <div className="flex items-center justify-between gap-4">
                                 <div>
                                     <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-0.5">Premium Listing</div>
-                                    <div id={`car-card-${car._id}-price`} className="text-2xl font-black text-slate-900 tracking-tight">{priceLabel}</div>
+                                    {hasDiscount ? (
+                                        <div className="space-y-1">
+                                            <div id={`car-card-${car._id}-price`} className="text-2xl font-black text-emerald-700 tracking-tight">{discountedPriceLabel}</div>
+                                            <div id={`car-card-${car._id}-original-price`} className="text-xs font-black text-slate-400 line-through">{priceLabel}</div>
+                                        </div>
+                                    ) : (
+                                        <div id={`car-card-${car._id}-price`} className="text-2xl font-black text-slate-900 tracking-tight">{priceLabel}</div>
+                                    )}
+                                    {hasDiscount && (
+                                        <div id={`car-card-${car._id}-savings`} className="mt-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-600">{activeOffer.discount_label}</div>
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button

@@ -1,10 +1,12 @@
 const Car = require('../models/Car');
 const Booking = require('../models/Booking');
+const { attachActiveOffers } = require('./carController');
 
 const getAllCars = async (req, res) => {
     try {
         const cars = await Car.findAll({ order: [['createdAt', 'DESC']] });
-        res.json(cars);
+        const carsWithOffers = await attachActiveOffers(cars);
+        res.json(carsWithOffers);
     } catch (err) {
         res.status(500).json({ message: 'Server error: ' + err.message });
     }

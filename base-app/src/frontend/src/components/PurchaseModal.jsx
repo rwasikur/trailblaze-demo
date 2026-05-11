@@ -23,6 +23,13 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
 
     if (!isOpen) return null;
 
+    const activeOffer = Array.isArray(car.activeOffers) && car.activeOffers.length > 0 ? car.activeOffers[0] : null;
+    const offerSavings = Number(activeOffer?.savings_amount) || 0;
+    const discountedPrice = activeOffer
+        ? Number(activeOffer.discounted_price ?? Math.max((Number(car.price) || 0) - offerSavings, 0))
+        : null;
+    const hasDiscount = activeOffer && offerSavings > 0 && discountedPrice !== null && discountedPrice < Number(car.price);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -92,7 +99,14 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                             </div>
                             <div>
                                 <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">Price</div>
-                                <div className="text-xs font-black text-blue-400">${car.price?.toLocaleString()}</div>
+                                {hasDiscount ? (
+                                    <div>
+                                        <div className="text-xs font-black text-emerald-300">${discountedPrice.toLocaleString()}</div>
+                                        <div className="text-[10px] font-black text-slate-500 line-through">${car.price?.toLocaleString()}</div>
+                                    </div>
+                                ) : (
+                                    <div className="text-xs font-black text-blue-400">${car.price?.toLocaleString()}</div>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -45,6 +45,7 @@ const Navbar = () => {
                     {isAdmin ? (
                         <>
                             <Link to="/admin/dashboard" className="text-sm font-bold tracking-wide text-slate-300 hover:text-white transition-colors duration-200">Dashboard</Link>
+                            <Link id="manage-offers-link" to="/admin/offers" className="text-sm font-bold tracking-wide text-slate-300 hover:text-white transition-colors duration-200">Offers</Link>
                             <Link to="/admin/profile" className="text-sm font-bold tracking-wide text-slate-300 hover:text-white transition-colors duration-200">Profile</Link>
                             <button
                                 onClick={handleLogout}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Gift } from 'lucide-react';
 import api from '../api';
 import { Button } from '../components/ui/Button';
 import PurchaseModal from '../components/PurchaseModal';
@@ -53,6 +54,13 @@ const CarDetailsPage = () => {
     }
 
     const tabs = ['Overview', 'Price', 'Specs', 'Images'];
+    const activeOffer = Array.isArray(car.activeOffers) && car.activeOffers.length > 0 ? car.activeOffers[0] : null;
+    const offerSavings = Number(activeOffer?.savings_amount) || 0;
+    const discountedPrice = activeOffer
+        ? Number(activeOffer.discounted_price ?? Math.max((Number(car.price) || 0) - offerSavings, 0))
+        : null;
+    const hasDiscount = activeOffer && offerSavings > 0 && discountedPrice !== null && discountedPrice < Number(car.price);
+    const displayPrice = hasDiscount ? discountedPrice : car.price;
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -86,13 +94,24 @@ const CarDetailsPage = () => {
                                     <span className="text-slate-500 text-sm font-bold">Owner Depreciation ({car.number_of_owners} Owners)</span>
                                     <span className="text-red-500 text-sm font-bold">- ${depreciationAmount.toLocaleString()}</span>
                                 </div>
+                                {hasDiscount && (
+                                    <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
+                                        <span className="text-slate-500 text-sm font-bold">Active Offer Discount</span>
+                                        <span className="text-emerald-600 text-sm font-black">- ${offerSavings.toLocaleString()}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
                                     <span className="text-slate-900 text-sm font-bold">Varies by City</span>
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
-                                    <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Current Valuation</span>
-                                    <span className="text-4xl font-black text-blue-600">${car.price?.toLocaleString()}</span>
+                                    <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">{hasDiscount ? 'Offer Valuation' : 'Current Valuation'}</span>
+                                    <div className="text-right">
+                                        <span id="car-price-tab-current-price" className={`block text-4xl font-black ${hasDiscount ? 'text-emerald-600' : 'text-blue-600'}`}>${displayPrice?.toLocaleString()}</span>
+                                        {hasDiscount && (
+                                            <span id="car-price-tab-original-price" className="block text-sm font-black text-slate-400 line-through">${car.price?.toLocaleString()}</span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -106,13 +125,24 @@ const CarDetailsPage = () => {
                                     <span className="text-slate-500 text-sm font-bold">Ex-Showroom Price</span>
                                     <span className="text-2xl font-black text-slate-900">${car.price?.toLocaleString()}</span>
                                 </div>
+                                {hasDiscount && (
+                                    <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
+                                        <span className="text-slate-500 text-sm font-bold">Active Offer Discount</span>
+                                        <span id="car-price-tab-savings" className="text-emerald-600 text-sm font-black">- ${offerSavings.toLocaleString()}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between items-center py-2 border-b border-slate-200/60">
                                     <span className="text-slate-500 text-sm font-bold">Estimated Registration</span>
                                     <span className="text-slate-900 text-sm font-bold">Varies by City</span>
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
-                                    <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Valuation</span>
-                                    <span className="text-4xl font-black text-blue-600">${car.price?.toLocaleString()}</span>
+                                    <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">{hasDiscount ? 'Offer Valuation' : 'Valuation'}</span>
+                                    <div className="text-right">
+                                        <span id="car-price-tab-current-price" className={`block text-4xl font-black ${hasDiscount ? 'text-emerald-600' : 'text-blue-600'}`}>${displayPrice?.toLocaleString()}</span>
+                                        {hasDiscount && (
+                                            <span id="car-price-tab-original-price" className="block text-sm font-black text-slate-400 line-through">${car.price?.toLocaleString()}</span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -215,7 +245,12 @@ const CarDetailsPage = () => {
                             <div className="flex justify-between items-end relative z-10">
                                 <div>
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Acquisition</div>
-                                    <div className="text-4xl font-black tracking-tight">${car.price?.toLocaleString()}</div>
+                                    <div id="car-detail-current-price" className={`text-4xl font-black tracking-tight ${hasDiscount ? 'text-emerald-300' : ''}`}>${displayPrice?.toLocaleString()}</div>
+                                    {hasDiscount && (
+                                        <div className="mt-1">
+                                            <span id="car-detail-original-price" className="text-sm font-black text-slate-500 line-through">${car.price?.toLocaleString()}</span>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="text-right">
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Official Seller</div>
@@ -223,6 +258,34 @@ const CarDetailsPage = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {activeOffer && (
+                            <div id="car-detail-offer-badge" className="relative overflow-hidden rounded-2xl border border-emerald-300 bg-gradient-to-r from-cyan-50 via-white to-emerald-50 p-3.5 text-slate-900 shadow-lg shadow-emerald-900/10 ring-1 ring-emerald-100">
+                                <div className="absolute inset-y-0 left-0 w-1.5 bg-emerald-500" />
+                                <div className="relative flex items-start justify-between gap-4 pl-2">
+                                    <div className="min-w-0">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <span className="inline-flex items-center gap-2 rounded-full bg-cyan-600 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm">
+                                                <Gift className="h-3 w-3" />
+                                                {activeOffer.badge_text}
+                                            </span>
+                                            {Number(activeOffer.discount_percent || 0) > 0 && (
+                                                <span className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-sm">
+                                                    {Number(activeOffer.discount_percent).toLocaleString()}% off
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="mt-2 text-base font-black leading-tight">{activeOffer.title}</div>
+                                    </div>
+                                    {hasDiscount && (
+                                        <div className="shrink-0 text-right">
+                                            <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Save</div>
+                                            <div className="text-lg font-black text-emerald-700">${offerSavings.toLocaleString()}</div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
                         <div className="grid grid-cols-3 gap-3 pt-2 text-center">
                             <div className="space-y-0.5">
