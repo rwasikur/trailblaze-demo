@@ -5,7 +5,10 @@
       "difficulty": "Medium",
       "description": "Integration of a comprehensive Ownership Heritage and Sales Ledger system. This features a dynamic timeline for pre-owned vehicles and an administrative sales history dashboard with automated revenue tracking and transaction highlighting.",
       "branch": "task-5",
-      "test_case_location": "test-cases/task-5/",
+      "test_case_location": [
+          "tasks/test-cases/task-5/public/task-5.spec.ts",
+          "evaluation/private-test-cases/task-5/private/task-5.spec.ts"
+        ],
       "acceptance_criteria": [
         "Login at '/admin-login' and navigate to a 'Used' vehicle. Verify the navigation bar contains a 'History' tab with ID 'history-tab'. Click it to reveal the 'Ownership Heritage' section with ID 'heritage-timeline'.",
         "On the history timeline, verify that the most recent record is visually distinguished using the 'animate-pulse' and 'border-blue-400' CSS classes for clear identification.",
