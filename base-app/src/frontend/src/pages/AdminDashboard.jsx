@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
@@ -55,6 +55,12 @@ const AdminDashboard = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success(`Booking ${status.toLowerCase()}!`);
+
+            if (status === 'Accepted') {
+                navigate('/admin/sales-history', { state: { lastAcceptedId: bookingId } });
+                return;
+            }
+
             // Simultaneous refresh to ensure UI is in sync
             await Promise.all([fetchBookings(token), fetchCars(token)]);
         } catch (err) {
@@ -64,7 +70,7 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="min-h-full bg-slate-50 py-10 px-4 md:px-6">
+        <div className="min-h-screen bg-slate-50 py-10 px-4 md:px-6">
             <div className="max-w-7xl mx-auto space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
@@ -72,6 +78,9 @@ const AdminDashboard = () => {
                         <p className="text-slate-500 mt-2 text-sm md:text-base font-medium">Manage your vehicle Catalogue and purchase bookings.</p>
                     </div>
                     <div className="flex flex-wrap gap-3">
+                        <Button id="sales-history-link" variant="outline" onClick={() => navigate('/admin/sales-history')} className="text-xs font-bold h-10 border-slate-300">
+                            Sales History
+                        </Button>
                         <Button variant="outline" onClick={() => navigate('/admin/catalogue')} className="text-xs font-bold h-10 border-slate-300">
                             Manage Catalogue
                         </Button>
@@ -146,21 +155,21 @@ const AdminDashboard = () => {
                                                         </td>
                                                         <td className="px-6 py-5 text-right">
                                                             {car.availability_status === 'Available' ? (
-                                                                <Button 
-                                                                    id={`car-row-${car._id}-edit`} 
-                                                                    variant="outline" 
-                                                                    size="sm" 
-                                                                    onClick={() => navigate(`/admin/edit-car/${car._id}`)} 
+                                                                <Button
+                                                                    id={`car-row-${car._id}-edit`}
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => navigate(`/admin/edit-car/${car._id}`)}
                                                                     className="h-8 px-4 text-[10px] font-black uppercase tracking-widest border-slate-200 hover:border-slate-900 transition-all"
                                                                 >
                                                                     Edit
                                                                 </Button>
                                                             ) : car.condition === 'New' ? (
-                                                                <Button 
-                                                                    id={`car-row-${car._id}-copy`} 
-                                                                    variant="outline" 
-                                                                    size="sm" 
-                                                                    onClick={() => navigate('/admin/add-car', { state: { copyFrom: car } })} 
+                                                                <Button
+                                                                    id={`car-row-${car._id}-copy`}
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => navigate('/admin/add-car', { state: { copyFrom: car } })}
                                                                     className="h-8 px-4 text-[10px] font-black uppercase tracking-widest border-slate-200 hover:border-slate-900 transition-all"
                                                                 >
                                                                     Make a Copy
@@ -174,19 +183,19 @@ const AdminDashboard = () => {
                                     </div>
                                 )}
                             </>
-                        ) : (
+                        ) : activeTab === 'bookings' ? (
                             <>
                                 <div className="bg-white px-6 py-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <h2 className="text-base font-black uppercase tracking-widest text-slate-400">Incoming Requests</h2>
                                     <div className="flex gap-2">
                                         {['All', 'Pending', 'Accepted', 'Rejected'].map(status => (
-                                            <button
+                                            <div
                                                 key={status}
                                                 onClick={() => setBookingFilter(status)}
-                                                className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${bookingFilter === status ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                                className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer ${bookingFilter === status ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                                             >
                                                 {status}
-                                            </button>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
@@ -212,116 +221,116 @@ const AdminDashboard = () => {
                                                 {bookings
                                                     .filter(b => bookingFilter === 'All' || b.status === bookingFilter)
                                                     .map(booking => (
-                                                    <tr id={`booking-row-${booking._id}`} key={booking._id} className="hover:bg-slate-50/30 transition-colors">
-                                                        <td className="px-6 py-5">
-                                                            <div className="font-black text-slate-900 text-sm">{booking.user_name}</div>
-                                                        </td>
-                                                        <td className="px-6 py-5">
-                                                            <div className="text-slate-600 font-bold text-sm tracking-tight">{booking.user_email}</div>
-                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_contact}</div>
-                                                        </td>
-                                                        <td className="px-6 py-5">
-                                                            <div className="font-black text-slate-900 text-sm">
-                                                                {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
-                                                            </div>
-                                                            <div className="flex items-center gap-1.5 mt-1">
-                                                                <div className="font-bold text-blue-600 text-[10px] uppercase tracking-widest">${booking.car?.price?.toLocaleString()}</div>
-                                                                {booking.car?.condition === 'New' && (
-                                                                    <>
-                                                                        <span className="text-slate-300 text-[10px]">•</span>
-                                                                        <div className="flex items-center gap-1">
-                                                                            <div 
-                                                                                className="w-2 h-2 rounded-full border border-slate-200" 
-                                                                                style={{ backgroundColor: getColorCode(booking.selected_color) }}
-                                                                            />
-                                                                            <div className="font-bold text-slate-500 text-[10px] uppercase tracking-widest">{booking.selected_color || 'N/A'}</div>
-                                                                        </div>
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex items-center gap-2 mt-1.5">
-                                                                <Badge variant={booking.car?.condition === 'New' ? 'new' : 'used'} className="text-[8px] px-1.5 py-0 h-4">
-                                                                    {booking.car?.condition === 'New' ? 'New' : 'Pre-Owned'}
+                                                        <tr id={`booking-row-${booking._id}`} key={booking._id} className="hover:bg-slate-50/30 transition-colors">
+                                                            <td className="px-6 py-5">
+                                                                <div className="font-black text-slate-900 text-sm">{booking.user_name}</div>
+                                                            </td>
+                                                            <td className="px-6 py-5">
+                                                                <div className="text-slate-600 font-bold text-sm tracking-tight">{booking.user_email}</div>
+                                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.user_contact}</div>
+                                                            </td>
+                                                            <td className="px-6 py-5">
+                                                                <div className="font-black text-slate-900 text-sm">
+                                                                    {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
+                                                                </div>
+                                                                <div className="flex items-center gap-1.5 mt-1">
+                                                                    <div className="font-bold text-blue-600 text-[10px] uppercase tracking-widest">${booking.car?.price?.toLocaleString()}</div>
+                                                                    {booking.car?.condition === 'New' && (
+                                                                        <>
+                                                                            <span className="text-slate-300 text-[10px]">•</span>
+                                                                            <div className="flex items-center gap-1">
+                                                                                <div
+                                                                                    className="w-2 h-2 rounded-full border border-slate-200"
+                                                                                    style={{ backgroundColor: getColorCode(booking.selected_color) }}
+                                                                                />
+                                                                                <div className="font-bold text-slate-500 text-[10px] uppercase tracking-widest">{booking.selected_color || 'N/A'}</div>
+                                                                            </div>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center gap-2 mt-1.5">
+                                                                    <Badge variant={booking.car?.condition === 'New' ? 'new' : 'used'} className="text-[8px] px-1.5 py-0 h-4">
+                                                                        {booking.car?.condition === 'New' ? 'New' : 'Pre-Owned'}
+                                                                    </Badge>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-5 text-slate-500 text-[11px] font-black uppercase tracking-tighter">
+                                                                {new Date(booking.createdAt).toLocaleDateString()}
+                                                            </td>
+                                                            <td className="px-6 py-5">
+                                                                <Badge variant={booking.status === 'Accepted' ? 'available' : booking.status === 'Pending' ? 'pending' : 'unavailable'}>
+                                                                    {booking.status}
                                                                 </Badge>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-5 text-slate-500 text-[11px] font-black uppercase tracking-tighter">
-                                                            {new Date(booking.createdAt).toLocaleDateString()}
-                                                        </td>
-                                                        <td className="px-6 py-5">
-                                                            <Badge variant={booking.status === 'Accepted' ? 'available' : booking.status === 'Pending' ? 'pending' : 'unavailable'}>
-                                                                {booking.status}
-                                                            </Badge>
-                                                        </td>
-                                                        <td className="px-6 py-5 text-right">
-                                                            <div className="flex justify-end gap-2">
-                                                                {editingBookingId === booking._id ? (
-                                                                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-300">
-                                                                        <select
-                                                                            className="h-8 px-2 text-[9px] font-black uppercase tracking-widest bg-slate-100 border border-slate-200 rounded-lg outline-none focus:border-slate-900 transition-all"
-                                                                            value={booking.status}
-                                                                            onChange={(e) => {
-                                                                                handleBookingStatus(booking._id, e.target.value);
-                                                                                setEditingBookingId(null);
-                                                                            }}
-                                                                        >
-                                                                            <option value="Pending">Pending</option>
-                                                                            <option value="Accepted">Accepted</option>
-                                                                            <option value="Rejected">Rejected</option>
-                                                                        </select>
-                                                                        <button 
-                                                                            onClick={() => setEditingBookingId(null)}
-                                                                            className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 px-2"
-                                                                        >
-                                                                            Cancel
-                                                                        </button>
-                                                                    </div>
-                                                                ) : (
-                                                                    <>
-                                                                        {booking.status === 'Pending' ? (
-                                                                            <div className="flex justify-end gap-2">
+                                                            </td>
+                                                            <td className="px-6 py-5 text-right">
+                                                                <div className="flex justify-end gap-2">
+                                                                    {editingBookingId === booking._id ? (
+                                                                        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-300">
+                                                                            <select
+                                                                                className="h-8 px-2 text-[9px] font-black uppercase tracking-widest bg-slate-100 border border-slate-200 rounded-lg outline-none focus:border-slate-900 transition-all"
+                                                                                value={booking.status}
+                                                                                onChange={(e) => {
+                                                                                    handleBookingStatus(booking._id, e.target.value);
+                                                                                    setEditingBookingId(null);
+                                                                                }}
+                                                                            >
+                                                                                <option value="Pending">Pending</option>
+                                                                                <option value="Accepted">Accepted</option>
+                                                                                <option value="Rejected">Rejected</option>
+                                                                            </select>
+                                                                            <button
+                                                                                onClick={() => setEditingBookingId(null)}
+                                                                                className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 px-2"
+                                                                            >
+                                                                                Cancel
+                                                                            </button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <>
+                                                                            {booking.status === 'Pending' ? (
+                                                                                <div className="flex justify-end gap-2">
+                                                                                    <Button
+                                                                                        id={`booking-row-${booking._id}-accept`}
+                                                                                        size="sm"
+                                                                                        variant="slate"
+                                                                                        className="h-8 px-4 text-[9px] bg-emerald-600 hover:bg-emerald-700 border-none font-black uppercase tracking-widest shadow-md shadow-emerald-600/10"
+                                                                                        onClick={() => handleBookingStatus(booking._id, 'Accepted')}
+                                                                                    >
+                                                                                        Accept
+                                                                                    </Button>
+                                                                                    <Button
+                                                                                        id={`booking-row-${booking._id}-reject`}
+                                                                                        size="sm"
+                                                                                        variant="outline"
+                                                                                        className="h-8 px-4 text-[9px] text-red-600 border-red-100 hover:bg-red-50 font-black uppercase tracking-widest"
+                                                                                        onClick={() => handleBookingStatus(booking._id, 'Rejected')}
+                                                                                    >
+                                                                                        Reject
+                                                                                    </Button>
+                                                                                </div>
+                                                                            ) : (
                                                                                 <Button
-                                                                                    id={`booking-row-${booking._id}-accept`}
-                                                                                    size="sm"
-                                                                                    variant="slate"
-                                                                                    className="h-8 px-4 text-[9px] bg-emerald-600 hover:bg-emerald-700 border-none font-black uppercase tracking-widest shadow-md shadow-emerald-600/10"
-                                                                                    onClick={() => handleBookingStatus(booking._id, 'Accepted')}
-                                                                                >
-                                                                                    Accept
-                                                                                </Button>
-                                                                                <Button
-                                                                                    id={`booking-row-${booking._id}-reject`}
+                                                                                    id={`booking-row-${booking._id}-edit-status`}
                                                                                     size="sm"
                                                                                     variant="outline"
-                                                                                    className="h-8 px-4 text-[9px] text-red-600 border-red-100 hover:bg-red-50 font-black uppercase tracking-widest"
-                                                                                    onClick={() => handleBookingStatus(booking._id, 'Rejected')}
+                                                                                    className="h-8 px-4 text-[9px] font-black uppercase tracking-widest border-slate-200 hover:border-slate-900 transition-all"
+                                                                                    onClick={() => setEditingBookingId(booking._id)}
                                                                                 >
-                                                                                    Reject
+                                                                                    Edit Status
                                                                                 </Button>
-                                                                            </div>
-                                                                        ) : (
-                                                                            <Button
-                                                                                id={`booking-row-${booking._id}-edit-status`}
-                                                                                size="sm"
-                                                                                variant="outline"
-                                                                                className="h-8 px-4 text-[9px] font-black uppercase tracking-widest border-slate-200 hover:border-slate-900 transition-all"
-                                                                                onClick={() => setEditingBookingId(booking._id)}
-                                                                            >
-                                                                                Edit Status
-                                                                            </Button>
-                                                                        )}
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))}
+                                                                            )}
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
                                             </tbody>
                                         </table>
                                     </div>
                                 )}
                             </>
-                        )}
+                        ) : null}
                     </CardContent>
                 </Card>
             </div>

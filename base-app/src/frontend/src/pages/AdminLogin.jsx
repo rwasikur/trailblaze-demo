@@ -32,7 +32,6 @@ const AdminLogin = () => {
             // 1. Set token immediately so re-renders know we are logged in
             localStorage.setItem('adminToken', data.token);
             window.dispatchEvent(new Event('authChange'));
-            
             // 2. Trigger toast
             toast.success("Access Granted.");
             
