@@ -187,9 +187,10 @@ test.describe('Task 4: Recently Viewed - Private Validation Suite', () => {
     test('Functionality: Clearing Recent History via UI', async ({ page, baseURL }) => {
         const cars = await getCars(baseURL || '');
         await page.goto(`${baseURL || ''}/car/${cars[0]._id}`);
+        await page.waitForTimeout(500);
         await page.goto(`${baseURL || ''}/browse`);
         await page.getByRole('button', { name: /^Recent$/i }).click();
-        
+
         // Ensure storage is synced
         await expect.poll(async () => {
             return await page.evaluate(() => localStorage.getItem('recentCars'));
@@ -198,10 +199,10 @@ test.describe('Task 4: Recently Viewed - Private Validation Suite', () => {
         const clearButton = page.locator('#clear-recent-button');
         await expect(clearButton).toBeVisible();
         await clearButton.click();
-        
+
         await expect(page.getByText(/No recent cars/i)).toBeVisible();
         await expect(clearButton).not.toBeVisible();
-        
+
         const recent = await page.evaluate(() => JSON.parse(localStorage.getItem('recentCars') || '[]'));
         expect(recent.length).toBe(0);
     });
