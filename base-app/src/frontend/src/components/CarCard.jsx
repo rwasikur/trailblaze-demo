@@ -59,6 +59,13 @@ const CarCard = ({ car, featured = false }) => {
                             </span>
                         </div>
 
+                        <div className="absolute top-14 right-4 animate-in fade-in zoom-in duration-500 delay-150">
+                            <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.15em] shadow-xl backdrop-blur-md border border-white/20 bg-slate-900/80 text-white">
+                                <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                {car.views || 0} Views
+                            </span>
+                        </div>
+
                         <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4 text-white">
                             <div>
                                 <div id={`car-card-${car._id}-brand`} className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-300 mb-1">{car.brand}</div>
