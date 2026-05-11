@@ -4,7 +4,7 @@
             "task_id": "task-2",
             "difficulty": "easy",
             "description": "Premium Fleet Comparison System: A comprehensive multi-vehicle evaluation framework allowing users and administrators to compare technical specifications side-by-side with real-time selection persistence and limit validation.",
-            "branch": "main",
+            "branch": "task-2",
             "test_case_location": [
                 "tasks/test-cases/task-2/public/task-2.spec.ts",
                 "evaluation/private-test-cases/task-2/private/task-2.spec.ts"
