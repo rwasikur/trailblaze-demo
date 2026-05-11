@@ -1,0 +1,28 @@
+{
+    "tasks": [
+        {
+            "task_id": "task-4",
+            "difficulty": "easy",
+            "description": "Implement a 'Recently Viewed' functionality that uses localStorage to track the last 5 visited car details and introduces a custom filter on the Browse Cars page to toggle the inventory view.",
+            "branch": "task-4",
+            "test_base_location": [
+                "tasks/test-cases/task-4/public/task-4.spec.ts",
+                "evaluation/private-test-cases/task-4/private/task-4.spec.ts"
+            ],
+            "acceptance_criteria": [
+                "Verify that the BrowseCarsPage includes a 'Recent' filter button accessible to both unauthenticated visitors and logged-in administrators.",
+                "Ensure that any car details page visited by an unauthenticated visitor is automatically added to the browsing history and reflected in the Recently Viewed gallery.",
+                "Confirm that authenticated administrators can track their vehicle views in the same manner as visitors ensuring consistent feature access across all user roles.",
+                "Ensure the filter state resets to All Collection by default whenever the browse page is accessed via fresh navigation.",
+                "Validate that the system maintains a maximum of 5 unique vehicle IDs in the browser's localStorage with the most recent visit always prepended to the start of the list.",
+                "Ensure that revisiting an existing car in the history moves its ID to the top of the list while preventing any duplicate entries in storage.",
+                "Verify that activating the Recent filter dynamically updates the inventory grid to show only the vehicles present in the visit history sorted by recency.",
+                "Confirm that switching the filter back to the All state fully restores the original gallery layout and displays all available inventory items.",
+                "Validate that the application silently skips and excludes any car IDs from the history that no longer exist in the database rendering only valid inventory items.",
+                "Ensure the application handles corrupted or malformed localStorage data gracefully by falling back to an empty history state instead of crashing the UI.",
+                "Verify that the No matches found template correctly renders if the Recent filter is selected when the visit history is empty.",
+                "Confirm that any manual or programmatic expansion of the history array beyond 5 items is automatically truncated to the 5-item limit upon the next vehicle visit."
+            ]
+        }
+    ]
+}

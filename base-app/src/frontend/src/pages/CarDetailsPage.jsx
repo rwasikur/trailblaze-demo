@@ -32,6 +32,20 @@ const CarDetailsPage = () => {
         fetchCar();
     }, [id]);
 
+    useEffect(() => {
+        if (id) {
+            try {
+                const raw = localStorage.getItem('recentCars');
+                const recent = JSON.parse(raw || '[]');
+                const updated = [id, ...recent.filter(rid => rid !== id)].slice(0, 5);
+                localStorage.setItem('recentCars', JSON.stringify(updated));
+                window.dispatchEvent(new Event('recentCarsUpdated'));
+            } catch (e) {
+                console.error('Error updating recentCars', e);
+            }
+        }
+    }, [id]);
+
     if (loading) return (
         <div className="min-h-full bg-slate-50 flex items-center justify-center">
             <p className="text-slate-400 font-medium animate-pulse">Scanning vehicle signatures...</p>
@@ -301,8 +315,8 @@ const CarDetailsPage = () => {
                         {/* Condition Badge Overlay */}
                         <div className="absolute top-8 left-8 z-20">
                             <div className={`px-5 py-2.5 rounded-2xl backdrop-blur-xl shadow-2xl border border-white/20 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3 ${car.condition === 'New'
-                                    ? 'bg-indigo-600/90 text-white'
-                                    : 'bg-slate-800/90 text-white'
+                                ? 'bg-indigo-600/90 text-white'
+                                : 'bg-slate-800/90 text-white'
                                 }`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${car.condition === 'New' ? 'bg-white animate-pulse' : 'bg-amber-400'}`}></span>
                                 {car.condition === 'New' ? 'Brand New' : 'Pre-Owned'}

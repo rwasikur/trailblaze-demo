@@ -28,17 +28,17 @@ const AdminLogin = () => {
         setLoading(true);
         try {
             const { data } = await api.post('/api/admin/login', formData);
-            
+
             // 1. Set token immediately so re-renders know we are logged in
             localStorage.setItem('adminToken', data.token);
             window.dispatchEvent(new Event('authChange'));
-            
+
             // 2. Trigger toast
             toast.success("Access Granted.");
-            
+
             // 3. Optimized delay for automated tests (Playwright)
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
             // 4. Navigate
             navigate('/admin/dashboard');
         } catch (err) {
