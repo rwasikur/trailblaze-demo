@@ -37,7 +37,7 @@ const CarCard = ({ car, featured = false }) => {
                 {/* Hover Glow Effect */}
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-blue-400 rounded-[1.8rem] opacity-0 group-hover:opacity-10 blur-xl transition-opacity duration-500 pointer-events-none"></div>
 
-                <article id={`car-card-${car._id}`} className={`relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(37,99,235,0.1)] ${featured ? 'lg:flex-row' : ''}`}>
+                <article id={`car-card-${car._id}`} className={`car-card relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(37,99,235,0.1)] ${featured ? 'lg:flex-row' : ''}`}>
                     <div className={`relative overflow-hidden bg-slate-100 ${featured ? 'lg:w-[52%] aspect-[4/3] lg:aspect-auto' : 'aspect-[16/10]'}`}>
                         <img
                             src={imageUrl}
@@ -92,7 +92,7 @@ const CarCard = ({ car, featured = false }) => {
                             <div className={`grid ${car.condition === 'New' ? 'grid-cols-2' : 'grid-cols-3'} gap-2 pb-6 border-b border-slate-100`}>
                                 <div className="text-center">
                                     <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">Drive</div>
-                                    <div className="text-xs font-bold text-slate-900">{car.transmission?.slice(0, 4) || 'N/A'}</div>
+                                    <div className="text-xs font-bold text-slate-900">{car.transmission || 'N/A'}</div>
                                 </div>
                                 <div className={`text-center ${car.condition !== 'New' ? 'border-x border-slate-100' : ''}`}>
                                     <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1">Seats</div>
