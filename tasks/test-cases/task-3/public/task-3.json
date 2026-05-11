@@ -2,10 +2,13 @@
   "tasks": [
     {
       "task_id": "task-3",
-      "difficulty": "Medium",
+      "difficulty": "easy",
       "description": "Validation of core pagination functionality across the platform, focusing on state persistence during navigation, tab-specific pagination in the dashboard, and correct reset behavior during filtering.",
       "branch": "task-3",
-      "test_case_location": "tasks/test-cases/task-3/public/",
+      "test_case_location": [
+              "tasks/test-cases/task-3/public/task-3.spec.ts",
+              "evaluation/private-test-cases/task-3/private/task-3.spec.ts"
+            ],
       "acceptance_criteria": [
         "Navigate to the public browse page ('/browse?page=1'). Verify that the vehicle grid correctly displays the first 9 vehicles from the inventory.",
         "On the '/browse' page, click the '2' button in the pagination footer. Verify that the URL updates to '/browse?page=2' and the second set of vehicles is rendered in the grid.",
