@@ -21,6 +21,10 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
 
     const [loading, setLoading] = useState(false);
 
+    const discount = parseInt(car?.discount_percentage) || 0;
+    const hasDiscount = car && discount > 0 && discount < 100;
+    const finalPrice = hasDiscount ? Math.round(car.price - (car.price * discount / 100)) : car?.price;
+
     if (!isOpen) return null;
 
     const handleSubmit = async (e) => {
@@ -92,8 +96,17 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                             </div>
                             <div>
                                 <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">Price</div>
-                                <div className="text-xs font-black text-blue-400">${car.price?.toLocaleString()}</div>
+                                <div className="text-xs font-black text-blue-400">${finalPrice?.toLocaleString()}</div>
+                                {hasDiscount && (
+                                    <div className="text-[8px] font-bold text-slate-500 line-through">${car.price?.toLocaleString()}</div>
+                                )}
                             </div>
+                            {hasDiscount && (
+                                <div>
+                                    <div className="text-[9px] font-bold uppercase tracking-widest text-red-400 mb-1">Offer</div>
+                                    <div className="text-xs font-black text-red-500">{discount}% OFF</div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

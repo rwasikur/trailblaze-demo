@@ -42,6 +42,7 @@ const Car = sequelize.define('Car', {
         defaultValue: []
     },
     availability_status: { type: DataTypes.STRING, defaultValue: 'Available' },
+    discount_percentage: { type: DataTypes.INTEGER, defaultValue: 0 },
 }, {
     timestamps: true,
 });
