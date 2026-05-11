@@ -836,6 +836,7 @@ const seedPublic = async () => {
                     price: carData.price,
                     image_url: carData.thumbnail_image,
                     secondary_images: carData.images || [],
+                    views: carData.views || 0,
                 });
                 updated += 1;
 
@@ -845,6 +846,7 @@ const seedPublic = async () => {
                     price: carData.price,
                     image_url: carData.thumbnail_image,
                     secondary_images: carData.images || [],
+                    views: carData.views || 0,
                 });
                 created += 1;
 
