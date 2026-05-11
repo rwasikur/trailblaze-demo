@@ -5,7 +5,7 @@
             "difficulty": "easy",
             "description": "Implement a 'Recently Viewed' functionality that uses localStorage to track the last 5 visited car details and introduces a custom filter on the Browse Cars page to toggle the inventory view.",
             "branch": "task-4",
-            "test_base_location": [
+            "test_case_location": [
                 "tasks/test-cases/task-4/public/task-4.spec.ts",
                 "evaluation/private-test-cases/task-4/private/task-4.spec.ts"
             ],
