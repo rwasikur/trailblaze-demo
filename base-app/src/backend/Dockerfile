@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install tools BEFORE copying code
 RUN apk update && \
-    apk add --no-cache curl netcat-openbsd python3 py3-pip build-base g++
+    apk add --no-cache curl netcat-openbsd build-base g++
 
 COPY package*.json ./
 RUN npm install
