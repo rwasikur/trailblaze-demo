@@ -1,18 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
+import { Pagination } from '../components/ui/Pagination';
 import { getColorCode } from '../constants/colorMapping';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [cars, setCars] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [activeTab, setActiveTab] = useState('vehicles');
     const [editingBookingId, setEditingBookingId] = useState(null);
+    const carPage = parseInt(searchParams.get('vPage') || '1');
+    const bookingPage = parseInt(searchParams.get('bPage') || '1');
+    const ITEMS_PER_PAGE = 10;
     const [bookingFilter, setBookingFilter] = useState('All');
 
     useEffect(() => {
@@ -62,6 +67,20 @@ const AdminDashboard = () => {
             console.error(err);
         }
     };
+
+    const paginatedCars = useMemo(() => {
+        const startIndex = (carPage - 1) * ITEMS_PER_PAGE;
+        return cars.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [cars, carPage]);
+
+    const filteredBookings = useMemo(() => {
+        return bookings.filter(b => bookingFilter === 'All' || b.status === bookingFilter);
+    }, [bookings, bookingFilter]);
+
+    const paginatedBookings = useMemo(() => {
+        const startIndex = (bookingPage - 1) * ITEMS_PER_PAGE;
+        return filteredBookings.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredBookings, bookingPage]);
 
     return (
         <div className="min-h-full bg-slate-50 py-10 px-4 md:px-6">
@@ -124,7 +143,7 @@ const AdminDashboard = () => {
                                                 </tr>
                                             </thead>
                                             <tbody id="dashboard-car-list" className="divide-y divide-slate-50">
-                                                {cars.map(car => (
+                                                {paginatedCars.map(car => (
                                                     <tr id={`car-row-${car._id}`} key={car._id} className="hover:bg-slate-50/30 transition-colors group">
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">
@@ -150,7 +169,7 @@ const AdminDashboard = () => {
                                                                     id={`car-row-${car._id}-edit`} 
                                                                     variant="outline" 
                                                                     size="sm" 
-                                                                    onClick={() => navigate(`/admin/edit-car/${car._id}`)} 
+                                                                    onClick={() => navigate(`/admin/edit-car/${car._id}?fromPage=${carPage}&from=dashboard`)} 
                                                                     className="h-8 px-4 text-[10px] font-black uppercase tracking-widest border-slate-200 hover:border-slate-900 transition-all"
                                                                 >
                                                                     Edit
@@ -171,6 +190,18 @@ const AdminDashboard = () => {
                                                 ))}
                                             </tbody>
                                         </table>
+                                        <div className="p-4 border-t border-slate-100">
+                                            <Pagination
+                                                totalItems={cars.length}
+                                                itemsPerPage={ITEMS_PER_PAGE}
+                                                currentPage={carPage}
+                                                onPageChange={(page) => setSearchParams(prev => {
+                                                    const newParams = new URLSearchParams(prev);
+                                                    newParams.set('vPage', page.toString());
+                                                    return newParams;
+                                                })}
+                                            />
+                                        </div>
                                     </div>
                                 )}
                             </>
@@ -209,9 +240,7 @@ const AdminDashboard = () => {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-50">
-                                                {bookings
-                                                    .filter(b => bookingFilter === 'All' || b.status === bookingFilter)
-                                                    .map(booking => (
+                                                {paginatedBookings.map(booking => (
                                                     <tr id={`booking-row-${booking._id}`} key={booking._id} className="hover:bg-slate-50/30 transition-colors">
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">{booking.user_name}</div>
@@ -318,6 +347,18 @@ const AdminDashboard = () => {
                                                 ))}
                                             </tbody>
                                         </table>
+                                        <div className="p-4 border-t border-slate-100">
+                                            <Pagination
+                                                totalItems={filteredBookings.length}
+                                                itemsPerPage={ITEMS_PER_PAGE}
+                                                currentPage={bookingPage}
+                                                onPageChange={(page) => setSearchParams(prev => {
+                                                    const newParams = new URLSearchParams(prev);
+                                                    newParams.set('bPage', page.toString());
+                                                    return newParams;
+                                                })}
+                                            />
+                                        </div>
                                     </div>
                                 )}
                             </>
@@ -330,3 +371,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+

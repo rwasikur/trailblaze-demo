@@ -1,11 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../api';
 import CarCard from '../components/CarCard';
+import { Pagination } from '../components/ui/Pagination';
 
 const BrowseCarsPage = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
     const [conditionFilter, setConditionFilter] = useState('All');
+    const currentPage = parseInt(searchParams.get('page') || '1');
+    const ITEMS_PER_PAGE = 9;
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -24,6 +29,7 @@ const BrowseCarsPage = () => {
         fetchCars();
     }, []);
 
+
     const filteredCars = useMemo(() => {
         return cars.filter(car => {
             const matchesCondition =
@@ -37,6 +43,13 @@ const BrowseCarsPage = () => {
         });
     }, [cars, conditionFilter]);
 
+    const paginatedCars = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredCars.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredCars, currentPage]);
+
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
     return (
         <div className="min-h-full bg-slate-50">
             <div className="mx-auto w-full max-w-7xl px-6 pt-4 pb-8">
@@ -48,7 +61,14 @@ const BrowseCarsPage = () => {
                             <button
                                 key={opt}
                                 id={`filter-${opt.toLowerCase().replace(' ', '-')}`}
-                                onClick={() => setConditionFilter(opt)}
+                                onClick={() => {
+                                    setConditionFilter(opt);
+                                    setSearchParams(prev => {
+                                        const newParams = new URLSearchParams(prev);
+                                        newParams.set('page', '1');
+                                        return newParams;
+                                    });
+                                }}
                                 className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${conditionFilter === opt ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 {opt}
@@ -79,10 +99,24 @@ const BrowseCarsPage = () => {
                 ) : (
                     <div className="space-y-12">
                         <section id="car-grid" className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                            {filteredCars.map((car) => (
+                            {paginatedCars.map((car) => (
                                 <CarCard key={car._id} car={car} />
                             ))}
                         </section>
+
+                        <Pagination
+                            totalItems={filteredCars.length}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                            currentPage={currentPage}
+                            onPageChange={(page) => {
+                                setSearchParams(prev => {
+                                    const newParams = new URLSearchParams(prev);
+                                    newParams.set('page', page.toString());
+                                    return newParams;
+                                });
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                        />
                     </div>
                 )}
             </div>
@@ -90,6 +124,6 @@ const BrowseCarsPage = () => {
     );
 };
 
-
 export default BrowseCarsPage;
+
 
