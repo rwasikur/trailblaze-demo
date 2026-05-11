@@ -2,7 +2,7 @@
   "tasks": [
     {
       "task_id": "task-5",
-      "difficulty": "Medium",
+      "difficulty": "medium",
       "description": "Integration of a comprehensive Ownership Heritage and Sales Ledger system. This features a dynamic timeline for pre-owned vehicles and an administrative sales history dashboard with automated revenue tracking and transaction highlighting.",
       "branch": "task-5",
       "test_case_location": [
