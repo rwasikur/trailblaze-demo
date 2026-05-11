@@ -81,6 +81,7 @@ const updateCar = async (req, res) => {
             car.secondary_images = req.body.secondary_images !== undefined ? req.body.secondary_images : car.secondary_images;
             car.availability_status = newStatus;
             car.condition = req.body.condition || car.condition;
+            car.available_colors = req.body.available_colors || car.available_colors;
 
             const updatedCar = await car.save();
 

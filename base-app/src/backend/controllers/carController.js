@@ -122,4 +122,22 @@ const uploadMultipleImages = async (req, res) => {
     }
 };
 
-module.exports = { getCars, getCarById, createCar, uploadCarImage, uploadMultipleImages };
+const getComparisonResults = async (req, res) => {
+    try {
+        const { ids } = req.query;
+        if (!ids) {
+            return res.status(400).json({ message: 'No car IDs provided for comparison' });
+        }
+        const idArray = ids.split(',');
+        const cars = await Car.findAll({
+            where: {
+                _id: idArray
+            }
+        });
+        res.json(cars);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error: ' + err.message });
+    }
+};
+
+module.exports = { getCars, getCarById, createCar, uploadCarImage, uploadMultipleImages, getComparisonResults };
