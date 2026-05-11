@@ -181,6 +181,7 @@ test.describe('Task 4: Recently Viewed - Comprehensive Validation', () => {
     test('Functionality: Clearing Recent History via UI', async ({ page, baseURL }) => {
         const cars = await getCars(baseURL || '');
         await page.goto(`${baseURL || ''}/car/${cars[0]._id}`);
+        await page.waitForTimeout(500);
         await page.goto(`${baseURL || ''}/browse`);
         await page.getByRole('button', { name: /^Recent$/i }).click();
         
