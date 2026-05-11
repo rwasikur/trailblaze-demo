@@ -28,26 +28,116 @@ const createCar = async (req, res) => {
     try {
         const {
             name, brand, model_year, transmission, fuel_type, seating_capacity,
-            price_per_day, range, body_type, mileage, exterior_color, interior_color,
+            price, range, body_type, mileage, total_distance_covered, available_colors,
             number_of_owners, registration_city, insurance_validity, description,
-            image_url, secondary_images, availability_status
+            image_url, secondary_images, availability_status, condition, past_owners
         } = req.body;
 
         const seller_name = req.admin ? req.admin.full_name : 'TrailblazeAuto Dealership';
         const seller_email = req.admin ? req.admin.email : 'contact@trailblazeauto.com';
 
-        const createdCar = await Car.create({
-            name, brand, model_year, transmission, fuel_type, seating_capacity,
-            price_per_day, range, body_type, mileage, exterior_color, interior_color,
-            number_of_owners, registration_city, insurance_validity, description,
-            image_url, secondary_images: secondary_images || [],
-            availability_status, seller_name, seller_email
-        });
+        // Validation
+        if (!name || !brand || !model_year || !price) {
+            return res.status(400).json({ message: 'Missing required fields: Name, Brand, Year, and Price are mandatory.' });
+        }
 
-        res.status(201).json(createdCar);
+        if (!image_url) {
+            return res.status(400).json({ message: 'A main vehicle image is mandatory.' });
+        }
+
+        const p_model_year = parseInt(model_year);
+        const p_seating_capacity = parseInt(seating_capacity) || 0;
+        const p_price = parseInt(price);
+
+        if (isNaN(p_model_year) || p_model_year < 1886 || p_model_year > new Date().getFullYear() + 1) {
+            return res.status(400).json({ message: 'Please provide a valid model year.' });
+        }
+
+        if (isNaN(p_price) || p_price <= 0) {
+            return res.status(400).json({ message: 'Price must be a positive number.' });
+        }
+
+        // Sanitize integer fields
+        const sanitizedOwners = (condition === 'New') ? 0 : (parseInt(number_of_owners) || 0);
+
+        try {
+            const createdCar = await Car.create({
+                name,
+                brand,
+                model_year: p_model_year,
+                transmission,
+                fuel_type,
+                seating_capacity: p_seating_capacity,
+                price: p_price,
+                range,
+                body_type,
+                mileage,
+                total_distance_covered,
+                available_colors: available_colors || [],
+                number_of_owners: sanitizedOwners,
+                registration_city,
+                insurance_validity,
+                description,
+                image_url,
+                secondary_images: secondary_images || [],
+                availability_status,
+                seller_name,
+                seller_email,
+                condition,
+                past_owners: past_owners || []
+            });
+
+            res.status(201).json(createdCar);
+        } catch (error) {
+            console.error('Error creating car:', error);
+            res.status(500).json({ message: 'Error creating car: ' + error.message });
+        }
     } catch (err) {
         res.status(500).json({ message: 'Failed to create car: ' + err.message });
     }
 };
 
-module.exports = { getCars, getCarById, createCar };
+const uploadCarImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+        // Return the path relative to the uploads folder
+        const filePath = `/uploads/cars/${req.file.filename}`;
+        res.json({ url: filePath });
+    } catch (err) {
+        res.status(500).json({ message: 'Upload failed: ' + err.message });
+    }
+};
+
+const uploadMultipleImages = async (req, res) => {
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'No files uploaded' });
+        }
+        const filePaths = req.files.map(file => `/uploads/cars/${file.filename}`);
+        res.json({ urls: filePaths });
+    } catch (err) {
+        res.status(500).json({ message: 'Upload failed: ' + err.message });
+    }
+};
+
+const getComparisonResults = async (req, res) => {
+    try {
+        const { ids } = req.query;
+        if (!ids) {
+            return res.status(400).json({ message: 'No car IDs provided for comparison' });
+        }
+        const idArray = ids.split(',');
+        const cars = await Car.findAll({
+            where: {
+                _id: idArray
+            }
+        });
+        res.json(cars);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error: ' + err.message });
+    }
+};
+
+module.exports = { getCars, getCarById, createCar, uploadCarImage, uploadMultipleImages, getComparisonResults };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
@@ -6,7 +6,9 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Card, CardContent } from '../components/ui/Card';
 
-const ManageInventoryPage = () => {
+import { BRANDS_MODELS } from '../constants/carData';
+
+const ManageCataloguePage = () => {
     const navigate = useNavigate();
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -55,7 +57,7 @@ const ManageInventoryPage = () => {
             <div className="max-w-7xl mx-auto space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Manage Inventory</h1>
+                        <h1 className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">Manage Catalogue</h1>
                         <p className="text-slate-500 mt-2 text-base">Overview and management of all registered vehicles.</p>
                     </div>
                     <div className="flex gap-4">
@@ -90,32 +92,33 @@ const ManageInventoryPage = () => {
                                     ) : cars.length === 0 ? (
                                         <tr>
                                             <td colSpan="6" className="py-12 text-center text-slate-500 font-medium tracking-wide">
-                                                No vehicles found in inventory.
+                                                No vehicles found in catalogue.
                                             </td>
                                         </tr>
                                     ) : (
-                                        cars.map((car) => {
-                                            let badgeVariant = 'default';
-                                            if (car.availability_status === 'Available') badgeVariant = 'available';
-                                            else if (car.availability_status === 'Pending') badgeVariant = 'pending';
-                                            else badgeVariant = 'unavailable';
-
-                                            return (
-                                                <tr key={car._id} className="hover:bg-slate-50/50 transition-colors">
-                                                    <td className="px-6 py-4 text-slate-400 font-mono text-xs">...{car._id.substring(car._id.length - 6)}</td>
-                                                    <td className="px-6 py-4 font-bold text-slate-900">{car.name}</td>
-                                                    <td className="px-6 py-4 text-slate-600 font-medium">{car.brand}</td>
-                                                    <td className="px-6 py-4 text-slate-600 font-medium">${car.price_per_day}</td>
-                                                    <td className="px-6 py-4">
-                                                        <Badge variant={badgeVariant}>
-                                                            <span className="mr-1.5 opacity-70">{car.availability_status === 'Available' ? '●' : (car.availability_status === 'Pending' ? '○' : '■')}</span>
-                                                            {car.availability_status}
+                                        cars.map((car) => (
+                                            <tr key={car._id} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-6 py-4 text-slate-400 font-mono text-xs">...{car._id.substring(car._id.length - 6)}</td>
+                                                <td className="px-6 py-4 font-bold text-slate-900">
+                                                    <div>{car.name}</div>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <Badge variant={car.condition === 'New' ? 'new' : 'used'} className="text-[8px] px-1.5 py-0 h-4">
+                                                            {car.condition === 'New' ? 'New' : 'Pre-Owned'}
                                                         </Badge>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right relative">
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-slate-600 font-medium">{car.brand}</td>
+                                                <td className="px-6 py-4 text-slate-600 font-medium">${car.price}</td>
+                                                <td className="px-6 py-4">
+                                                    <Badge variant={car.availability_status === 'Available' ? 'available' : 'unavailable'} className="w-fit">
+                                                        {car.availability_status}
+                                                    </Badge>
+                                                </td>
+                                                <td className="px-6 py-4 text-right relative">
+                                                    {(car.availability_status === 'Available' || (car.availability_status === 'Sold' && car.condition === 'New')) && (
                                                         <div className="relative inline-block text-left">
-                                                            <Button 
-                                                                variant="outline" 
+                                                            <Button
+                                                                variant="outline"
                                                                 size="sm"
                                                                 onClick={() => setActiveDropdown(activeDropdown === car._id ? null : car._id)}
                                                                 className="h-8 text-xs font-semibold px-3"
@@ -125,29 +128,30 @@ const ManageInventoryPage = () => {
                                                             {activeDropdown === car._id && (
                                                                 <>
                                                                     <div onClick={() => setActiveDropdown(null)} className="fixed inset-0 z-40 bg-transparent"></div>
-                                                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-50 p-1 divide-y divide-slate-100 font-medium text-sm">
+                                                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-50 p-1 divide-y divide-slate-100 font-medium text-sm text-left">
                                                                         <div className="py-1">
-                                                                            {car.availability_status === 'Pending' && (
-                                                                                <>
-                                                                                    <button onClick={() => { updateStatusHandler(car._id, 'Unavailable'); setActiveDropdown(null); }} className="w-full text-left px-3 py-2 text-emerald-600 hover:bg-slate-50 transition-colors rounded-md">✓ Approve</button>
-                                                                                    <button onClick={() => { updateStatusHandler(car._id, 'Available'); setActiveDropdown(null); }} className="w-full text-left px-3 py-2 text-slate-600 hover:bg-slate-50 transition-colors rounded-md">✕ Reject</button>
-                                                                                </>
-                                                                            )}
-                                                                            {car.availability_status === 'Unavailable' && (
-                                                                                <button onClick={() => { updateStatusHandler(car._id, 'Available'); setActiveDropdown(null); }} className="w-full text-left px-3 py-2 text-slate-600 hover:bg-slate-50 transition-colors rounded-md">↩ Return to Available</button>
-                                                                            )}
+                                                                            <button 
+                                                                                onClick={() => { 
+                                                                                    setActiveDropdown(null); 
+                                                                                    if (car.availability_status === 'Sold') {
+                                                                                        navigate('/admin/add-car', { state: { copyFrom: car } });
+                                                                                    } else {
+                                                                                        navigate(`/admin/edit-car/${car._id}`); 
+                                                                                    }
+                                                                                }} 
+                                                                                className="w-full text-left px-3 py-2 text-blue-600 hover:bg-slate-50 transition-colors rounded-md"
+                                                                            >
+                                                                                {car.availability_status === 'Sold' ? '⧉ Make a Copy' : '✎ Edit Vehicle'}
+                                                                            </button>
                                                                         </div>
-                                                                        <div className="py-1">
-                                                                            <button onClick={() => { setActiveDropdown(null); navigate(`/admin/edit-car/${car._id}`); }} className="w-full text-left px-3 py-2 text-blue-600 hover:bg-slate-50 transition-colors rounded-md">✎ Edit Vehicle</button>
-                                                                        </div>
-                                                                                    </div>
+                                                                    </div>
                                                                 </>
                                                             )}
                                                         </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
                                     )}
                                 </tbody>
                             </table>
@@ -159,4 +163,4 @@ const ManageInventoryPage = () => {
     );
 };
 
-export default ManageInventoryPage;
+export default ManageCataloguePage;

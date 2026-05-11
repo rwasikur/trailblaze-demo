@@ -1,6 +1,6 @@
 # Trailblaze Auto
 
-A premium automotive inventory management platform that bridges the gap between elite dealerships and car enthusiasts. Featuring an image-led car catalog and a robust administrative suite for fleet expansion and status management.
+A premium automotive Catalogue management platform that bridges the gap between elite dealerships and car enthusiasts. Featuring an image-led car catalog and a robust administrative suite for fleet expansion and status management.
 
 ## 🏗️ Architecture
 ```
@@ -15,8 +15,10 @@ A premium automotive inventory management platform that bridges the gap between 
 ### Public Routes
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/cars` | List currently available car inventory. |
+| `GET` | `/api/cars` | List currently available car Catalogue. |
 | `GET` | `/api/cars/:id` | Retrieve detailed specifications for a specific car. |
+| `GET` | `/api/cars/health-check` | Diagnostic endpoint for car catalogue services. |
+| `POST` | `/api/bookings` | Submit a new purchase/enquiry request for a vehicle. |
 
 ### Administrative Routes
 | Method | Endpoint | Description |
@@ -24,11 +26,17 @@ A premium automotive inventory management platform that bridges the gap between 
 | `POST` | `/api/admin/login` | Authenticate administrator and receive JWT token. |
 | `POST` | `/api/admin/signup` | Register a new administrator account. |
 | `GET` | `/api/admin/profile` | Retrieve the logged-in administrator's profile. |
-| `PUT` | `/api/admin/profile` | Update administrator account details and bio. |
+| `PUT` | `/api/admin/profile` | Update administrator account details and password. |
+| `POST` | `/api/admin/profile/upload` | Upload and set a custom profile avatar. |
+| `DELETE` | `/api/admin/users/:email` | Remove an administrative account (System use). |
 | `GET` | `/api/cars/admin/all` | List all vehicles in fleet with full metadata (Admin only). |
 | `POST` | `/api/cars` | Register a new vehicle to the dealership (Admin only). |
 | `PUT` | `/api/cars/:id` | Modify an existing vehicle's attributes (Admin only). |
 | `PUT` | `/api/cars/:id/status` | Update vehicle availability (Available/Booked) (Admin only). |
+| `POST` | `/api/cars/upload` | Upload primary vehicle image (Admin only). |
+| `POST` | `/api/cars/upload-multiple` | Upload secondary images (Admin only). |
+| `GET` | `/api/bookings/admin/all` | Retrieve all customer enquiries and bookings (Admin only). |
+| `PUT` | `/api/bookings/admin/:id/status` | Update booking status (Pending/Accepted/Rejected) (Admin only). |
 
 ## 🛠️ Tech Stack
 
@@ -44,7 +52,7 @@ A premium automotive inventory management platform that bridges the gap between 
 *   **Build Tool**: Vite 4.4.5
 *   **Framework**: React 19.0.0
 *   **Routing**: React Router 7.13.1
-*   **Styling**: TailwindCSS 3.4.19
+*   **Styling**: Vanilla CSS (Premium Custom Styles)
 *   **Animations**: Framer Motion 12.38.0
 *   **Component Libraries**: Lucide React, React Icons
 
@@ -65,7 +73,7 @@ A premium automotive inventory management platform that bridges the gap between 
 | `role` | String | Support for multi-role management (default: `admin`) |
 | `phone` | String | Contact phone number |
 | `bio` | Text | Short professional biography |
-| `avatar_url` | String | Profile image reference |
+| `avatar_url` | Text | Profile image reference |
 
 ### Table: `Car` (managed via Sequelize)
 | Column | Type | Description |
@@ -73,11 +81,38 @@ A premium automotive inventory management platform that bridges the gap between 
 | `_id` | UUID | Primary Key (Auto-generated) |
 | `name` | String | Model name (e.g., "Model S Plaid") |
 | `brand` | String | Manufacturer (e.g., "Tesla") |
-| `price_per_day` | Integer | Daily rental/listing price |
+| `model_year` | Integer | Manufacturing year |
 | `transmission` | String | Shift type (Automatic/Manual) |
 | `fuel_type` | String | Energy source (Electric/Petrol/etc.) |
-| `availability_status`| String | Current fleet status (Available/Pending/Unavailable) |
+| `seating_capacity` | Integer | Number of seats |
+| `price` | Integer | Daily rental/listing price |
+| `availability_status`| String | Current fleet status (Available/Unavailable) |
+| `condition` | Enum | Vehicle state (New/Used) |
+| `number_of_owners` | Integer | Count of previous owners (for Used vehicles) |
+| `registration_city` | String | City of vehicle registration |
+| `insurance_validity`| String | Expiration date of current insurance |
+| `mileage` | String | Fuel efficiency (e.g., "18.5 kmpl") |
+| `total_distance_covered` | String | Total distance traveled (for Used vehicles) |
+| `range` | String | Operational range per charge/tank |
+| `body_type` | String | Body architecture (SUV/Sedan/Hatchback) |
+| `available_colors` | Array (String) | List of supported vehicle colors |
+| `description` | Text | Detailed vehicle pitch and features |
 | `image_url` | String | Primary high-resolution vehicle image |
+| `secondary_images` | Array | List of gallery image URLs |
+| `past_owners` | JSONB | History of previous sales and ownership |
+| `seller_name` | String | Registered dealership/seller entity |
+| `seller_email` | String | Contact email for the seller |
+
+### Table: `Booking` (managed via Sequelize)
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `_id` | UUID | Primary Key (Auto-generated) |
+| `car_id` | UUID | Reference to the booked vehicle |
+| `user_name` | String | Full name of the prospect |
+| `user_email` | String | Contact email for the booking |
+| `user_contact` | String | Contact phone number |
+| `selected_color` | String | Preferred vehicle color choice |
+| `status` | String | Enquiry status (Pending/Accepted/Rejected) |
 
 ## 🚀 Quick Start
 

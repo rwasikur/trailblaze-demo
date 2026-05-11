@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Navbar = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem('adminToken'));
 
     useEffect(() => {
         const checkAuth = () => setIsAdmin(!!localStorage.getItem('adminToken'));
-        // Check auth on route change
         checkAuth();
-
         window.addEventListener('authChange', checkAuth);
         window.addEventListener('storage', checkAuth);
         return () => {
@@ -18,20 +18,51 @@ const Navbar = () => {
         };
     }, [location.pathname]);
 
+    const handleLogout = () => {
+        localStorage.removeItem('adminToken');
+        toast.info('Logged out successfully');
+        setIsAdmin(false);
+        navigate('/');
+    };
+
     return (
-        <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-[rgba(13,13,13,0.8)] backdrop-blur-md border-b border-[rgba(74,101,114,0.2)]">
-            <Link to="/" className="flex items-center text-accent text-xl font-extrabold no-underline tracking-tight" aria-label="Trailblaze Auto Logo">
-                <img src="/carlogo.png" alt="Trailblaze Auto Logo" className="h-[55px] w-auto" />
-            </Link>
-            <div className="flex items-center space-x-6">
-                {isAdmin && <Link to="/admin/dashboard" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Admin Dashboard</Link>}
-                {isAdmin && <Link to="/admin/profile" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Profile</Link>}
-                <Link id="browse-link" to="/browse" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Catalogue</Link>
-                {!isAdmin && <Link id="admin-link" to="/admin" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300">Admin Login</Link>}
-                {isAdmin && <Link to="/admin" className="text-slate-200 hover:text-accent font-medium text-sm transition-colors duration-300" onClick={() => {
-                    localStorage.removeItem('adminToken');
-                    window.dispatchEvent(new Event('authChange'));
-                }}>Sign Out</Link>}
+        <nav className="sticky top-0 z-[1000] h-20 w-full border-b border-white/10 bg-slate-950/60 backdrop-blur-xl transition-all duration-300">
+            <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6 lg:px-8">
+                <Link to="/" className="flex items-center gap-4 decoration-0 group">
+                    <img
+                        src="/carlogo.png"
+                        alt="TrailblazeAuto"
+                        className="h-10 w-auto transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <span className="text-xl font-black tracking-tighter text-white lg:text-2xl">
+                        TRAILBLAZE<span className="text-blue-500">AUTO</span>
+                    </span>
+                </Link>
+
+                <div className="flex items-center space-x-8">
+                    <Link id="browse-link" to="/browse" className="text-sm font-bold tracking-wide text-slate-300 hover:text-white transition-colors duration-200"> Catalogue</Link>
+
+                    {isAdmin ? (
+                        <>
+                            <Link to="/admin/dashboard" className="text-sm font-bold tracking-wide text-slate-300 hover:text-white transition-colors duration-200">Dashboard</Link>
+                            <Link to="/admin/profile" className="text-sm font-bold tracking-wide text-slate-300 hover:text-white transition-colors duration-200">Profile</Link>
+                            <button
+                                onClick={handleLogout}
+                                className="rounded-xl bg-white/10 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md border border-white/10 hover:bg-white/20 transition-all active:scale-95"
+                            >
+                                Sign Out
+                            </button>
+                        </>
+                    ) : (
+                        <Link
+                            id="admin-link"
+                            to="/admin"
+                            className="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-blue-900/20 hover:bg-blue-500 transition-all active:scale-95"
+                        >
+                            Admin Login
+                        </Link>
+                    )}
+                </div>
             </div>
         </nav>
     );

@@ -3,6 +3,12 @@ const { Sequelize } = require('sequelize');
 const sequelize = new Sequelize(process.env.DATABASE_URL || 'postgres://trailblaze:trailblazepass@postgres:5432/trailblaze', {
     dialect: 'postgres',
     logging: false, // Set to console.log to see SQL
+    pool: {
+        max: 30,
+        min: 5,
+        acquire: 60000,
+        idle: 10000
+    }
 });
 
 const connectDB = async (retries = 5, delay = 5000) => {

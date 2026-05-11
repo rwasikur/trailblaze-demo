@@ -1,100 +1,124 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 
 const AdminLogin = () => {
-    const [isLogin, setIsLogin] = useState(true);
-    const [formData, setFormData] = useState({
-        full_name: '', email: '', password: '', confirm_password: '', phone: ''
-    });
     const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (localStorage.getItem('adminToken')) {
+        const token = localStorage.getItem('adminToken');
+        if (token) {
             navigate('/admin/dashboard');
         }
     }, [navigate]);
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
+
+        if (!formData.email || !formData.password) {
+            return toast.error('Email and Password are required.');
+        }
+
+        setLoading(true);
         try {
-            if (!isLogin && formData.password.length < 6) {
-                return toast.error('Password must be at least 6 characters');
-            }
-
-            const endpoint = isLogin ? '/api/admin/login' : '/api/admin/signup';
-            const payload = isLogin
-                ? { email: formData.email, password: formData.password }
-                : { full_name: formData.full_name, email: formData.email, password: formData.password };
-
-            const { data } = await api.post(endpoint, payload);
+            const { data } = await api.post('/api/admin/login', formData);
+            
+            // 1. Set token immediately so re-renders know we are logged in
             localStorage.setItem('adminToken', data.token);
             window.dispatchEvent(new Event('authChange'));
-            toast.success("Successfully logged in!");
+            
+            // 2. Trigger toast
+            toast.success("Access Granted.");
+            
+            // 3. Optimized delay for automated tests (Playwright)
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // 4. Navigate
             navigate('/admin/dashboard');
         } catch (err) {
             toast.error(err.response?.data?.message || 'Authentication failed.');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-full flex items-center justify-center -m-8 py-16 px-6 bg-slate-50 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('/car3.avif')] bg-cover bg-center opacity-10"></div>
-            
-            <Card className="w-full max-w-md bg-white/70 backdrop-blur-xl border-slate-200 shadow-2xl relative z-10 p-2 md:p-4">
-                <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-2xl font-extrabold text-accent font-display tracking-tight">
-                        {isLogin ? 'Admin Portal' : 'Admin Register'}
-                    </CardTitle>
-                    <p className="text-slate-500 text-sm mt-2">{isLogin ? 'Sign in to manage your fleet.' : 'Create an account to manage your fleet.'}</p>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {!isLogin && (
-                            <Input
-                                id="admin-name-input"
-                                label="Full Name"
-                                type="text"
-                                value={formData.full_name}
-                                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                required={!isLogin}
+        <div className="h-screen w-full flex items-center justify-center relative overflow-hidden px-6 text-white bg-slate-950 font-sans">
+            <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.12),transparent_70%)]"></div>
+                <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]"></div>
+            </div>
+
+            <div className="w-full max-w-[400px] relative z-10">
+                <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-10 md:p-12 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
+                    <div className="text-center mb-10">
+                        <h1 className="text-3xl font-black tracking-tighter text-white mb-2 uppercase italic text-blue-500">
+                            Admin Login
+                        </h1>
+                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em]">Secure Access Portal</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Email Address <span className="text-red-500">*</span></label>
+                            <input
+                                id="admin-email-input"
+                                type="email"
+                                placeholder="admin@trailblaze.com"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 py-3.5 text-white font-bold focus:outline-none focus:border-blue-600/50 focus:bg-white/10 transition-all placeholder:text-white/10 text-sm"
+                                required
                             />
-                        )}
-                        <Input
-                            id="admin-email-input"
-                            label="Email Address"
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            required
-                        />
+                        </div>
 
-                        <Input
-                            id="admin-password-input"
-                            label="Password"
-                            type="password"
-                            value={formData.password}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            required
-                        />
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Password <span className="text-red-500">*</span></label>
+                            <input
+                                id="admin-password-input"
+                                type="password"
+                                placeholder="••••••••"
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 py-3.5 text-white font-bold focus:outline-none focus:border-blue-600/50 focus:bg-white/10 transition-all placeholder:text-white/10 text-sm"
+                                required
+                            />
+                        </div>
 
-                        <Button id={isLogin ? 'admin-login-button' : 'admin-signup-button'} type="submit" className="w-full mt-6 shadow-md h-12 text-base font-bold" variant="slate">
-                            {isLogin ? 'Login' : 'Sign Up'}
-                        </Button>
-                        <div
-                            id="admin-signup-toggle"
-                            className="text-center mt-6 text-sm text-accent hover:text-slate-700 font-semibold cursor-pointer transition-colors"
-                            onClick={() => setIsLogin(!isLogin)}
-                        >
-                            {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
+                        <div className="pt-4 h-14">
+                            <button
+                                id="admin-login-button"
+                                type="submit"
+                                disabled={loading}
+                                className="w-full h-full rounded-2xl text-[10px] font-black uppercase tracking-widest bg-blue-600 text-white shadow-xl shadow-blue-600/20 hover:bg-blue-500 active:scale-95 transition-all flex items-center justify-center border-none cursor-pointer"
+                            >
+                                {loading ? (
+                                    <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                ) : (
+                                    'Login'
+                                )}
+                            </button>
+                        </div>
+
+                        <div className="text-center pt-2">
+                            <button
+                                type="button"
+                                id="admin-signup-toggle"
+                                onClick={() => navigate('/admin/signup')}
+                                className="text-[9px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors"
+                            >
+                                Don't have an account? Sign Up
+                            </button>
                         </div>
                     </form>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     );
 };
