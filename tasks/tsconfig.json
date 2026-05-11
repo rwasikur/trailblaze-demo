@@ -3,16 +3,11 @@
     "target": "ESNext",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "types": [
-      "node",
-      "@playwright/test"
-    ],
+    "types": ["node", "@playwright/test"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": [
-    "**/*.ts"
-  ]
+  "include": ["**/*.ts"]
 }
