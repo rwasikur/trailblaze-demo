@@ -2,7 +2,7 @@
   "tasks": [
     {
       "task_id": "task-9",
-      "difficulty": "medium",
+      "difficulty": "hard",
       "description": "Implement offer management for vehicle listings, allowing admins to configure promotional activation and expiry periods and automatically controlling offer badge visibility based on the current date.",
       "branch": "task-9",
       "test_case_location": [
