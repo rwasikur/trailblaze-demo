@@ -33,7 +33,8 @@
         "options": {
           "awslogs-group": "/ecs/trailblaze-auto",
           "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "frontend-nginx"
+          "awslogs-stream-prefix": "frontend-nginx",
+          "awslogs-create-group": "true"
         }
       }
     },
@@ -91,7 +92,8 @@
         "options": {
           "awslogs-group": "/ecs/trailblaze-auto",
           "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "backend"
+          "awslogs-stream-prefix": "backend",
+          "awslogs-create-group": "true"
         }
       }
     },
@@ -134,7 +136,8 @@
         "options": {
           "awslogs-group": "/ecs/trailblaze-auto",
           "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "db"
+          "awslogs-stream-prefix": "db",
+          "awslogs-create-group": "true"
         }
       }
     }
