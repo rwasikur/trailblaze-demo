@@ -31,10 +31,10 @@ docker push "${ECR_REGISTRY}/trailblaze-auto-backend:latest"
 cd ../../..
 
 echo "Building frontend production image..."
-cd base-app/src/frontend
-docker build -f Dockerfile.ecs -t trailblaze-auto-frontend-prod:latest .
+cd base-app
+docker build -f src/frontend/Dockerfile.ecs -t trailblaze-auto-frontend-prod:latest .
 docker tag trailblaze-auto-frontend-prod:latest "${ECR_REGISTRY}/trailblaze-auto-frontend-prod:latest"
 docker push "${ECR_REGISTRY}/trailblaze-auto-frontend-prod:latest"
-cd ../../..
+cd ..
 
 echo "All ECS images built and pushed successfully."

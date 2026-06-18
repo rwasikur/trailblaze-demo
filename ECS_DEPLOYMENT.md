@@ -86,7 +86,7 @@ Check:
 
 Check:
 
-- `base-app/src/frontend/nginx.ecs.conf` proxies `/api` to `http://localhost:3000`
+- `base-app/deployment/nginx/nginx.ecs.conf` proxies `/api` to `http://localhost:3000`
 - backend container is healthy
 
 ### Task starts but stops quickly
