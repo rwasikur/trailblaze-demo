@@ -142,7 +142,6 @@
       }
     }
   ],
-  "taskRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ecs-task-role",
   "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ecsTaskExecutionRole",
   "requiresCompatibilities": [
     "FARGATE"
