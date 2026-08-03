@@ -24,6 +24,8 @@ async function getFirstCar(baseURL: string, condition?: string) {
     const body = await res.json();
     await ctx.dispose();
     const cars = (body.cars ?? body);
+    if (condition === 'Used') return cars.find((c: any) => c.name === 'Dzire' && c.brand === 'Maruti Suzuki' && c.model_year === 2018);
+    if (condition === 'New') return cars.find((c: any) => c.name === 'Safari Accomplished' && c.model_year === 2024);
     if (condition) return cars.find((c: any) => c.condition === condition);
     return cars[0];
 }
@@ -38,6 +40,8 @@ test.describe('Task 5: Sale History & Ownership Heritage - Public Validation', (
         await page.locator('#history-tab').click();
         await expect(page.locator('#heritage-timeline')).toBeVisible();
         await expect(page.locator('text=1ST OWNER')).toBeVisible();
+        await expect(page.locator('#heritage-timeline')).toContainText('Rajesh Kumar');
+        await expect(page.locator('#heritage-timeline')).toContainText('Maruti Suzuki Arena');
     });
 
     test("AC 2: [Step 1] Inspect timeline [Step 2] Verify visual highlights 'animate-pulse' and 'border-blue-400' on recent records.", async ({ page, baseURL }) => {
@@ -48,6 +52,7 @@ test.describe('Task 5: Sale History & Ownership Heritage - Public Validation', (
         const topRecord = page.locator('#heritage-timeline > div').first();
         await expect(topRecord.locator('.animate-pulse')).toBeVisible();
         await expect(topRecord.locator('.border-blue-400')).toBeVisible();
+        await expect(topRecord).toContainText('Rajesh Kumar');
     });
 
     test("AC 3: [Step 1] Access Used car as guest [Step 2] Verify 'history-tab' ID is completely absent from DOM.", async ({ page, baseURL }) => {
@@ -71,6 +76,7 @@ test.describe('Task 5: Sale History & Ownership Heritage - Public Validation', (
         await page.locator('#sales-history-link').click();
         await expect(page.locator('#sales-ledger-table')).toBeVisible();
         await expect(page.locator('#sales-ledger-table tbody tr')).not.toHaveCount(0);
+        await expect(page.locator('#sales-ledger-table')).toContainText('Rahul Sharma');
     });
 
     test("AC 6: [Step 1] Inspect Sales Ledger [Step 2] Verify 'condition-badge' ID is present for inventory auditing.", async ({ page, baseURL }) => {
@@ -78,6 +84,7 @@ test.describe('Task 5: Sale History & Ownership Heritage - Public Validation', (
         await page.goto(`${baseURL}/admin/dashboard`);
         await page.locator('#sales-history-link').click();
         await expect(page.locator('#condition-badge').first()).toBeVisible();
+        await expect(page.locator('#sales-ledger-table')).toContainText('Thar LX');
     });
 
     test("AC 7: [Step 1] Accept booking [Step 2] Verify jump to Sales History [Step 3] Verify row highlight 'bg-blue-50/50'.", async ({ page, baseURL }) => {
@@ -95,7 +102,10 @@ test.describe('Task 5: Sale History & Ownership Heritage - Public Validation', (
         await login(page, baseURL || '', USERS.admin1);
         await page.goto(`${baseURL}/admin/sales-history`);
         await expect(page.locator('#net-revenue-stat')).toBeVisible();
-        await expect(page.locator('#net-revenue-stat')).toContainText(/\$/);
+        await expect(page.locator('#net-revenue-stat')).not.toContainText('$0');
+        const text = await page.locator('#net-revenue-stat').textContent();
+        const value = parseInt(text?.replace(/[^0-9]/g, '') || '0');
+        expect(value).toBeGreaterThanOrEqual(39847);
     });
 
     test("AC 9: [Step 1] Confirm JSONB data population [Step 2] Verify buyer/seller names from 'past_owners' are correctly rendered.", async ({ page, baseURL }) => {
@@ -105,6 +115,8 @@ test.describe('Task 5: Sale History & Ownership Heritage - Public Validation', (
         await page.locator('#history-tab').click();
         await expect(page.locator('text=Authorized Seller')).toBeVisible();
         await expect(page.locator('text=Acquired By')).toBeVisible();
+        await expect(page.locator('#heritage-timeline')).toContainText('Rajesh Kumar');
+        await expect(page.locator('#heritage-timeline')).toContainText('Maruti Suzuki Arena');
     });
 
     test("AC 10: [Step 1] Access Used car [Step 2] Navigate to 'Price' tab [Step 3] Verify 'Owner Depreciation' rendering.", async ({ page, baseURL }) => {
@@ -113,6 +125,7 @@ test.describe('Task 5: Sale History & Ownership Heritage - Public Validation', (
         await page.click('button:has-text("Price")');
         await expect(page.locator('text=Financial Breakdown')).toBeVisible();
         await expect(page.locator('text=Owner Depreciation')).toBeVisible();
+        await expect(page.locator('text=- $3,151')).toBeVisible();
     });
 
     test("AC 11: [Step 1] Navigate to Sales History [Step 2] Click 'Export Report' [Step 3] Verify CSV download trigger.", async ({ page, baseURL }) => {
