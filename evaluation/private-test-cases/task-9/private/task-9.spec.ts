@@ -214,6 +214,16 @@ async function createIsolatedOffer(
 
 // POSITIVE TESTS (AC 1-22)
 
+test.beforeEach(async ({ page, baseURL }) => {
+    const ctx = page.request;
+    const res = await ctx.get(`${baseURL || ''}/api/cars`);
+    expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    const cars = body.cars ?? body;
+    const hasPrivateCar = cars.some((c: any) => c.name === 'Swift' && c.brand === 'Maruti Suzuki');
+    expect(hasPrivateCar).toBe(true);
+});
+
 test(`AC 1: Authenticate with seeded admin credentials Navigate to /admin/offers Verify the Offer Management route renders the form container ID #offer-form and page heading ID #offers-heading.`, async ({ page, baseURL }) => {
     await loginUi(page, baseURL || '');
     await page.goto(`${baseURL}/admin/offers`);
