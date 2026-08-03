@@ -68,14 +68,12 @@ test("AC 2: On the '/browse' page, click the '2' button in the pagination footer
     const page1Names = await getVisibleCarNames(page);
     
     const page2Btn = page.getByRole('button', { name: '2', exact: true });
-    if (await page2Btn.isVisible()) {
-        await page2Btn.click();
-        await expect(page).toHaveURL(/page=2/);
-        
-        const page2Names = await getVisibleCarNames(page);
-        expect(page2Names.length).toBeGreaterThan(0);
-        expect(page2Names).not.toEqual(page1Names);
-    }
+    await page2Btn.click();
+    await expect(page).toHaveURL(/page=2/);
+    
+    const page2Names = await getVisibleCarNames(page);
+    expect(page2Names.length).toBeGreaterThan(0);
+    expect(page2Names).not.toEqual(page1Names);
 });
 
 test("AC 3: On the '/browse' page, select a filter option that yields multiple pages of results. Switch to page 2. Then reset the filter to 'All'. Verify that the pagination automatically resets to page 1.", async ({ page, baseURL }) => {
@@ -116,24 +114,22 @@ test("AC 3: On the '/browse' page, select a filter option that yields multiple p
     await page.waitForTimeout(500);
     
     const page2Btn = page.getByRole('button', { name: '2', exact: true });
-    if (await page2Btn.isVisible()) {
-        await page2Btn.click();
-        await expect(page).toHaveURL(/page=2/);
-        
-        // Reset filter to All
-        await page.locator('#filter-all').click();
-        await expect(page).toHaveURL(/page=1/);
-        
-        // Verify total results count is restored
-        await expect(resultsCountLocator).toHaveText(initialTotal);
-        
-        // Verify pagination recalculates correctly: Page 2 button must be visible again (13 items = 2 pages)
-        await expect(page.getByRole('button', { name: '2', exact: true })).toBeVisible();
-        
-        // Verify Page 1 is active in UI
-        const page1Btn = page.getByRole('button', { name: '1', exact: true });
-        await expect(page1Btn).toHaveClass(/bg-slate-900/);
-    }
+    await page2Btn.click();
+    await expect(page).toHaveURL(/page=2/);
+    
+    // Reset filter to All
+    await page.locator('#filter-all').click();
+    await expect(page).toHaveURL(/page=1/);
+    
+    // Verify total results count is restored
+    await expect(resultsCountLocator).toHaveText(initialTotal);
+    
+    // Verify pagination recalculates correctly: Page 2 button must be visible again (13 items = 2 pages)
+    await expect(page.getByRole('button', { name: '2', exact: true })).toBeVisible();
+    
+    // Verify Page 1 is active in UI
+    const page1Btn = page.getByRole('button', { name: '1', exact: true });
+    await expect(page1Btn).toHaveClass(/bg-slate-900/);
 });
 
 test("AC 4: Navigate to the Manage Catalogue page at '/admin/catalogue?page=1'. Verify the vehicle table lists the first 10 records and the pagination highlights the first page.", async ({ page, baseURL }) => {
@@ -148,28 +144,26 @@ test("AC 5: On the Manage Catalogue page (Page 2), click 'Options' -> 'Edit Vehi
     await page.goto(`${baseURL}/admin/catalogue?page=1`);
     
     const page2Btn = page.getByRole('button', { name: '2', exact: true });
-    if (await page2Btn.isVisible()) {
-        await page2Btn.click();
-        await page.waitForTimeout(500);
-        
-        const page2Names = await getVisibleCatalogueCarNames(page);
-        
-        await page.locator('button:has-text("Options")').first().click();
-        await page.getByText('Edit Vehicle').click();
-        await expect(page).toHaveURL(/fromPage=2/);
-        
-        await page.locator('#car-price-input').fill('1234567');
-        await page.getByRole('button', { name: /Save Changes/i }).click();
-        
-        await expect(page).toHaveURL(/admin\/catalogue\?page=2/);
-        await expect(page.getByText(/Vehicle updated successfully!/i)).toBeVisible();
-        
-        // Confirm the updated data is actually persisted and reflected in the UI
-        await expect(page.getByText('$1,234,567').or(page.getByText('$1234567'))).toBeVisible();
-        
-        const finalNames = await getVisibleCatalogueCarNames(page);
-        expect(finalNames).toEqual(page2Names);
-    }
+    await page2Btn.click();
+    await page.waitForTimeout(500);
+    
+    const page2Names = await getVisibleCatalogueCarNames(page);
+    
+    await page.locator('button:has-text("Options")').first().click();
+    await page.getByText('Edit Vehicle').click();
+    await expect(page).toHaveURL(/fromPage=2/);
+    
+    await page.locator('#car-price-input').fill('1234567');
+    await page.getByRole('button', { name: /Save Changes/i }).click();
+    
+    await expect(page).toHaveURL(/admin\/catalogue\?page=2/);
+    await expect(page.getByText(/Vehicle updated successfully!/i)).toBeVisible();
+    
+    // Confirm the updated data is actually persisted and reflected in the UI
+    await expect(page.getByText('$1,234,567').or(page.getByText('$1234567'))).toBeVisible();
+    
+    const finalNames = await getVisibleCatalogueCarNames(page);
+    expect(finalNames).toEqual(page2Names);
 });
 
 test("AC 6: In the Admin Dashboard, switch to the 'Bookings' tab and navigate to page 2. Verify the URL includes 'bPage=2'. Switch back to the 'Vehicles' tab and verify its pagination state (vPage) is preserved.", async ({ page, baseURL }) => {
@@ -184,14 +178,9 @@ test("AC 6: In the Admin Dashboard, switch to the 'Bookings' tab and navigate to
     
     // Actively click Next on Bookings tab to go to bPage=2
     const nextBtn = page.locator('button:has-text("Next")');
-    if (await nextBtn.isVisible() && await nextBtn.isEnabled()) {
-        await nextBtn.click();
-        await expect(page).toHaveURL(/bPage=2/);
-    } else {
-        // If data size doesn't allow click, navigate directly to bPage=2
-        await page.goto(`${baseURL}/admin/dashboard?vPage=2&bPage=2`);
-        await expect(page).toHaveURL(/bPage=2/);
-    }
+    await expect(nextBtn).toBeEnabled();
+    await nextBtn.click();
+    await expect(page).toHaveURL(/bPage=2/);
     
     // Switch back to Vehicles tab
     await page.locator('#admin-vehicles-tab').click();
@@ -207,16 +196,15 @@ test("AC 7: In the 'Vehicles' tab of the Admin Dashboard, click the 'Next' arrow
     const page1Names = await getVisibleDashboardCarNames(page);
     const nextBtn = page.locator('.p-4 >> text=Next');
     
-    if (await nextBtn.isVisible() && await nextBtn.isEnabled()) {
-        await nextBtn.click();
-        await page.waitForTimeout(500);
-        
-        // Explicitly verify vPage URL parameter increments correctly
-        await expect(page).toHaveURL(/vPage=2/);
-        
-        const page2Names = await getVisibleDashboardCarNames(page);
-        expect(page2Names).not.toEqual(page1Names);
-    }
+    await expect(nextBtn).toBeEnabled();
+    await nextBtn.click();
+    await page.waitForTimeout(500);
+    
+    // Explicitly verify vPage URL parameter increments correctly
+    await expect(page).toHaveURL(/vPage=2/);
+    
+    const page2Names = await getVisibleDashboardCarNames(page);
+    expect(page2Names).not.toEqual(page1Names);
 });
 
 test("AC 8: On the first page of the '/browse' inventory, verify that the 'Previous' pagination button is visually disabled and clicking it does not change the URL or refresh the list.", async ({ page, baseURL }) => {
@@ -244,15 +232,14 @@ test("AC 9: On the last page of the vehicle inventory in Manage Catalogue, verif
     const nextBtn = page.getByRole('button', { name: 'Next' });
     
     await page.waitForTimeout(1000);
-    if (await nextBtn.isVisible()) {
-        await expect(nextBtn).toBeDisabled();
-        
-        // Clicking disabled button should have no effect
-        await nextBtn.click({ force: true });
-        expect(page.url()).toBe(initialUrl);
-        const finalNames = await getVisibleCatalogueCarNames(page);
-        expect(finalNames).toEqual(pageNames);
-    }
+    await expect(nextBtn).toBeVisible();
+    await expect(nextBtn).toBeDisabled();
+    
+    // Clicking disabled button should have no effect
+    await nextBtn.click({ force: true });
+    expect(page.url()).toBe(initialUrl);
+    const finalNames = await getVisibleCatalogueCarNames(page);
+    expect(finalNames).toEqual(pageNames);
 });
 
 test("AC 10: Verify that the pagination component is hidden from the UI when zero results are found.", async ({ page, baseURL }) => {
