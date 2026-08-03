@@ -67,14 +67,14 @@ test.describe('Trailblaze Auto - Vehicle Catalogue Filters (Private)', () => {
     // AC-6: Positive - Fuel Type
     test('Fuel Type toggle pills should filter results', async ({ page }: { page: Page }) => {
         await page.getByTestId('filter-toggle').click();
-        await page.getByTestId('fuel-filter-Electric').click();
+        await page.getByTestId('fuel-filter-Hybrid').click();
         await page.waitForTimeout(500);
         
         const carCards = page.locator('.car-card');
         const count = await carCards.count();
         expect(count).toBeGreaterThan(0);
         for (let i = 0; i < count; i++) {
-            await expect(carCards.nth(i)).toContainText(/Electric/i);
+            await expect(carCards.nth(i)).toContainText(/Hybrid/i);
         }
     });
 
