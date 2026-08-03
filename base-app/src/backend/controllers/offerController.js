@@ -82,11 +82,13 @@ const validateOfferPayload = (body, options = {}) => {
         return 'Activation and expiry dates must be valid dates and times.';
     }
 
-    if (requireFutureActivation && getMinuteTime(activationDate) < getMinuteTime(now)) {
+    const clockTolerance = 5 * 60 * 1000; // 5 minutes tolerance for network latency/clock skew
+
+    if (requireFutureActivation && getMinuteTime(activationDate) < (getMinuteTime(now) - clockTolerance)) {
         return 'Activation date and time cannot be in the past.';
     }
 
-    if (requireFutureExpiry && getMinuteTime(expiryDate) < getMinuteTime(now)) {
+    if (requireFutureExpiry && getMinuteTime(expiryDate) < (getMinuteTime(now) - clockTolerance)) {
         return 'Expiry date and time cannot be in the past.';
     }
 
