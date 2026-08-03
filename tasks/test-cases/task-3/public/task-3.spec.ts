@@ -27,12 +27,11 @@ async function getVisibleDashboardCarNames(page: Page) {
 async function login(page: Page, baseURL: string, user = USERS.admin1) {
     await page.goto(`${baseURL}/admin`);
     const emailInput = page.locator('#admin-email-input');
-    if (await emailInput.isVisible()) {
-        await emailInput.fill(user.email);
-        await page.locator('#admin-password-input').fill(user.password);
-        await page.locator('#admin-login-button').click();
-        await page.waitForURL(/dashboard/);
-    }
+    await expect(emailInput).toBeVisible();
+    await emailInput.fill(user.email);
+    await page.locator('#admin-password-input').fill(user.password);
+    await page.locator('#admin-login-button').click();
+    await page.waitForURL(/dashboard/);
 }
 
 async function gotoLastPage(page: Page) {
