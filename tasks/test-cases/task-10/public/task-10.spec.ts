@@ -169,12 +169,9 @@ test('AC 4: When `brand`, `fuelType`, and `city` are provided together, the API 
 });
 
 test('AC 5: `totalInventoryValue` must equal the sum of numeric `price` values for filtered cars.', async ({ baseURL }) => {
-    const cars = await getSeedCars(baseURL || '');
-    const selected = chooseFilterCar(cars);
-    const filters = { brand: selected.brand || '' };
-    const analytics = await getAnalytics(baseURL || '', filters);
-    const expected = cars.filter(car => matchesFilters(car, filters)).reduce((sum, car) => sum + money(car.price), 0);
-    expect(analytics.totalInventoryValue).toBe(expected);
+    const analytics = await getAnalytics(baseURL || '', { brand: 'Tata' });
+    expect(analytics.totalFleet).toBe(3);
+    expect(analytics.totalInventoryValue).toBe(46150);
 });
 
 test('AC 6: `availableInventoryValue` must equal the sum of numeric `price` values for filtered cars where `availability_status === "Available"`.', async ({ baseURL }) => {
@@ -201,8 +198,9 @@ test('AC 7: `soldInventoryValue` must equal the sum of numeric `price` values fo
 
 test('AC 8: `averageListingPrice` must equal `Math.round(totalInventoryValue / totalFleet)` when `totalFleet > 0`.', async ({ baseURL }) => {
     const analytics = await getAnalytics(baseURL || '');
-    expect(analytics.totalFleet).toBeGreaterThan(0);
-    expect(analytics.averageListingPrice).toBe(Math.round(analytics.totalInventoryValue / analytics.totalFleet));
+    expect(analytics.totalFleet).toBe(20);
+    expect(analytics.totalInventoryValue).toBe(319739);
+    expect(analytics.averageListingPrice).toBe(15987);
 });
 
 test('AC 9: `totalBookings` must count only bookings inside the selected date range whose associated car matches the active vehicle filters.', async ({ baseURL }) => {
@@ -321,4 +319,20 @@ test('AC 22: `totalClientClicks` must equal the sum of `views` across all filter
     const analytics = await getAnalytics(baseURL || '');
     const expectedViews = analytics.carRows.reduce((sum: number, row: any) => sum + row.views, 0);
     expect(analytics.totalClientClicks).toBe(expectedViews);
+});
+
+test('AC 23: Dashboard must render the Pie Chart with id "#fleet-status-chart" and aria-label "Fleet status distribution pie chart".', async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/admin`);
+    await page.locator('#admin-email-input').fill(CONFIG.admin.email);
+    await page.locator('#admin-password-input').fill(CONFIG.admin.password);
+    await page.locator('#admin-login-button').click();
+    await expect(page).toHaveURL(/\/admin\/dashboard/, { timeout: 10000 });
+
+    // Navigate to Analytics page
+    await page.locator('#analytics-dashboard-button').click();
+    await expect(page).toHaveURL(/\/admin\/analytics/, { timeout: 10000 });
+
+    const pieChart = page.locator('#fleet-status-chart');
+    await expect(pieChart).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[aria-label="Fleet status distribution pie chart"]')).toBeVisible({ timeout: 10000 });
 });

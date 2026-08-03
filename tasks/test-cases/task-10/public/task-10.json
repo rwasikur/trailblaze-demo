@@ -31,7 +31,8 @@
         "If a comparison previous value is `0`, its `deltaPercentage` must be `null` and must not return `0`, `NaN`, or `Infinity`.",
         "If a ranged booking or sale has an unparsable date, it must not be included in `bookingsByMonth`, `salesByMonth`, or ranged totals.",
         "`carRows` must include a `views` property for each car representing the number of client clicks.",
-        "`totalClientClicks` must equal the sum of `views` across all filtered cars."
+        "`totalClientClicks` must equal the sum of `views` across all filtered cars.",
+        "Dashboard must render the Pie Chart with id \"#fleet-status-chart\" and aria-label \"Fleet status distribution pie chart\"."
       ]
     }
   ]
