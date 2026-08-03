@@ -15,8 +15,7 @@ async function getFirstNewCar(baseURL: string) {
     const body = await res.json();
     await ctx.dispose();
     const cars: any[] = body.cars ?? body;
-    const newCars = cars.filter((c: any) => c.condition === 'New' && c.availability_status === 'Available');
-    return newCars[0] ?? cars[0];
+    return cars.find((c: any) => c.name === 'Safari Accomplished' && c.model_year === 2024) ?? cars[0];
 }
 
 /**
@@ -84,11 +83,10 @@ test('AC-01 | Navigate to Price tab on a car detail page, click "Calculate EMI" 
     await expect(page.getByText(new RegExp(car.brand, 'i')).first()).toBeVisible();
     await expect(page.getByText(/Financial Tool/i)).toBeVisible();
 
-    // Price is shown in the modal header subtitle. Note: `div.bg-slate-950` also
-    // matches the App root <div class="min-h-screen bg-slate-950 ...">, so we
-    // can't use it as a scope. Instead target the subtitle paragraph directly
-    // using the unique "Ex-showroom $X" text format that only appears in the
-    // modal header.
+    // Verify correct seed data price is loaded
+    expect(car.brand).toBe('Tata');
+    expect(car.price).toBe(26750);
+
     const priceFmt = car.price.toLocaleString('en-US');
     await expect(
         page.getByText(new RegExp('Ex-showroom\\s*\\$' + priceFmt))
