@@ -54,6 +54,28 @@ test.describe('Catalogue Search Bar - Task 6 Suite (Public)', () => {
         await expect(carCards.first()).toContainText('Grand Vitara');
     });
 
+    test("The search functionality must match the car's 'transmission' property (e.g., searching 'Automatic' or 'Manual') within the car cards in id 'car-grid'.", async ({ page }: { page: Page }) => {
+        const searchInput = page.locator('#search-input');
+        
+        // Search Manual
+        await searchInput.fill('Manual');
+        const manualCards = page.locator('#car-grid article');
+        const manualCount = await manualCards.count();
+        expect(manualCount).toBeGreaterThan(0);
+        for (let i = 0; i < manualCount; i++) {
+            await expect(manualCards.nth(i)).toContainText(/Manu/i);
+        }
+
+        // Search Automatic
+        await searchInput.fill('Automatic');
+        const autoCards = page.locator('#car-grid article');
+        const autoCount = await autoCards.count();
+        expect(autoCount).toBeGreaterThan(0);
+        for (let i = 0; i < autoCount; i++) {
+            await expect(autoCards.nth(i)).toContainText(/Auto/i);
+        }
+    });
+
     test("All search operations performed via id 'search-input' must be case-insensitive to ensure a user-friendly experience.", async ({ page }: { page: Page }) => {
         const searchInput = page.locator('#search-input');
         await searchInput.fill('tata');
