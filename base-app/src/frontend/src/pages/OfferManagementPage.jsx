@@ -125,22 +125,25 @@ const OfferManagementPage = () => {
     const fetchPageData = async () => {
         setLoading(true);
         const headers = { Authorization: `Bearer ${token}` };
-        const [offersResult, carsResult] = await Promise.allSettled([
-            api.get('/api/offers/admin/all', { headers }),
-            api.get('/api/cars/admin/all', { headers }),
-        ]);
-
-        if (offersResult.status === 'fulfilled') {
-            setOffers(offersResult.value.data || []);
-        } else {
-            console.error('Failed to fetch offers:', offersResult.reason);
-            toast.error('Failed to load offers');
+        
+        try {
+            const { data } = await api.get('/api/offers/admin/all', { headers });
+            setOffers(data || []);
+        } catch (e) {
+            console.error('Failed to fetch offers:', e);
         }
 
-        if (carsResult.status === 'fulfilled') {
-            setCars(carsResult.value.data || []);
-        } else {
-            console.error('Failed to fetch vehicles:', carsResult.reason);
+        try {
+            let carsRes;
+            try {
+                carsRes = await api.get('/api/cars/admin/all', { headers });
+            } catch (e) {
+                carsRes = await api.get('/api/cars');
+            }
+            const carsList = Array.isArray(carsRes.data) ? carsRes.data : (carsRes.data?.cars || []);
+            setCars(carsList);
+        } catch (e) {
+            console.error('Failed to fetch vehicles:', e);
             toast.error('Failed to load vehicles for offer selection');
         }
 

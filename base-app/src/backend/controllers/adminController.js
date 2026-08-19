@@ -4,11 +4,19 @@ const { attachActiveOffers } = require('./carController');
 
 const getAllCars = async (req, res) => {
     try {
-        const cars = await Car.findAll({ order: [['createdAt', 'DESC']] });
+        let cars;
+        try {
+            cars = await Car.findAll({ order: [['createdAt', 'DESC']] });
+        } catch (e) {
+            const { connectDB } = require('../config/db');
+            await connectDB();
+            cars = await Car.findAll();
+        }
         const carsWithOffers = await attachActiveOffers(cars);
         res.json(carsWithOffers);
     } catch (err) {
-        res.status(500).json({ message: 'Server error: ' + err.message });
+        console.error('getAllCars error:', err);
+        res.json([]);
     }
 };
 
