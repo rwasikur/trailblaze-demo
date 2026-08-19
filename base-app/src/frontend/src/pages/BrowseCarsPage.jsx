@@ -78,6 +78,14 @@ const BrowseCarsPage = () => {
             }
         };
         fetchCars();
+        sync();
+
+        window.addEventListener('storage', sync);
+        window.addEventListener('recentCarsUpdated', sync);
+        return () => {
+            window.removeEventListener('storage', sync);
+            window.removeEventListener('recentCarsUpdated', sync);
+        };
     }, []);
 
     const toggleCompare = (car, e) => {
@@ -118,11 +126,23 @@ const BrowseCarsPage = () => {
     };
 
     const filteredCars = useMemo(() => {
-        return cars.filter(car => {
-            const matchesCondition =
-                conditionFilter === 'All' ||
-                (conditionFilter === 'New' && car.condition === 'New') ||
-                (conditionFilter === 'Pre-Owned' && car.condition === 'Used');
+        let result = cars;
+        if (activeFilter === 'Recent') {
+            const idMap = new Map(recentCarIds.map((id, i) => [id, i]));
+            result = cars
+                .filter(car => idMap.has(car._id))
+                .sort((a, b) => idMap.get(a._id) - idMap.get(b._id));
+        } else if (activeFilter === 'New') {
+            result = cars.filter(c => c.condition === 'New');
+        } else if (activeFilter === 'Pre-Owned') {
+            result = cars.filter(c => c.condition === 'Used');
+        }
+
+        return result.filter(car => {
+            const matchesSearch =
+                car.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                car.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                car.body_type?.toLowerCase().includes(searchQuery.toLowerCase());
 
             const matchesBrand = brandFilter === 'All Brands' || car.brand === brandFilter;
             const matchesBodyType = bodyTypeFilter === 'All Body Types' || car.body_type === bodyTypeFilter;
