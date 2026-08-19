@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getCars, getCarById, createCar, uploadCarImage, uploadMultipleImages, getComparisonResults } = require('../controllers/carController');
+const { getCars, getCarById, createCar, uploadCarImage, uploadMultipleImages, getComparisonResults, getFleetAnalytics, incrementCarView } = require('../controllers/carController');
 const { getAllCars, updateCarStatus, updateCar } = require('../controllers/adminController');
 const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');

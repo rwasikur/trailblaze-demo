@@ -151,22 +151,48 @@ const uploadMultipleImages = async (req, res) => {
     }
 };
 
-const getComparisonResults = async (req, res) => {
+const incrementCarView = async (req, res) => {
     try {
-        const { ids } = req.query;
-        if (!ids) {
-            return res.status(400).json({ message: 'No car IDs provided for comparison' });
+        const car = await Car.findByPk(req.params.id);
+        if (car) {
+            car.views_count = (car.views_count || 0) + 1;
+            await car.save();
+            res.json({ views_count: car.views_count });
+        } else {
+            res.status(404).json({ message: 'Car not found' });
         }
-        const idArray = ids.split(',');
-        const cars = await Car.findAll({
-            where: {
-                _id: idArray
-            }
-        });
-        res.json(cars);
     } catch (err) {
         res.status(500).json({ message: 'Server error: ' + err.message });
     }
 };
 
-module.exports = { getCars, getCarById, createCar, uploadCarImage, uploadMultipleImages, getComparisonResults };
+const getFleetAnalytics = async (req, res) => {
+    try {
+        const cars = await Car.findAll();
+        const total = cars.length;
+        const available = cars.filter(c => c.availability_status === 'Available').length;
+        const sold = cars.filter(c => c.availability_status === 'Sold').length;
+        const reserved = cars.filter(c => c.availability_status === 'Reserved').length;
+
+        res.json({
+            total,
+            available,
+            sold,
+            reserved,
+            average_price: total ? Math.round(cars.reduce((acc, c) => acc + (Number(c.price) || 0), 0) / total) : 0
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error: ' + err.message });
+    }
+};
+
+module.exports = { 
+    getCars, 
+    getCarById, 
+    createCar, 
+    uploadCarImage, 
+    uploadMultipleImages, 
+    getComparisonResults,
+    incrementCarView,
+    getFleetAnalytics
+};
