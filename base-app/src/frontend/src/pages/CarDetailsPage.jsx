@@ -57,9 +57,17 @@ const CarDetailsPage = () => {
         );
     };
 
+    const [isEmiModalOpen, setIsEmiModalOpen] = useState(false);
+    const [emiInfo, setEmiInfo] = useState(null);
+
+    const activeOffer = Array.isArray(car?.activeOffers) && car.activeOffers.length > 0 ? car.activeOffers[0] : null;
+    const offerSavings = Number(activeOffer?.savings_amount) || 0;
+
     const discount = parseInt(car?.discount_percentage) || 0;
-    const hasDiscount = car && discount > 0 && discount < 100;
-    const discountedPrice = hasDiscount ? Math.round(car.price - (car.price * discount / 100)) : car?.price;
+    const hasDiscount = (car && discount > 0 && discount < 100) || (activeOffer && offerSavings > 0);
+    const discountedPrice = activeOffer
+        ? Number(activeOffer.discounted_price ?? Math.max((Number(car.price) || 0) - offerSavings, 0))
+        : (hasDiscount ? Math.round(car.price - (car.price * discount / 100)) : car?.price);
 
     useEffect(() => {
         const fetchCar = async () => {

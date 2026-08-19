@@ -132,23 +132,23 @@ const BrowseCarsPage = () => {
     };
 
     const filteredCars = useMemo(() => {
-        let result = cars;
+        let baseList = cars;
         if (conditionFilter === 'Recent') {
             const idMap = new Map(recentCarIds.map((id, i) => [id, i]));
-            result = cars
+            baseList = cars
                 .filter(car => idMap.has(car._id))
                 .sort((a, b) => idMap.get(a._id) - idMap.get(b._id));
-        } else if (conditionFilter === 'New') {
-            result = cars.filter(c => c.condition === 'New');
-        } else if (conditionFilter === 'Pre-Owned' || conditionFilter === 'Used') {
-            result = cars.filter(c => c.condition === 'Used');
         }
 
-        return result.filter(car => {
-            const matchesSearch =
+        return baseList.filter(car => {
+            const matchesSearch = !searchQuery ||
                 car.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 car.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 car.body_type?.toLowerCase().includes(searchQuery.toLowerCase());
+
+            const matchesCondition = conditionFilter === 'All' || conditionFilter === 'Recent' ||
+                (conditionFilter === 'New' && car.condition === 'New') ||
+                ((conditionFilter === 'Pre-Owned' || conditionFilter === 'Used') && car.condition === 'Used');
 
             const matchesBrand = brandFilter === 'All Brands' || car.brand === brandFilter;
             const matchesBodyType = bodyTypeFilter === 'All Body Types' || car.body_type === bodyTypeFilter;
@@ -158,25 +158,24 @@ const BrowseCarsPage = () => {
             const matchesPrice = () => {
                 if (priceFilter === 'All Prices') return true;
                 const price = car.price;
-                if (priceFilter === 'Under 5L') return price < 500000;
-                if (priceFilter === '5L - 10L') return price >= 500000 && price <= 1000000;
-                if (priceFilter === '10L - 20L') return price > 1000000 && price <= 2000000;
-                if (priceFilter === '20L - 40L') return price > 2000000 && price <= 4000000;
-                if (priceFilter === 'Above 40L') return price > 4000000;
+                if (priceFilter === 'Under $10k') return price < 10000;
+                if (priceFilter === '$10k - $20k') return price >= 10000 && price <= 20000;
+                if (priceFilter === '$20k - $40k') return price > 20000 && price <= 40000;
+                if (priceFilter === 'Above $40k') return price > 40000;
                 return true;
             };
 
             const isAvailable = car.availability_status === 'Available';
 
-            return matchesCondition && matchesBrand && matchesBodyType && matchesFuelType && matchesTransmission && matchesPrice() && isAvailable;
+            return matchesSearch && matchesCondition && matchesBrand && matchesBodyType && matchesFuelType && matchesTransmission && matchesPrice() && isAvailable;
         });
-    }, [cars, conditionFilter, brandFilter, bodyTypeFilter, fuelTypeFilter, transmissionFilter, priceFilter]);
+    }, [cars, recentCarIds, searchQuery, conditionFilter, brandFilter, bodyTypeFilter, fuelTypeFilter, transmissionFilter, priceFilter]);
 
     const uniqueBrands = useMemo(() => ['All Brands', ...new Set(cars.map(c => c.brand))].sort(), [cars]);
     const uniqueBodyTypes = useMemo(() => ['All Body Types', ...new Set(cars.filter(c => c.body_type).map(c => c.body_type))].sort(), [cars]);
     const fuelTypes = ['All Fuel Types', 'Petrol', 'Diesel', 'Electric', 'Hybrid'];
     const transmissions = ['All Transmissions', 'Manual', 'Automatic'];
-    const priceRanges = ['All Prices', 'Under 5L', '5L - 10L', '10L - 20L', '20L - 40L', 'Above 40L'];
+    const priceRanges = ['All Prices', 'Under $10k', '$10k - $20k', '$20k - $40k', 'Above $40k'];
 
     const paginatedCars = useMemo(() => {
         const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
