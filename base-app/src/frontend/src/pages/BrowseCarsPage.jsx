@@ -40,6 +40,7 @@ const BrowseCarsPage = () => {
     const [transmissionFilter, setTransmissionFilter] = useState('All Transmissions');
     const [priceFilter, setPriceFilter] = useState('All Prices');
     const [showFilters, setShowFilters] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const [recentCarIds, setRecentCarIds] = useState([]);
 
     const currentPage = parseInt(searchParams.get('page') || '1');
