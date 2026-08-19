@@ -1,0 +1,49 @@
+{
+  "tasks": [
+    {
+      "task_id": "task-7",
+      "difficulty": "medium",
+      "description": "Implement logic to calculate and display discounted prices. Original prices are rendered with text-decoration: line-through if a discount is present.",
+      "branch": "task-7",
+      "test_case_location": [
+        "tasks/test-cases/task-7/public/task-7.spec.ts",
+        "evaluation/private-test-cases/task-7/private/task-7.spec.ts"
+      ],
+      "acceptance_criteria": [
+        "'Car' model must define 'discount_percentage' as an integer field with default value 0.",
+        "'POST /api/cars' must persist a provided 'discount_percentage' value as an integer.",
+        "'PUT /api/cars/:id' must persist a provided 'discount_percentage' value as an integer.",
+        "'AddCarPage' must render a 'Discount (%)' number input with id='car-discount-input' in the pricing/details step.",
+        "'AddCarPage' must include the entered discount value in the submitted 'POST /api/cars' request body.",
+        "'EditCarPage' must pre-fill the discount input from the car's persisted 'discount_percentage'.",
+        "'EditCarPage' must include the edited discount value in the submitted 'PUT /api/cars/:id' request body.",
+        "'CarCard' must render a discount badge with '<discount_percentage>% OFF' when 'discount_percentage' is greater than 0 and less than 100.",
+        "'CarCard' must render the rounded discounted price when 'discount_percentage' is greater than 0 and less than 100.",
+        "'CarCard' must render the original price as a line-through value when a valid discount is present.",
+        "'CarDetailsPage' Overview tab must render a discount badge with '<discount_percentage>% OFF' when a valid discount is present.",
+        "'CarDetailsPage' Overview acquisition card must render the original price as a line-through value when a valid discount is present.",
+        "'CarDetailsPage' Price tab must render the discount deduction amount as original price minus discounted price.",
+        "'PurchaseModal' must render the rounded final discounted price when a valid discount is present.",
+        "'PurchaseModal' must render an 'Offer' value of '<discount_percentage>% OFF' when a valid discount is present.",
+        "'PurchaseModal' must render the original price as a line-through value when a valid discount is present.",
+        "'AdminDashboard' Vehicles tab must render the discounted display price for a discounted car.",
+        "'AdminDashboard' Bookings tab must render the discounted display price for a booking whose car has a valid discount.",
+        "'HomePage' must render '#homepage-discounts-section' when the API returns at least one car with a valid discount.",
+        "'HomePage' must render no more than six discounted car banners.",
+        "'HomePage' must render each discounted car banner as a link to '/car/<car._id>'.",
+        "'HomePage' must render each discount banner with '<discount_percentage>% OFF' badge text and the rounded discounted price.",
+        "'HomePage' must render each discount banner's original price as a line-through value.",
+        "'CarCard' must not render a discount badge when 'discount_percentage' is 0.",
+        "'CarCard' must render the original price, not a discounted price, when 'discount_percentage' is 100.",
+        "'CarDetailsPage' Overview tab must not render a discount badge when 'discount_percentage' is 0.",
+        "'CarDetailsPage' Price tab must not render a discount row when 'discount_percentage' is 0.",
+        "'CarDetailsPage' Overview tab must render the original acquisition price, not a discounted price, when 'discount_percentage' is negative.",
+        "'PurchaseModal' must not render the 'Offer' section when 'discount_percentage' is 0.",
+        "'PurchaseModal' must render the original price and no discount offer when 'discount_percentage' is 100.",
+        "'AdminDashboard' Vehicles tab must render the original price when 'discount_percentage' is 0.",
+        "'AdminDashboard' Bookings tab must render the original booking car price when 'discount_percentage' is 100.",
+        "'HomePage' must not render a discount banner for a seeded car with 'discount_percentage' 0."
+      ]
+    }
+  ]
+}
