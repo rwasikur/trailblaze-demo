@@ -1093,11 +1093,15 @@ const seedPublic = async () => {
         }
         console.log("Public auxiliary accounts seeded!");
 
-        process.exit(0);
+        return true;
     } catch (err) {
         console.error("Error seeding public data:", err);
-        process.exit(1);
+        throw err;
     }
 };
 
-seedPublic();
+if (require.main === module) {
+    seedPublic().then(() => process.exit(0)).catch(() => process.exit(1));
+}
+
+module.exports = { seedPublic };
