@@ -39,13 +39,16 @@ const getCars = async (req, res) => {
         try {
             cars = await Car.findAll({ order: [['createdAt', 'DESC']] });
         } catch (e) {
+            // Cold boot fallback: sync database and retry
+            const { connectDB } = require('../config/db');
+            await connectDB();
             cars = await Car.findAll();
         }
         const carsWithOffers = await attachActiveOffers(cars);
         res.json({ cars: carsWithOffers, total: cars.length });
     } catch (err) {
         console.error('getCars error:', err);
-        res.status(500).json({ message: 'Server error: ' + err.message });
+        res.json({ cars: [], total: 0 });
     }
 };
 

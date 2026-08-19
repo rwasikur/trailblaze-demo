@@ -21,17 +21,16 @@ if (require('fs').existsSync(uploadsDir)) {
     app.use('/uploads', express.static(uploadsDir));
 }
 
-let isDbConnected = false;
+let dbPromise = null;
 
 app.use(async (req, res, next) => {
-    if (!isDbConnected) {
-        try {
-            await connectDB();
-            isDbConnected = true;
-        } catch (e) {
+    if (!dbPromise) {
+        dbPromise = connectDB().catch(e => {
             console.error('DB Connection error:', e);
-        }
+            dbPromise = null;
+        });
     }
+    await dbPromise;
     next();
 });
 
