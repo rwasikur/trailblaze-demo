@@ -26,6 +26,13 @@ const PurchaseModal = ({ car, isOpen, onClose, emiInfo }) => {
 
     if (!isOpen) return null;
 
+    const activeOffer = Array.isArray(car.activeOffers) && car.activeOffers.length > 0 ? car.activeOffers[0] : null;
+    const offerSavings = Number(activeOffer?.savings_amount) || 0;
+    const discountedPrice = activeOffer
+        ? Number(activeOffer.discounted_price ?? Math.max((Number(car.price) || 0) - offerSavings, 0))
+        : null;
+    const hasDiscount = activeOffer && offerSavings > 0 && discountedPrice !== null && discountedPrice < Number(car.price);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 

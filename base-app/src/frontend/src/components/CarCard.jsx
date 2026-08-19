@@ -65,6 +65,14 @@ const CarCard = ({ car, featured = false, isComparing = false, onCompareToggle =
                             </span>
                         </div>
 
+                        {activeOffer && (
+                            <div className="absolute left-4 top-14 animate-in fade-in slide-in-from-left-2 duration-500">
+                                <span id={`car-card-${car._id}-offer-badge`} className="inline-flex max-w-[220px] items-center gap-2 rounded-full border border-white/25 bg-rose-600/95 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-xl shadow-rose-900/25 backdrop-blur-md">
+                                    {activeOffer.badge_text}
+                                </span>
+                            </div>
+                        )}
+
                         <div className="absolute top-4 right-4 animate-in fade-in zoom-in duration-500">
                             <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl backdrop-blur-md border border-white/20 ${fuelTheme(car.fuel_type)}`}>
                                 <span className="w-1 h-1 rounded-full bg-white animate-pulse"></span>

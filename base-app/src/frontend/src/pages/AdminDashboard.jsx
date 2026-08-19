@@ -37,6 +37,7 @@ const AdminDashboard = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [cars, setCars] = useState([]);
     const [bookings, setBookings] = useState([]);
+    const [offers, setOffers] = useState([]);
     const [activeTab, setActiveTab] = useState('vehicles');
     const [editingBookingId, setEditingBookingId] = useState(null);
     const carPage = parseInt(searchParams.get('vPage') || '1');
@@ -51,6 +52,7 @@ const AdminDashboard = () => {
         else {
             fetchCars(token);
             fetchBookings(token);
+            fetchOffers(token);
         }
     }, [navigate]);
 
@@ -78,6 +80,18 @@ const AdminDashboard = () => {
         }
     };
 
+    const fetchOffers = async (token) => {
+        try {
+            const { data } = await api.get('/api/offers/admin/all', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setOffers(data || []);
+        } catch (err) {
+            console.error('Failed to fetch offers:', err);
+            setOffers([]);
+        }
+    };
+
     const handleBookingStatus = async (bookingId, status) => {
         try {
             const token = localStorage.getItem('adminToken');
@@ -92,7 +106,7 @@ const AdminDashboard = () => {
             }
 
             // Simultaneous refresh to ensure UI is in sync
-            await Promise.all([fetchBookings(token), fetchCars(token)]);
+            await Promise.all([fetchBookings(token), fetchCars(token), fetchOffers(token)]);
         } catch (err) {
             toast.error('Failed to update booking status');
             console.error(err);
@@ -241,7 +255,8 @@ const AdminDashboard = () => {
                                                             ) : null}
                                                         </td>
                                                     </tr>
-                                                ))}
+                                                    );
+                                                })}
                                             </tbody>
                                         </table>
                                         <div className="p-4 border-t border-slate-100">

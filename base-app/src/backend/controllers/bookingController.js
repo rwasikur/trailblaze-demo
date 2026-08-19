@@ -77,7 +77,21 @@ const getBookings = async (req, res) => {
             include: [{ model: Car, as: 'car' }],
             order: [['createdAt', 'DESC']]
         });
-        res.json(bookings);
+        const serializedBookings = bookings.map((booking) => booking.toJSON ? booking.toJSON() : booking);
+        const decoratedCars = await attachActiveOffers(
+            serializedBookings
+                .filter((booking) => booking.car)
+                .map((booking) => booking.car)
+        );
+        const carsById = decoratedCars.reduce((acc, car) => {
+            acc[String(car._id)] = car;
+            return acc;
+        }, {});
+
+        res.json(serializedBookings.map((booking) => ({
+            ...booking,
+            car: booking.car ? carsById[String(booking.car._id)] || booking.car : booking.car,
+        })));
     } catch (error) {
         console.error('Error fetching bookings:', error);
         res.status(500).json({ message: 'Server error' });

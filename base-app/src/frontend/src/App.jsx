@@ -34,6 +34,7 @@ function AnimatedRoutes() {
         <Route path="/admin/dashboard" element={<PageTransition><AdminDashboard /></PageTransition>} />
         <Route path="/admin/sales-history" element={<PageTransition><SalesHistoryPage /></PageTransition>} />
         <Route path="/admin/catalogue" element={<PageTransition><ManageCataloguePage /></PageTransition>} />
+        <Route path="/admin/offers" element={<PageTransition><OfferManagementPage /></PageTransition>} />
         <Route path="/admin/add-car" element={<PageTransition><AddCarPage /></PageTransition>} />
         <Route path="/admin/edit-car/:id" element={<PageTransition><EditCarPage /></PageTransition>} />
         <Route path="/admin/profile" element={<PageTransition><AdminProfile /></PageTransition>} />
