@@ -127,14 +127,14 @@ const BrowseCarsPage = () => {
 
     const filteredCars = useMemo(() => {
         let result = cars;
-        if (activeFilter === 'Recent') {
+        if (conditionFilter === 'Recent') {
             const idMap = new Map(recentCarIds.map((id, i) => [id, i]));
             result = cars
                 .filter(car => idMap.has(car._id))
                 .sort((a, b) => idMap.get(a._id) - idMap.get(b._id));
-        } else if (activeFilter === 'New') {
+        } else if (conditionFilter === 'New') {
             result = cars.filter(c => c.condition === 'New');
-        } else if (activeFilter === 'Pre-Owned') {
+        } else if (conditionFilter === 'Pre-Owned' || conditionFilter === 'Used') {
             result = cars.filter(c => c.condition === 'Used');
         }
 
