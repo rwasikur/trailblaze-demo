@@ -1,5 +1,7 @@
 const Booking = require('../models/Booking');
 const Car = require('../models/Car');
+const Sale = require('../models/Sale');
+const { Op } = require('sequelize');
 
 const createBooking = async (req, res) => {
     try {
@@ -91,14 +93,25 @@ const updateBookingStatus = async (req, res) => {
                 { where: { _id: booking.car_id } }
             );
 
+            // CREATE SALE RECORD
+            await Sale.create({
+                car_id: booking.car_id,
+                booking_id: booking._id,
+                sale_price: booking.car.price,
+                sale_date: new Date(),
+                buyer_name: booking.user_name,
+                buyer_email: booking.user_email
+            });
+
             // Auto-reject other pending bookings for the same car
+
             await Booking.update(
                 { status: 'Rejected' },
                 {
                     where: {
                         car_id: booking.car_id,
                         status: 'Pending',
-                        _id: { [require('sequelize').Op.ne]: booking._id }
+                        _id: { [Op.ne]: booking._id }
                     }
                 }
             );
@@ -110,6 +123,10 @@ const updateBookingStatus = async (req, res) => {
                 { availability_status: 'Available' },
                 { where: { _id: booking.car_id } }
             );
+
+            await Sale.destroy({
+                where: { booking_id: booking._id }
+            });
         }
 
         res.json({ message: `Booking ${status.toLowerCase()} successfully`, booking });
