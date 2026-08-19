@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
+import api from '../api';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -54,6 +55,9 @@ const AdminDashboard = () => {
             fetchBookings(token);
             fetchOffers(token);
         }
+
+        fetchCars(token);
+        fetchBookings(token);
     }, [navigate]);
 
     const fetchCars = async (token) => {
@@ -132,8 +136,12 @@ const AdminDashboard = () => {
             <div className="max-w-7xl mx-auto space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h1 id="dashboard-heading" className="text-3xl font-black text-slate-900 tracking-tight">Admin Dashboard</h1>
-                        <p className="text-slate-500 mt-2 text-sm md:text-base font-medium">Manage your vehicle Catalogue and purchase bookings.</p>
+                        <h1 id="dashboard-heading" className="text-3xl font-extrabold text-slate-900 font-display tracking-tight">
+                            Admin Dashboard
+                        </h1>
+                        <p className="text-slate-500 mt-2 text-base">
+                            Manage your vehicle Catalogue, purchase bookings, and system operations.
+                        </p>
                     </div>
                     <div className="flex flex-wrap gap-3">
                         <Button id="sales-history-link" variant="outline" onClick={() => navigate('/admin/sales-history')} className="text-xs font-bold h-10 border-slate-300">
@@ -142,7 +150,12 @@ const AdminDashboard = () => {
                         <Button variant="outline" onClick={() => navigate('/admin/catalogue')} className="text-xs font-bold h-10 border-slate-300">
                             Manage Catalogue
                         </Button>
-                        <Button id="add-car-button" onClick={() => navigate('/admin/add-car')} className="text-xs font-bold h-10 shadow-lg shadow-slate-900/10" variant="slate">
+                        <Button
+                            id="add-car-button"
+                            onClick={() => navigate('/admin/add-car')}
+                            className="text-sm font-semibold h-11"
+                            variant="slate"
+                        >
                             + Add New Vehicle
                         </Button>
                     </div>
@@ -215,7 +228,7 @@ const AdminDashboard = () => {
                                                     <tr id={`car-row-${car._id}`} key={car._id} className="hover:bg-slate-50/30 transition-colors group">
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">
-                                                                {car.name.toLowerCase().startsWith(car.brand.toLowerCase()) ? car.name : `${car.brand} ${car.name}`}
+                                                                {car.name?.toLowerCase().startsWith(car.brand?.toLowerCase()) ? car.name : `${car.brand} ${car.name}`}
                                                             </div>
                                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{car.fuel_type} • {car.transmission}</div>
                                                             <div className="flex items-center gap-2 mt-1.5">
@@ -321,7 +334,7 @@ const AdminDashboard = () => {
                                                         </td>
                                                         <td className="px-6 py-5">
                                                             <div className="font-black text-slate-900 text-sm">
-                                                                {booking.car?.name.toLowerCase().startsWith(booking.car?.brand.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
+                                                                {booking.car?.name?.toLowerCase().startsWith(booking.car?.brand?.toLowerCase()) ? booking.car?.name : `${booking.car?.brand} ${booking.car?.name}`}
                                                             </div>
                                                             <div className="flex items-center gap-1.5 mt-1">
                                                                 <div className="font-bold text-blue-600 text-[10px] uppercase tracking-widest">${getDisplayPrice(booking.car)?.toLocaleString()}</div>

@@ -67,6 +67,19 @@ const CarDetailsPage = () => {
                 const { data } = await api.get(`/api/cars/${id}`);
                 setCar(data);
                 setLoading(false);
+
+                // Increment view logic
+                try {
+                    const viewedCars = JSON.parse(sessionStorage.getItem('viewedCars') || '[]');
+                    if (!viewedCars.includes(id)) {
+                        await api.put(`/api/cars/${id}/view`);
+                        viewedCars.push(id);
+                        sessionStorage.setItem('viewedCars', JSON.stringify(viewedCars));
+                    }
+                } catch (viewError) {
+                    console.error('Error recording view', viewError);
+                }
+
             } catch (error) {
                 console.error('Error fetching car details', error);
                 setLoading(false);

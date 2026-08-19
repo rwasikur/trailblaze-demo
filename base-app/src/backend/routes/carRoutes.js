@@ -17,8 +17,10 @@ router.get('/', getCars);
 router.get('/compare', getComparisonResults);
 router.get('/admin/all', protect, getAllCars);
 router.post('/', protect, createCar);
+router.get('/analytics/summary', getFleetAnalytics);
 router.get('/:id', getCarById);
 router.put('/:id', protect, updateCar);
 router.put('/:id/status', protect, updateCarStatus);
+router.put('/:id/view', incrementCarView);
 
 module.exports = router;

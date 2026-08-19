@@ -9,6 +9,7 @@ import BrowseCarsPage from './pages/BrowseCarsPage';
 import CarDetailsPage from './pages/CarDetailsPage';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminAnalyticsDashboard from './pages/AdminAnalyticsDashboard';
 import AddCarPage from './pages/AddCarPage';
 import EditCarPage from './pages/EditCarPage';
 import ManageCataloguePage from './pages/ManageCataloguePage';
