@@ -3,37 +3,48 @@ const Offer = require('../models/Offer.js');
 const { isActiveOffer, offerMatchesCar } = require('./offerController.js');
 
 const attachActiveOffers = async (cars) => {
-    const activeOffers = (await Offer.findAll({ order: [['activation_date', 'ASC']] }))
-        .filter((offer) => isActiveOffer(offer));
+    try {
+        const offersList = await Offer.findAll({ order: [['activation_date', 'ASC']] });
+        const activeOffers = offersList.filter((offer) => isActiveOffer(offer));
 
-    return cars.map((car) => {
-        const serializedCar = car.toJSON ? car.toJSON() : car;
-        return {
-            ...serializedCar,
-            activeOffers: serializedCar.availability_status === 'Sold'
-                ? []
-                : activeOffers
-                    .filter((offer) => offerMatchesCar(offer, serializedCar))
-                    .map((offer) => {
-                        const serializedOffer = offer.toJSON ? offer.toJSON() : offer;
-                        const savingsAmount = Number(serializedOffer.savings_amount) || 0;
-                        return {
-                            ...serializedOffer,
-                            discounted_price: Math.max((Number(serializedCar.price) || 0) - savingsAmount, 0),
-                        };
-                    }),
-        };
-    });
+        return cars.map((car) => {
+            const serializedCar = car.toJSON ? car.toJSON() : car;
+            return {
+                ...serializedCar,
+                activeOffers: serializedCar.availability_status === 'Sold'
+                    ? []
+                    : activeOffers
+                        .filter((offer) => offerMatchesCar(offer, serializedCar))
+                        .map((offer) => {
+                            const serializedOffer = offer.toJSON ? offer.toJSON() : offer;
+                            const savingsAmount = Number(serializedOffer.savings_amount) || 0;
+                            return {
+                                ...serializedOffer,
+                                discounted_price: Math.max((Number(serializedCar.price) || 0) - savingsAmount, 0),
+                            };
+                        }),
+            };
+        });
+    } catch (e) {
+        return cars.map((car) => {
+            const serializedCar = car.toJSON ? car.toJSON() : car;
+            return { ...serializedCar, activeOffers: [] };
+        });
+    }
 };
 
 const getCars = async (req, res) => {
     try {
-        const cars = await Car.findAll({
-            order: [['createdAt', 'DESC']]
-        });
+        let cars;
+        try {
+            cars = await Car.findAll({ order: [['createdAt', 'DESC']] });
+        } catch (e) {
+            cars = await Car.findAll();
+        }
         const carsWithOffers = await attachActiveOffers(cars);
         res.json({ cars: carsWithOffers, total: cars.length });
     } catch (err) {
+        console.error('getCars error:', err);
         res.status(500).json({ message: 'Server error: ' + err.message });
     }
 };

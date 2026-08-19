@@ -31,8 +31,11 @@ if (isPostgres) {
 const connectDB = async (retries = 2, delay = 1000) => {
     try {
         await sequelize.authenticate();
-        console.log('Database connected');
-        await sequelize.sync({ alter: true });
+        if (isPostgres) {
+            await sequelize.sync({ alter: true });
+        } else {
+            await sequelize.sync();
+        }
         console.log('Database models synced');
 
         // Auto-seed if database is empty (essential for Vercel demo)
