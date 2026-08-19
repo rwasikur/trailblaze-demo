@@ -30,10 +30,16 @@ const ManageCataloguePage = () => {
     const fetchCars = async (token) => {
         setLoading(true);
         try {
-            const carsRes = await api.get('/api/cars/admin/all', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setCars(carsRes.data || []);
+            let res;
+            try {
+                res = await api.get('/api/cars/admin/all', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            } catch (e) {
+                res = await api.get('/api/cars');
+            }
+            const carsList = Array.isArray(res.data) ? res.data : (res.data?.cars || []);
+            setCars(carsList);
         } catch (err) {
             console.error('Failed to fetch cars:', err);
             setCars([]);
