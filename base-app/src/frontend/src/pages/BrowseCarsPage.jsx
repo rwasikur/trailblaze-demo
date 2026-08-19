@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Filter, 
@@ -12,6 +13,7 @@ import {
 } from 'lucide-react';
 import api from '../api';
 import CarCard from '../components/CarCard';
+import { Pagination } from '../components/ui/Pagination';
 
 const Badge = ({ children, variant = 'default', className = '' }) => {
     const variants = {
@@ -28,6 +30,7 @@ const Badge = ({ children, variant = 'default', className = '' }) => {
 
 const BrowseCarsPage = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
     const [conditionFilter, setConditionFilter] = useState('All');
@@ -37,6 +40,9 @@ const BrowseCarsPage = () => {
     const [transmissionFilter, setTransmissionFilter] = useState('All Transmissions');
     const [priceFilter, setPriceFilter] = useState('All Prices');
     const [showFilters, setShowFilters] = useState(false);
+
+    const currentPage = parseInt(searchParams.get('page') || '1');
+    const ITEMS_PER_PAGE = 9;
 
     const resetFilters = () => {
         setConditionFilter('All');
@@ -146,6 +152,13 @@ const BrowseCarsPage = () => {
     const transmissions = ['All Transmissions', 'Manual', 'Automatic'];
     const priceRanges = ['All Prices', 'Under 5L', '5L - 10L', '10L - 20L', '20L - 40L', 'Above 40L'];
 
+    const paginatedCars = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredCars.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredCars, currentPage]);
+
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
     return (
         <div className="min-h-full bg-slate-50 relative pb-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -173,8 +186,19 @@ const BrowseCarsPage = () => {
                             <button
                                 key={opt}
                                 id={`filter-${opt.toLowerCase().replace(' ', '-')}`}
+<<<<<<< HEAD
                                 data-testid={`condition-filter-${opt}`}
                                 onClick={() => setConditionFilter(opt)}
+=======
+                                onClick={() => {
+                                    setConditionFilter(opt);
+                                    setSearchParams(prev => {
+                                        const newParams = new URLSearchParams(prev);
+                                        newParams.set('page', '1');
+                                        return newParams;
+                                    });
+                                }}
+>>>>>>> task-3
                                 className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${conditionFilter === opt ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 {opt}
@@ -375,7 +399,7 @@ const BrowseCarsPage = () => {
                 ) : (
                     <div className="space-y-12">
                         <div id="car-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {filteredCars.map((car) => (
+                            {paginatedCars.map((car) => (
                                 <CarCard
                                     key={car._id}
                                     car={car}
@@ -384,6 +408,20 @@ const BrowseCarsPage = () => {
                                 />
                             ))}
                         </div>
+
+                        <Pagination
+                            totalItems={filteredCars.length}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                            currentPage={currentPage}
+                            onPageChange={(page) => {
+                                setSearchParams(prev => {
+                                    const newParams = new URLSearchParams(prev);
+                                    newParams.set('page', page.toString());
+                                    return newParams;
+                                });
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                        />
                     </div>
                 )}
             </div>

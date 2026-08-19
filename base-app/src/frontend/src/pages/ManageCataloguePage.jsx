@@ -1,18 +1,22 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Card, CardContent } from '../components/ui/Card';
+import { Pagination } from '../components/ui/Pagination';
 
 import { BRANDS_MODELS } from '../constants/carData';
 
 const ManageCataloguePage = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeDropdown, setActiveDropdown] = useState(null);
+    const currentPage = parseInt(searchParams.get('page') || '1');
+    const ITEMS_PER_PAGE = 10;
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
@@ -51,6 +55,11 @@ const ManageCataloguePage = () => {
             toast.error('Error updating car status.');
         }
     };
+
+    const paginatedCars = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return cars.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [cars, currentPage]);
 
     return (
         <div className="min-h-full bg-slate-50 py-10 px-6 font-sans text-slate-800">
@@ -96,7 +105,7 @@ const ManageCataloguePage = () => {
                                             </td>
                                         </tr>
                                     ) : (
-                                        cars.map((car) => (
+                                        paginatedCars.map((car) => (
                                             <tr key={car._id} className="hover:bg-slate-50/50 transition-colors">
                                                 <td className="px-6 py-4 text-slate-400 font-mono text-xs">...{car._id.substring(car._id.length - 6)}</td>
                                                 <td className="px-6 py-4 font-bold text-slate-900">
@@ -136,7 +145,7 @@ const ManageCataloguePage = () => {
                                                                                     if (car.availability_status === 'Sold') {
                                                                                         navigate('/admin/add-car', { state: { copyFrom: car } });
                                                                                     } else {
-                                                                                        navigate(`/admin/edit-car/${car._id}`); 
+                                                                                        navigate(`/admin/edit-car/${car._id}?fromPage=${currentPage}`); 
                                                                                     }
                                                                                 }} 
                                                                                 className="w-full text-left px-3 py-2 text-blue-600 hover:bg-slate-50 transition-colors rounded-md"
@@ -158,9 +167,17 @@ const ManageCataloguePage = () => {
                         </div>
                     </CardContent>
                 </Card>
+
+                <Pagination
+                    totalItems={cars.length}
+                    itemsPerPage={ITEMS_PER_PAGE}
+                    currentPage={currentPage}
+                    onPageChange={(page) => setSearchParams({ page: page.toString() })}
+                />
             </div>
         </div>
     );
 };
 
 export default ManageCataloguePage;
+
