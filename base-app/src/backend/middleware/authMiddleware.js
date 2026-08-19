@@ -10,7 +10,8 @@ const protect = async (req, res, next) => {
         }
 
         const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const secret = process.env.JWT_SECRET || 'trailblazer_super_secret_jwt_key_2026';
+        const decoded = jwt.verify(token, secret);
         const admin = await Admin.findByPk(decoded.id, {
             attributes: { exclude: ['password'] }
         });

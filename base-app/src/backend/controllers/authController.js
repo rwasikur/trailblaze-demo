@@ -2,7 +2,8 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    const secret = process.env.JWT_SECRET || 'trailblazer_super_secret_jwt_key_2026';
+    return jwt.sign({ id }, secret, { expiresIn: '30d' });
 };
 
 const signupAdmin = async (req, res) => {
