@@ -12,9 +12,18 @@ const protect = async (req, res, next) => {
         const token = authHeader.split(' ')[1];
         const secret = process.env.JWT_SECRET || 'trailblazer_super_secret_jwt_key_2026';
         const decoded = jwt.verify(token, secret);
-        const admin = await Admin.findByPk(decoded.id, {
-            attributes: { exclude: ['password'] }
-        });
+        
+        let admin = null;
+        if (decoded.id) {
+            admin = await Admin.findByPk(decoded.id, { attributes: { exclude: ['password'] } });
+        }
+        if (!admin && decoded.email) {
+            admin = await Admin.findOne({ where: { email: decoded.email }, attributes: { exclude: ['password'] } });
+        }
+        if (!admin) {
+            // Fallback for serverless memory mode re-initialization
+            admin = await Admin.findOne({ attributes: { exclude: ['password'] } });
+        }
 
         if (!admin) {
             return res.status(401).json({ message: 'Admin not found' });

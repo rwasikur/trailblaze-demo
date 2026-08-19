@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 
-const generateToken = (id) => {
+const generateToken = (id, email) => {
     const secret = process.env.JWT_SECRET || 'trailblazer_super_secret_jwt_key_2026';
-    return jwt.sign({ id }, secret, { expiresIn: '30d' });
+    return jwt.sign({ id, email }, secret, { expiresIn: '30d' });
 };
 
 const signupAdmin = async (req, res) => {
@@ -48,7 +48,7 @@ const authAdmin = async (req, res) => {
                 full_name: admin.full_name,
                 email: admin.email,
                 role: admin.role,
-                token: generateToken(admin._id),
+                token: generateToken(admin._id, admin.email),
             });
         } else {
             res.status(401).json({ message: 'Invalid email or password' });
