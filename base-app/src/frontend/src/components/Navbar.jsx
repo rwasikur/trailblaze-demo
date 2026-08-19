@@ -28,11 +28,11 @@ const Navbar = () => {
     return (
         <nav className="sticky top-0 z-[1000] h-20 w-full border-b border-white/10 bg-slate-950/60 backdrop-blur-xl transition-all duration-300">
             <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6 lg:px-8">
-                <Link to="/" className="flex items-center gap-3 decoration-0 group">
+                <Link to="/" className="flex items-center gap-3 decoration-0 group py-1">
                     <img
-                        src="/carlogo.png"
+                        src="/Trailblazerauto-logo.png"
                         alt="TrailblazeAuto"
-                        className="h-9 w-auto transition-transform duration-300 group-hover:scale-105"
+                        className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                     />
                 </Link>
 
