@@ -32,6 +32,10 @@ const Booking = sequelize.define('Booking', {
         type: DataTypes.STRING,
         defaultValue: 'Pending'
     },
+    final_price: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     selected_color: {
         type: DataTypes.STRING,
         allowNull: true
