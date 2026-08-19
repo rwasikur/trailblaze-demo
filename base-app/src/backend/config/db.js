@@ -13,6 +13,7 @@ const sequelize = isPostgres
     })
     : new Sequelize({
         dialect: 'sqlite',
+        dialectModule: require('sqlite3'),
         storage: '/tmp/trailblaze.sqlite',
         logging: false
     });
