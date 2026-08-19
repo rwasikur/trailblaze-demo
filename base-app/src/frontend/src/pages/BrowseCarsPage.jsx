@@ -40,6 +40,7 @@ const BrowseCarsPage = () => {
     const [transmissionFilter, setTransmissionFilter] = useState('All Transmissions');
     const [priceFilter, setPriceFilter] = useState('All Prices');
     const [showFilters, setShowFilters] = useState(false);
+    const [recentCarIds, setRecentCarIds] = useState([]);
 
     const currentPage = parseInt(searchParams.get('page') || '1');
     const ITEMS_PER_PAGE = 9;
@@ -78,13 +79,17 @@ const BrowseCarsPage = () => {
             }
         };
         fetchCars();
-        sync();
+        const syncRecent = () => {
+            const saved = localStorage.getItem('trailblaze_recent_viewed');
+            setRecentCarIds(saved ? JSON.parse(saved) : []);
+        };
+        syncRecent();
 
-        window.addEventListener('storage', sync);
-        window.addEventListener('recentCarsUpdated', sync);
+        window.addEventListener('storage', syncRecent);
+        window.addEventListener('recentCarsUpdated', syncRecent);
         return () => {
-            window.removeEventListener('storage', sync);
-            window.removeEventListener('recentCarsUpdated', sync);
+            window.removeEventListener('storage', syncRecent);
+            window.removeEventListener('recentCarsUpdated', syncRecent);
         };
     }, []);
 
