@@ -2,19 +2,26 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
-const baseUploadDir = isVercel ? '/tmp/uploads' : path.join(__dirname, '..', 'uploads');
-
+let baseUploadDir = '/tmp/uploads';
+if (!process.env.VERCEL) {
+    try {
+        const localDir = path.join(__dirname, '..', 'uploads');
+        if (!fs.existsSync(localDir)) {
+            fs.mkdirSync(localDir, { recursive: true });
+        }
+        baseUploadDir = localDir;
+    } catch (e) {
+        baseUploadDir = '/tmp/uploads';
+    }
+}
 try {
     if (!fs.existsSync(baseUploadDir)) {
         fs.mkdirSync(baseUploadDir, { recursive: true });
     }
-} catch (e) {
-    console.warn('Could not create upload directory:', e.message);
-}
+} catch (e) {}
 
 // Use memoryStorage in serverless or diskStorage locally/tmp
-const storage = isVercel
+const storage = (process.env.VERCEL || baseUploadDir.startsWith('/tmp'))
     ? multer.memoryStorage()
     : multer.diskStorage({
         destination: (req, file, cb) => {
