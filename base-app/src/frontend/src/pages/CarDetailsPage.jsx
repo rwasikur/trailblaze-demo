@@ -200,6 +200,7 @@ const CarDetailsPage = () => {
                                         <span className="text-xs font-bold text-slate-400 line-through">${car.price?.toLocaleString()}</span>
                                     </div>
                                 )}
+                                <EmiButton />
                             </div>
                         </div>
                     );
@@ -389,7 +390,7 @@ const CarDetailsPage = () => {
                             </div>
                         </div>
 
-                        <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group">
+                        <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group space-y-4">
                             <div className="flex justify-between items-end relative z-10">
                                 <div>
                                     <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-0.5">Acquisition</div>
@@ -403,6 +404,14 @@ const CarDetailsPage = () => {
                                     <div className="text-base font-bold">{car.seller_name || 'Trailblaze HQ'}</div>
                                 </div>
                             </div>
+                            <button
+                                id="calculate-emi-btn"
+                                onClick={() => setIsEmiModalOpen(true)}
+                                className="w-full py-2.5 rounded-xl border border-blue-500/40 bg-blue-600/20 text-blue-300 hover:bg-blue-600 hover:text-white font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+                            >
+                                <span>$</span>
+                                <span>Calculate EMI / Monthly Options</span>
+                            </button>
                         </div>
 
                         {activeOffer && (
