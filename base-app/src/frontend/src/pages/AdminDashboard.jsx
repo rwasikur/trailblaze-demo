@@ -8,6 +8,30 @@ import { Badge } from '../components/ui/Badge';
 import { Pagination } from '../components/ui/Pagination';
 import { getColorCode } from '../constants/colorMapping';
 
+// Small inline component for the EMI / Full Payment badge in the bookings table
+const FinancingBadge = ({ emiDetails }) => {
+    if (emiDetails && emiDetails.opted) {
+        return (
+            <div className="space-y-1">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-[9px] font-black uppercase tracking-widest">
+                    <span>$</span> EMI
+                </span>
+                <div className="text-[10px] font-bold text-slate-700">
+                    ${emiDetails.monthlyEmi?.toLocaleString('en-US')}<span className="text-slate-400">/mo</span>
+                </div>
+                <div className="text-[9px] text-slate-400 font-medium">
+                    {emiDetails.tenure} mo · {emiDetails.downPaymentPct}% down · {emiDetails.annualRate}% p.a.
+                </div>
+            </div>
+        );
+    }
+    return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-500 text-[9px] font-black uppercase tracking-widest">
+            Full Payment
+        </span>
+    );
+};
+
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -264,6 +288,7 @@ const AdminDashboard = () => {
                                                     <th className="px-6 py-4 font-black">Customer Name</th>
                                                     <th className="px-6 py-4 font-black">Contact Info</th>
                                                     <th className="px-6 py-4 font-black">Vehicle Choice</th>
+                                                    <th className="px-6 py-4 font-black">Financing</th>
                                                     <th className="px-6 py-4 font-black">Timestamp</th>
                                                     <th className="px-6 py-4 font-black">Current Status</th>
                                                     <th className="px-6 py-4 text-right font-black">Action Panel</th>

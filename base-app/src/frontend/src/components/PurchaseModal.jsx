@@ -3,15 +3,14 @@ import api from '../api';
 import { toast } from 'react-toastify';
 import { getColorCode } from '../constants/colorMapping';
 
-const PurchaseModal = ({ car, isOpen, onClose }) => {
-
-
+const PurchaseModal = ({ car, isOpen, onClose, emiInfo }) => {
     const [formData, setFormData] = useState({
         user_name: '',
         user_email: '',
         user_contact: '',
         selected_color: car.available_colors?.[0] || ''
     });
+    const [loading, setLoading] = useState(false);
 
     React.useEffect(() => {
         if (car.available_colors?.[0]) {
@@ -49,11 +48,23 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
             return toast.error('Please select a color.');
         }
 
+        // Build emi_details payload — only populated when coming from EMI calculator
+        const emi_details = emiInfo
+            ? {
+                opted: true,
+                tenure: emiInfo.tenure,
+                downPaymentPct: emiInfo.downPaymentPct,
+                monthlyEmi: emiInfo.emi,
+                annualRate: emiInfo.annualRate
+            }
+            : null;
+
         setLoading(true);
         try {
             await api.post('/api/bookings', {
                 car_id: car._id,
-                ...formData
+                ...formData,
+                emi_details
             });
             toast.success('Booking request sent! Our team will contact you soon.');
 
@@ -108,6 +119,22 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                                 </div>
                             )}
                         </div>
+
+                        {/* EMI Summary Strip — shown only when coming from EMI calculator */}
+                        {emiInfo && (
+                            <div className="mt-4 px-3 py-2.5 rounded-xl bg-white/10 border border-white/10 backdrop-blur-sm">
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Selected EMI Plan</div>
+                                <div className="flex items-baseline gap-1.5">
+                                    <span className="text-lg font-black text-blue-400">
+                                        ${emiInfo.emi.toLocaleString('en-US')}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-slate-400">/month</span>
+                                </div>
+                                <div className="text-[10px] text-slate-400 font-medium mt-0.5">
+                                    {emiInfo.tenure} months · {emiInfo.downPaymentPct}% down payment
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -122,7 +149,11 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
 
                     <div className="mb-4">
                         <h2 className="text-2xl font-black text-slate-900 tracking-tight">Booking</h2>
-                        <p className="text-slate-400 font-medium text-[10px] mt-0.5">Reserve this vehicle.</p>
+                        <p className="text-slate-400 font-medium text-[10px] mt-0.5">
+                            {emiInfo
+                                ? `EMI plan · $${emiInfo.emi.toLocaleString('en-US')}/mo for ${emiInfo.tenure} months`
+                                : 'Reserve this vehicle.'}
+                        </p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-3" noValidate>
@@ -172,13 +203,12 @@ const PurchaseModal = ({ car, isOpen, onClose }) => {
                                                 key={idx}
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, selected_color: color })}
-                                                className={`group flex items-center gap-2 px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border ${
-                                                    formData.selected_color === color
-                                                    ? 'bg-slate-950 text-white border-slate-950 shadow-lg scale-105'
-                                                    : 'bg-white text-slate-600 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
-                                                }`}
+                                                className={`group flex items-center gap-2 px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border ${formData.selected_color === color
+                                                        ? 'bg-slate-950 text-white border-slate-950 shadow-lg scale-105'
+                                                        : 'bg-white text-slate-600 border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                                                    }`}
                                             >
-                                                <span 
+                                                <span
                                                     className="w-2.5 h-2.5 rounded-full border border-white/20 shadow-sm"
                                                     style={{ backgroundColor: getColorCode(color) }}
                                                 ></span>

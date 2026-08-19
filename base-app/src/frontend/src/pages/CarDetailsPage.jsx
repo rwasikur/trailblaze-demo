@@ -3,10 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Button } from '../components/ui/Button';
 import PurchaseModal from '../components/PurchaseModal';
+import EmiModal from '../components/EmiModal';
 import { getColorCode } from '../constants/colorMapping';
 
 const CarDetailsPage = () => {
-
 
     const { id } = useParams();
     const navigate = useNavigate();
@@ -111,6 +111,19 @@ const CarDetailsPage = () => {
     const isAdmin = !!localStorage.getItem('adminToken');
     const tabs = ['Overview', 'Price', 'Specs', ...(car.condition === 'Used' && isAdmin ? ['History'] : []), 'Images'];
 
+    // Shared EMI button used in both New and Used price panels
+    const EmiButton = () => (
+        <div className="pt-3">
+            <button
+                onClick={() => setIsEmiModalOpen(true)}
+                className="w-full py-3 rounded-xl border-2 border-blue-100 bg-blue-50 text-blue-600 font-black text-[10px] uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all duration-200 flex items-center justify-center gap-2"
+            >
+                <span>$</span>
+                <span>Calculate EMI</span>
+            </button>
+        </div>
+    );
+
     const renderTabContent = () => {
         switch (activeTab) {
             case 'Price':
@@ -125,9 +138,6 @@ const CarDetailsPage = () => {
                         originalPrice = Math.round(car.price / (1 - depreciationFactor));
                     }
                     console.log(originalPrice, "originalPrice");
-                    // if (typeof originalPrice !== 'number' || isNaN(originalPrice)) {
-                    //     originalPrice = car.price || 0;
-                    // }
                     console.log(originalPrice, "originalPrice");
                     const depreciationAmount = originalPrice - (car.price || 0);
                     console.log(depreciationAmount, "depreciationAmount");
@@ -188,6 +198,7 @@ const CarDetailsPage = () => {
                                     <span className="text-blue-600 font-black uppercase tracking-tighter text-xl">Valuation</span>
                                     <span className="text-4xl font-black text-blue-600">${discountedPrice?.toLocaleString()}</span>
                                 </div>
+                                <EmiButton />
                             </div>
                         </div>
                     );
@@ -483,10 +494,26 @@ const CarDetailsPage = () => {
                 </div>
             )}
 
+            {/* EMI Calculator Modal */}
+            <EmiModal
+                car={car}
+                isOpen={isEmiModalOpen}
+                onClose={() => setIsEmiModalOpen(false)}
+                onProceedToBook={(info) => {
+                    setEmiInfo(info);
+                    setIsPurchaseModalOpen(true);
+                }}
+            />
+
+            {/* Booking Modal */}
             <PurchaseModal
                 car={car}
                 isOpen={isPurchaseModalOpen}
-                onClose={() => setIsPurchaseModalOpen(false)}
+                onClose={() => {
+                    setIsPurchaseModalOpen(false);
+                    setEmiInfo(null);
+                }}
+                emiInfo={emiInfo}
             />
         </div>
     );
