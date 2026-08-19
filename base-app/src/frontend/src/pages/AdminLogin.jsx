@@ -49,7 +49,7 @@ const AdminLogin = () => {
     };
 
     return (
-        <div className="h-screen w-full flex items-center justify-center relative overflow-hidden px-6 text-white bg-slate-950 font-sans">
+        <div className="min-h-[calc(100vh-5rem)] w-full flex items-center justify-center relative overflow-hidden px-6 py-8 text-white bg-slate-950 font-sans">
             <div className="absolute inset-0 z-0">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.12),transparent_70%)]"></div>
                 <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]"></div>
@@ -70,7 +70,7 @@ const AdminLogin = () => {
                             <input
                                 id="admin-email-input"
                                 type="email"
-                                placeholder="admin@trailblaze.com"
+                                placeholder="admin@trailblazer.com"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 py-3.5 text-white font-bold focus:outline-none focus:border-blue-600/50 focus:bg-white/10 transition-all placeholder:text-white/10 text-sm"

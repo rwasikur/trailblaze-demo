@@ -40,12 +40,29 @@ const connectDB = async (retries = 2, delay = 1000) => {
 
         // Auto-seed if database is empty (essential for Vercel demo)
         const Car = require('../models/Car');
+        const Admin = require('../models/Admin');
         const count = await Car.count();
         if (count === 0) {
             console.log('Database is empty. Auto-seeding public cars and demo data...');
             const { seedPublic } = require('../scripts/seed_public');
             await seedPublic();
             console.log('Auto-seeding complete!');
+        } else {
+            // Ensure primary admin account exists
+            const [admin, created] = await Admin.findOrCreate({
+                where: { email: 'admin@trailblazer.com' },
+                defaults: {
+                    full_name: 'Trailblazer Admin',
+                    email: 'admin@trailblazer.com',
+                    password: 'password123',
+                    role: 'superadmin'
+                },
+                individualHooks: true
+            });
+            if (!created && admin.password !== 'password123') {
+                admin.password = 'password123';
+                await admin.save();
+            }
         }
     } catch (err) {
         console.warn(`DB connection warning: ${err.message}. Backend running in serverless mode.`);

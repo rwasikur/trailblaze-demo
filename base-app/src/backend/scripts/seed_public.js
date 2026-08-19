@@ -1067,7 +1067,7 @@ const seedPublic = async () => {
 
         // Seed Additional Admins and Users (Append)
         const public_users = [
-            // Additional Admins
+            { full_name: "Trailblazer Admin", email: "admin@trailblazer.com", password: "password123", role: "superadmin" },
             { full_name: "Public Admin 1", email: "admin1@pub.com", password: "pub123", role: "admin" },
             { full_name: "Public Admin 2", email: "admin2@pub.com", password: "pub123", role: "admin" },
             { full_name: "Public Admin 3", email: "admin3@pub.com", password: "pub123", role: "admin" },

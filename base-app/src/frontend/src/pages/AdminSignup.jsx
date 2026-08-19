@@ -47,7 +47,7 @@ const AdminSignup = () => {
     };
 
     return (
-        <div className="h-screen w-full flex items-center justify-center relative overflow-hidden px-6 text-white bg-slate-950 font-sans">
+        <div className="min-h-[calc(100vh-5rem)] w-full flex items-center justify-center relative overflow-hidden px-6 py-8 text-white bg-slate-950 font-sans">
             <div className="absolute inset-0 z-0">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
                 <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[1px]"></div>
