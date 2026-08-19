@@ -9,6 +9,8 @@ const carRoutes = require('./routes/carRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const saleRoutes = require('./routes/saleRoutes');
+const offerRoutes = require('./routes/offerRoutes');
+const emiRoutes = require('./routes/emiRoutes');
 
 const app = express();
 app.use(cors());
@@ -37,6 +39,8 @@ app.use('/api/cars', carRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/sales', saleRoutes);
+app.use('/api/offers', offerRoutes);
+app.use('/api/emi', emiRoutes);
 
 app.get('/', (req, res) => {
     res.send('API Engine Running...');
