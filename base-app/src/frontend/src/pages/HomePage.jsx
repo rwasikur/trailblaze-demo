@@ -35,36 +35,39 @@ const HomePage = () => {
     };
 
     return (
-        <div className="min-h-[calc(100vh-5rem)] w-full relative overflow-hidden bg-slate-950 flex flex-col font-outfit">
-            <div className="absolute inset-0 z-0">
-                <img
-                    src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070&auto=format&fit=crop"
-                    alt="Pinnacle Fleet"
-                    className="h-full w-full object-cover opacity-60 scale-105 animate-[pulse_15s_infinite_ease-in-out]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.1),transparent_50%)]"></div>
-            </div>
+        <div className="w-full bg-slate-950 flex flex-col font-outfit">
+            {/* Hero Section with contained background */}
+            <div className="relative w-full min-h-[78vh] flex flex-col items-center justify-center overflow-hidden bg-slate-950 px-6 py-16 text-center">
+                <div className="absolute inset-0 z-0 pointer-events-none">
+                    <img
+                        src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070&auto=format&fit=crop"
+                        alt="Pinnacle Fleet"
+                        className="h-full w-full object-cover object-center opacity-40 scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-slate-950/40"></div>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.15),transparent_70%)]"></div>
+                </div>
 
-            <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-20 text-center">
-                <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000 ease-out">
-                    <h1 id="hero-heading" className="text-balance text-5xl font-black leading-[0.95] text-white md:text-7xl lg:text-[5.5rem] tracking-tighter">
-                        Elegance for <br /> <span className="text-blue-500 italic font-serif font-medium lowercase">everyone.</span>
-                    </h1>
+                <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center justify-center">
+                    <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000 ease-out">
+                        <h1 id="hero-heading" className="text-balance text-5xl font-black leading-[0.95] text-white md:text-7xl lg:text-[5.5rem] tracking-tighter">
+                            Elegance for <br /> <span className="text-blue-500 italic font-serif font-medium lowercase">everyone.</span>
+                        </h1>
 
-                    <p className="mt-8 mx-auto max-w-xl text-base leading-relaxed text-slate-400 font-medium tracking-wide">
-                        Traverse our curated collection of pristine machines and certified automotive masterpieces. Designed for those who demand excellence in every single mile.
-                    </p>
+                        <p className="mt-6 mx-auto max-w-xl text-base leading-relaxed text-slate-300 font-medium tracking-wide">
+                            Traverse our curated collection of pristine machines and certified automotive masterpieces. Designed for those who demand excellence in every single mile.
+                        </p>
 
-                    <div className="mt-12 flex flex-col items-center justify-center">
-                        <Button
-                            id="browse-cars-cta"
-                            onClick={() => navigate('/browse')}
-                            className="group h-16 rounded-2xl bg-blue-600 px-16 text-sm font-black uppercase tracking-widest text-white shadow-2xl shadow-blue-900/40 hover:bg-blue-500 transition-all hover:scale-105 active:scale-95"
-                        >
-                            Explore The Fleet
-                            <svg className="ml-3 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                        </Button>
+                        <div className="mt-10 flex flex-col items-center justify-center">
+                            <Button
+                                id="browse-cars-cta"
+                                onClick={() => navigate('/browse')}
+                                className="group h-14 rounded-2xl bg-blue-600 px-12 text-xs font-black uppercase tracking-widest text-white shadow-2xl shadow-blue-900/50 hover:bg-blue-500 transition-all hover:scale-105 active:scale-95 border border-blue-400/30"
+                            >
+                                Explore The Fleet
+                                <svg className="ml-3 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -72,7 +75,7 @@ const HomePage = () => {
             {discountedCars.length > 0 && (
                 <section
                     id="homepage-discounts-section"
-                    className="relative z-20 w-full border-t border-white/10 bg-slate-950/85 px-6 py-8 backdrop-blur-xl"
+                    className="relative z-20 w-full border-t border-white/10 bg-slate-950 px-6 py-12"
                 >
                     <div className="mx-auto max-w-7xl">
                         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
