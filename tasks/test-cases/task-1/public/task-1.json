@@ -1,0 +1,29 @@
+{
+    "tasks": [
+        {
+            "task_id": "task-1",
+            "difficulty": "easy",
+            "description": "Implement a comprehensive vehicle filtering system for the Trailblaze Auto catalogue, including multi-dimensional filters for condition, brand, body style, fuel type, transmission, and price range with a clean reset mechanism.",
+            "branch": "task-1",
+            "test_case_location": [
+                "tasks/test-cases/task-1/public/task-1.spec.ts",
+                "evaluation/private-test-cases/task-1/private/task-1.spec.ts"
+            ],
+            "acceptance_criteria": [
+                "The Condition filter using data-testid='condition-filter-New' must correctly show only 'Brand New' vehicles.",
+                "The Condition filter using data-testid='condition-filter-Pre-Owned' must correctly show only 'Pre-Owned' vehicles.",
+                "The Brand dropdown filter with data-testid='brand-filter' must correctly show only vehicles of the selected brand.",
+                "The Body Style dropdown filter with data-testid='body-type-filter' must correctly show only vehicles of the selected body type.",
+                "Fuel Type toggle pills with data-testid='fuel-filter-[Type]' (e.g., Electric) must correctly filter the inventory.",
+                "Transmission toggle pills with data-testid='transmission-filter-[Type]' (e.g., Automatic) must correctly filter results.",
+                "The Budget Range filter with data-testid='price-filter-[Range]' (e.g., Under 5L) must correctly filter vehicles within the selected price brackets.",
+                "Combining multiple active filters (e.g., Brand + Fuel Type) must narrow results correctly based on all active criteria.",
+                "Selecting conflicting filter combinations that have no overlap must gracefully show the 'No matches found' state (Negative Case).",
+                "Selecting a brand that has no available inventory for the current criteria must display the 'No matches found' message (Negative Case).",
+                "Selecting a budget range with no available vehicles must result in the 'No matches found' heading being visible (Negative Case).",
+                "The filtering system must correctly exclude vehicles marked as 'Sold', ensuring they never appear in filtered results (Negative Case).",
+                "The 'Clear All Filters' button with data-testid='reset-filters' must clear all active selections and restore the full available catalogue."
+            ]
+        }
+    ]
+}
