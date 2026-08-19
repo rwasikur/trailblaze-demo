@@ -226,5 +226,6 @@ module.exports = {
     uploadMultipleImages, 
     getComparisonResults,
     incrementCarView,
-    getFleetAnalytics
+    getFleetAnalytics,
+    attachActiveOffers
 };

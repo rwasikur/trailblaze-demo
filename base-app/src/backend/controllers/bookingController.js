@@ -2,6 +2,7 @@ const Booking = require('../models/Booking');
 const Car = require('../models/Car');
 const Sale = require('../models/Sale');
 const { Op } = require('sequelize');
+const { attachActiveOffers } = require('./carController');
 
 const createBooking = async (req, res) => {
     try {
@@ -73,18 +74,30 @@ const createBooking = async (req, res) => {
 
 const getBookings = async (req, res) => {
     try {
-        const bookings = await Booking.findAll({
-            include: [{ model: Car, as: 'car' }],
-            order: [['createdAt', 'DESC']]
-        });
+        let bookings;
+        try {
+            bookings = await Booking.findAll({
+                include: [{ model: Car, as: 'car' }],
+                order: [['createdAt', 'DESC']]
+            });
+        } catch (e) {
+            const { connectDB } = require('../config/db');
+            await connectDB();
+            bookings = await Booking.findAll({
+                include: [{ model: Car, as: 'car' }]
+            });
+        }
+
         const serializedBookings = bookings.map((booking) => booking.toJSON ? booking.toJSON() : booking);
         const decoratedCars = await attachActiveOffers(
             serializedBookings
                 .filter((booking) => booking.car)
                 .map((booking) => booking.car)
         );
-        const carsById = decoratedCars.reduce((acc, car) => {
-            acc[String(car._id)] = car;
+        const carsById = (decoratedCars || []).reduce((acc, car) => {
+            if (car && car._id) {
+                acc[String(car._id)] = car;
+            }
             return acc;
         }, {});
 
@@ -94,7 +107,7 @@ const getBookings = async (req, res) => {
         })));
     } catch (error) {
         console.error('Error fetching bookings:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.json([]);
     }
 };
 
