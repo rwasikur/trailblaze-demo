@@ -2,36 +2,41 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Ensure base upload directory exists
-const baseUploadDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(baseUploadDir)) {
-    fs.mkdirSync(baseUploadDir, { recursive: true });
+const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
+const baseUploadDir = isVercel ? '/tmp/uploads' : path.join(__dirname, '..', 'uploads');
+
+try {
+    if (!fs.existsSync(baseUploadDir)) {
+        fs.mkdirSync(baseUploadDir, { recursive: true });
+    }
+} catch (e) {
+    console.warn('Could not create upload directory:', e.message);
 }
 
-// Storage configuration with dynamic folder selection
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        // Default to profiles if not specified or for backward compatibility
-        let subFolder = 'profiles';
-
-        // Determine subfolder based on fieldname or custom header/param if needed
-        if (file.fieldname === 'car_image' || file.fieldname === 'secondary_images') {
-            subFolder = 'cars';
+// Use memoryStorage in serverless or diskStorage locally/tmp
+const storage = isVercel
+    ? multer.memoryStorage()
+    : multer.diskStorage({
+        destination: (req, file, cb) => {
+            let subFolder = 'profiles';
+            if (file.fieldname === 'car_image' || file.fieldname === 'secondary_images') {
+                subFolder = 'cars';
+            }
+            const targetDir = path.join(baseUploadDir, subFolder);
+            try {
+                if (!fs.existsSync(targetDir)) {
+                    fs.mkdirSync(targetDir, { recursive: true });
+                }
+            } catch (e) {}
+            cb(null, targetDir);
+        },
+        filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            const prefix = file.fieldname === 'car_image' ? 'car' :
+                file.fieldname === 'secondary_images' ? 'gallery' : 'profile';
+            cb(null, `${prefix}-${uniqueSuffix}${path.extname(file.originalname).toLowerCase()}`);
         }
-
-        const targetDir = path.join(baseUploadDir, subFolder);
-        if (!fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true });
-        }
-        cb(null, targetDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const prefix = file.fieldname === 'car_image' ? 'car' :
-            file.fieldname === 'secondary_images' ? 'gallery' : 'profile';
-        cb(null, `${prefix}-${uniqueSuffix}${path.extname(file.originalname).toLowerCase()}`);
-    }
-});
+    });
 
 // File filter (images only)
 const fileFilter = (req, file, cb) => {
