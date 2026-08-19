@@ -16,6 +16,20 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+let isDbConnected = false;
+
+app.use(async (req, res, next) => {
+    if (!isDbConnected) {
+        try {
+            await connectDB();
+            isDbConnected = true;
+        } catch (e) {
+            console.error('DB Connection error:', e);
+        }
+    }
+    next();
+});
+
 app.use('/api/cars', carRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/bookings', bookingRoutes);
@@ -32,15 +46,9 @@ app.get('/health', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-const startServer = async () => {
-    try {
-        await connectDB();
-        const PORT = process.env.PORT || 3000;
-        app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
-    } catch (error) {
-        console.error('Failed to start server:', error);
-        process.exit(1);
-    }
-};
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+}
 
-startServer();
+module.exports = app;
