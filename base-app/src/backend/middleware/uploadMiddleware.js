@@ -3,17 +3,15 @@ const path = require('path');
 const fs = require('fs');
 
 let baseUploadDir = '/tmp/uploads';
-if (!process.env.VERCEL) {
-    try {
+try {
+    if (process.env.NODE_ENV !== 'production') {
         const localDir = path.join(__dirname, '..', 'uploads');
-        if (!fs.existsSync(localDir)) {
-            fs.mkdirSync(localDir, { recursive: true });
+        if (fs.existsSync(localDir)) {
+            baseUploadDir = localDir;
         }
-        baseUploadDir = localDir;
-    } catch (e) {
-        baseUploadDir = '/tmp/uploads';
     }
-}
+} catch (e) {}
+
 try {
     if (!fs.existsSync(baseUploadDir)) {
         fs.mkdirSync(baseUploadDir, { recursive: true });
