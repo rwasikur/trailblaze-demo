@@ -19,7 +19,7 @@ const Car = sequelize.define('Car', {
     mileage: { type: DataTypes.STRING },
     total_distance_covered: { type: DataTypes.STRING },
     available_colors: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
+        type: DataTypes.JSON,
         defaultValue: []
     },
     number_of_owners: { type: DataTypes.INTEGER },
@@ -28,7 +28,7 @@ const Car = sequelize.define('Car', {
     description: { type: DataTypes.TEXT },
     image_url: { type: DataTypes.STRING },
     secondary_images: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
+        type: DataTypes.JSON,
         defaultValue: []
     },
     seller_name: { type: DataTypes.STRING, defaultValue: 'TrailblazeAuto Dealership' },

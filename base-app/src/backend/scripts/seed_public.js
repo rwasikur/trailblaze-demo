@@ -810,10 +810,6 @@ const sample_bookings = [
 const seedPublic = async () => {
     try {
         console.log("Running public database seeding...");
-        await connectDB();
-        await Car.sync({ alter: true });
-        await Booking.sync({ alter: true });
-        await Sale.sync({ alter: true });
 
         let created = 0;
         let updated = 0;

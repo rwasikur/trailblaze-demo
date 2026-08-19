@@ -39,15 +39,13 @@ const connectDB = async (retries = 2, delay = 1000) => {
         console.log('Database models synced');
 
         // Auto-seed if database is empty (essential for Vercel demo)
-        const Car = sequelize.models.Car;
-        if (Car) {
-            const count = await Car.count();
-            if (count === 0) {
-                console.log('Database is empty. Auto-seeding public cars and demo data...');
-                const { seedPublic } = require('../scripts/seed_public');
-                await seedPublic();
-                console.log('Auto-seeding complete!');
-            }
+        const Car = require('../models/Car');
+        const count = await Car.count();
+        if (count === 0) {
+            console.log('Database is empty. Auto-seeding public cars and demo data...');
+            const { seedPublic } = require('../scripts/seed_public');
+            await seedPublic();
+            console.log('Auto-seeding complete!');
         }
     } catch (err) {
         console.warn(`DB connection warning: ${err.message}. Backend running in serverless mode.`);
