@@ -17,6 +17,7 @@ import SalesHistoryPage from './pages/SalesHistoryPage';
 import AdminProfile from './pages/AdminProfile';
 import AdminSignup from './pages/AdminSignup';
 import CompareResultsPage from './pages/CompareResultsPage';
+import OfferManagementPage from './pages/OfferManagementPage';
 import { PageTransition } from './components/ui/PageTransition';
 import './index.css';
 
