@@ -19,6 +19,7 @@ const AdminDashboard = () => {
     const bookingPage = parseInt(searchParams.get('bPage') || '1');
     const ITEMS_PER_PAGE = 10;
     const [bookingFilter, setBookingFilter] = useState('All');
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
@@ -109,22 +110,42 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="flex gap-2 p-1.5 bg-slate-200/50 rounded-2xl w-fit">
-                    <button
-                        id="admin-vehicles-tab"
-                        onClick={() => setActiveTab('vehicles')}
-                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'vehicles' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        Vehicles ({cars.length})
-                    </button>
-                    <button
-                        id="admin-bookings-tab"
-                        onClick={() => setActiveTab('bookings')}
-                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'bookings' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        Bookings ({bookings.length})
-                    </button>
+                {/* Controls Bar */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    {/* Tabs */}
+                    <div className="flex gap-2 p-1.5 bg-slate-200/50 rounded-2xl w-fit">
+                        <button
+                            id="admin-vehicles-tab"
+                            onClick={() => { setActiveTab('vehicles'); setSearchTerm(''); }}
+                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'vehicles' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            Vehicles ({cars.length})
+                        </button>
+                        <button
+                            id="admin-bookings-tab"
+                            onClick={() => { setActiveTab('bookings'); setSearchTerm(''); }}
+                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'bookings' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            Bookings ({bookings.length})
+                        </button>
+                    </div>
+
+                    {/* Search Bar */}
+                    <div className="relative w-full md:w-96 group">
+                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-slate-900 transition-colors">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input
+                            id="admin-search-input"
+                            type="text"
+                            placeholder={activeTab === 'vehicles' ? "Search by Name, Brand or Fuel Type..." : "Search by Customer Name or Email..."}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-[11px] font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all shadow-sm shadow-slate-900/5"
+                        />
+                    </div>
                 </div>
 
                 <Card className="border-slate-200 shadow-sm overflow-hidden bg-white">

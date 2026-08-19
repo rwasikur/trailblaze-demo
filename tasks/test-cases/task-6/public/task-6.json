@@ -1,0 +1,36 @@
+{
+    "tasks": [
+        {
+            "task_id": "task-6",
+            "difficulty": "medium",
+            "description": "Implement a search bar in both the Catalogue page and the Admin Dashboard. The search bar should filter vehicles in the catalogue and allow administrators to filter both inventory and customer bookings. Ensure a premium UI and responsive filtering.",
+            "branch": "task-6",
+            "test_case_location": [
+                "tasks/test-cases/task-6/public/task-6.spec.ts",
+                "evaluation/private-test-cases/task-6/private/task-6.spec.ts"
+            ],
+            "acceptance_criteria": [
+                "Catalogue page must feature a prominent search input with id 'search-input' and the placeholder 'Search by make, model, or details...'.",
+                "Search input with id 'search-input' must filter the car list in real-time as the user types, displaying results within the container id 'car-grid'.",
+                "The search functionality must match the car's 'name' property (e.g., searching 'Swift' should show Swift cars) within the car cards in id 'car-grid'.",
+                "The search functionality must match the car's 'brand' property (e.g., searching 'Maruti' should show Maruti Suzuki cars) within the car cards in id 'car-grid'.",
+                "The search functionality must match the car's 'model' property (e.g., searching 'Baleno' should show Baleno cars) within the car cards in id 'car-grid'.",
+                "The search functionality must match the car's 'description' text fragment (e.g., searching 'scratchless' should show matching cars) within the car cards in id 'car-grid'.",
+                "The search functionality must match the car's 'fuel_type' property (e.g., searching 'Diesel' should show diesel cars) within the car cards in id 'car-grid'.",
+                "The search functionality must match the car's 'transmission' property (e.g., searching 'Automatic' should show automatic cars) within the car cards in id 'car-grid'.",
+                "The search functionality must match the car's 'body_type' property (e.g., searching 'SUV' should show SUV cars) within the car cards in id 'car-grid'.",
+                "The search functionality must match the car's 'registration_city' or 'registration_state' properties within the car cards in id 'car-grid'.",
+                "All search operations performed via id 'search-input' must be case-insensitive to ensure a user-friendly experience.",
+                "Search input id 'search-input' must work seamlessly in combination with the condition filters using ids 'filter-new' and 'filter-pre-owned'.",
+                "Clearing the search input id 'search-input' must immediately restore the full list of available cars in id 'car-grid', respecting any active condition filters.",
+                "If no cars match the query in id 'search-input', a clear 'No matches found' message must be displayed within the results area.",
+                "The search functionality must be able to match the 'model_year' of the car (e.g., searching '2023' should show cars from that year) in id 'car-grid'.",
+                "Admin login must be fully functional and use ids 'admin-email-input', 'admin-password-input', and 'admin-login-button' for authentication.",
+                "Admin Dashboard must include a persistent search input with id 'admin-search-input' to filter administrative views.",
+                "Admin search via id 'admin-search-input' must filter the vehicle inventory table in real-time and display results in the list with id 'dashboard-car-list'.",
+                "Admin search via id 'admin-search-input' must filter the customer bookings table by customer name, email, or vehicle choice in the active view.",
+                "The search input with id 'admin-search-input' must be programmatically cleared when switching between dashboard tabs 'Vehicles' (id 'admin-vehicles-tab') and 'Bookings' (id 'admin-bookings-tab')."
+            ]
+        }
+    ]
+}
