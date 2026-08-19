@@ -32,6 +32,19 @@ const FinancingBadge = ({ emiDetails }) => {
     );
 };
 
+const getDisplayPrice = (car) => {
+    if (!car) return 0;
+    const activeOffer = Array.isArray(car.activeOffers) && car.activeOffers.length > 0 ? car.activeOffers[0] : null;
+    if (activeOffer && activeOffer.discounted_price) {
+        return activeOffer.discounted_price;
+    }
+    const discount = parseInt(car.discount_percentage) || 0;
+    if (discount > 0 && discount < 100) {
+        return Math.round(car.price - (car.price * discount / 100));
+    }
+    return car.price || 0;
+};
+
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
