@@ -18,20 +18,16 @@ const PurchaseModal = ({ car, isOpen, onClose, emiInfo }) => {
         }
     }, [car]);
 
-    const [loading, setLoading] = useState(false);
-
-    const discount = parseInt(car?.discount_percentage) || 0;
-    const hasDiscount = car && discount > 0 && discount < 100;
-    const finalPrice = hasDiscount ? Math.round(car.price - (car.price * discount / 100)) : car?.price;
-
-    if (!isOpen) return null;
-
-    const activeOffer = Array.isArray(car.activeOffers) && car.activeOffers.length > 0 ? car.activeOffers[0] : null;
+    const activeOffer = Array.isArray(car?.activeOffers) && car.activeOffers.length > 0 ? car.activeOffers[0] : null;
     const offerSavings = Number(activeOffer?.savings_amount) || 0;
     const discountedPrice = activeOffer
         ? Number(activeOffer.discounted_price ?? Math.max((Number(car.price) || 0) - offerSavings, 0))
         : null;
-    const hasDiscount = activeOffer && offerSavings > 0 && discountedPrice !== null && discountedPrice < Number(car.price);
+    const discount = parseInt(car?.discount_percentage) || offerSavings || 0;
+    const hasDiscount = (car && discount > 0 && discount < 100) || (activeOffer && offerSavings > 0);
+    const finalPrice = discountedPrice !== null ? discountedPrice : (hasDiscount ? Math.round(car?.price - (car?.price * discount / 100)) : car?.price);
+
+    if (!isOpen) return null;
 
     const handleSubmit = async (e) => {
         e.preventDefault();

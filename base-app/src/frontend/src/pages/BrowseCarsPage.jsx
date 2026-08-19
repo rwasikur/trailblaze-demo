@@ -206,10 +206,7 @@ const BrowseCarsPage = () => {
                             <button
                                 key={opt}
                                 id={`filter-${opt.toLowerCase().replace(' ', '-')}`}
-<<<<<<< HEAD
                                 data-testid={`condition-filter-${opt}`}
-                                onClick={() => setConditionFilter(opt)}
-=======
                                 onClick={() => {
                                     setConditionFilter(opt);
                                     setSearchParams(prev => {
@@ -218,7 +215,6 @@ const BrowseCarsPage = () => {
                                         return newParams;
                                     });
                                 }}
->>>>>>> task-3
                                 className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${conditionFilter === opt ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 {opt}

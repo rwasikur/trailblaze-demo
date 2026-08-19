@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import { toast } from 'react-toastify';
-import api from '../api';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -268,8 +267,7 @@ const AdminDashboard = () => {
                                                             ) : null}
                                                         </td>
                                                     </tr>
-                                                    );
-                                                })}
+                                                ))}
                                             </tbody>
                                         </table>
                                         <div className="p-4 border-t border-slate-100">
@@ -355,7 +353,19 @@ const AdminDashboard = () => {
                                                                 <Badge variant={booking.car?.condition === 'New' ? 'new' : 'used'} className="text-[8px] px-1.5 py-0 h-4">
                                                                     {booking.car?.condition === 'New' ? 'New' : 'Pre-Owned'}
                                                                 </Badge>
-                                                            </td>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-5">
+                                                            <FinancingBadge emiDetails={booking.emi_details} />
+                                                        </td>
+                                                        <td className="px-6 py-5 text-slate-500 font-medium text-xs">
+                                                            {booking.created_at ? new Date(booking.created_at).toLocaleDateString() : 'N/A'}
+                                                        </td>
+                                                        <td className="px-6 py-5">
+                                                            <Badge variant={booking.status === 'Accepted' ? 'available' : booking.status === 'Rejected' ? 'unavailable' : 'pending'}>
+                                                                {booking.status}
+                                                            </Badge>
+                                                        </td>
                                                             <td className="px-6 py-5 text-right">
                                                                 <div className="flex justify-end gap-2">
                                                                     {editingBookingId === booking._id ? (
