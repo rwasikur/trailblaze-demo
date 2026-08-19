@@ -17,20 +17,19 @@ const sequelize = isPostgres
         logging: false
     });
 
-const connectDB = async (retries = 5, delay = 5000) => {
+const connectDB = async (retries = 2, delay = 1000) => {
     while (retries > 0) {
         try {
             await sequelize.authenticate();
-            console.log('PostgreSQL Connected via Sequelize');
-            // Sync models. In production this should be handled by migrations
+            console.log('Database connected via Sequelize');
             await sequelize.sync({ alter: true });
-            console.log('PostgreSQL Models synced');
+            console.log('Database models synced');
             return;
         } catch (err) {
-            console.error(`Error connecting to PostgreSQL: ${err.message}. Retries left: ${retries - 1}`);
+            console.error(`DB connection error: ${err.message}. Retries left: ${retries - 1}`);
             retries -= 1;
             if (retries === 0) {
-                process.exit(1);
+                throw new Error(`Failed to connect to database: ${err.message}`);
             }
             await new Promise(res => setTimeout(res, delay));
         }
